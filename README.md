@@ -1,6 +1,6 @@
 # Welcome to My Master Thesis! 😊
 
-Hello everyone, and welcome to my first interactions with my Master thies!  Through this work, I aim to show my current progress in a nice manner, so that my progress can be tracked.
+Hello everyone, and welcome to my first interactions with my Master thesis!  Through this work, I aim to show my current progress in a nice manner, so that my progress can be tracked.
 
 Let's get started! 👋🏻
 
@@ -63,11 +63,15 @@ As can be seen in the table **totalanimal** the animals are listed not in Englis
 
 $\Pi_{name}(\sigma_{category='dog'}(totalanimal))$
 
-When running it three time two times it printed **bill** and one time **diego, bill**. Therefore, also quite decent
+When running it three time two times it printed **bill** and one time **diego, bill**. Therefore, also quite decent. 
 
 ### TODO
 
 Modify the pipeline such that also "dirty join" like for example Vladi and Vladimir be performed.
 Howerver, the database would have to be modified for that or some other sort of matching defined.
 
+### Execution:
 
+In order to reproduce the results get a link for Gemini at [link](https://ai.google.dev/gemini-api/?utm_source=google&utm_medium=cpc&utm_campaign=core-brand-eur-sem&utm_id=21341690381&gad_source=1&gclid=Cj0KCQjw4Oe4BhCcARIsADQ0cslvbZYqZx9qC0R4cRh8QWMlv1aYItsLmv1BzbyTBC1to-wwT4aI20UaAqiSEALw_wcB).
+
+Also, one needs to set up the tables with the correct user and password. I used Postgres and pgAdmin4.
