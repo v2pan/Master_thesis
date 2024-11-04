@@ -4,7 +4,7 @@ import re
 with open("api_key.txt", "r") as file:
     api_key = file.read().strip()  # Read the file and remove any surrounding whitespace
 
-print(api_key)  # Use the API key as needed
+#print(api_key)  # Use the API key as needed
 
 # Set the endpoint
 url_gem = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={api_key}"
@@ -35,7 +35,7 @@ def post_gemini(text, values=False):
 
     # Check the status and output the response
     if response.status_code == 200:
-        print("Success!")
+        #print("Success!")
         response=response.json()
         # Extract the text
         text = response['candidates'][0]['content']['parts'][0]['text']
@@ -48,7 +48,7 @@ def post_gemini(text, values=False):
                 print("No match found")
             return query
         else:
-            print(text)
+            #print(text)
             return text
 
     else:

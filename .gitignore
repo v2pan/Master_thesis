@@ -2,3 +2,4 @@ api_key.txt
 embedding.py
 relational.txt
 venv
+__pycache__

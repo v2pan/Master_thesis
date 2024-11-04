@@ -1,77 +1,109 @@
-# Welcome to My Master Thesis! 😊
 
-Hello everyone, and welcome to my first interactions with my Master thesis!  Through this work, I aim to show my current progress in a nice manner, so that my progress can be tracked.
+### Soft binding 
 
-Let's get started! 👋🏻
+Now after having dealt with correcting small typos, it's time to deal with the soft binding. What if teh data is badly represented. For that let's deal with the following example.
 
----
+### Table 1: shareowner
 
-## Tables and first Pipeline
+|id| name          | shares   | 
+|----|-------------|----------|
+|1   | Pierre       | 20      |
+|2   | Vladi         | 10     |
+|3   | Diego       | 15      |
+|4   | Marcel         | 11     |
 
-My task is to enhance basically realtional algebra expressions with the help of a LLM.
-Therefore I can make use of its semantic capabilities 🧠 to enhance querying and getting better answers.
+### Table 2: animalowner
 
-### Table 1: totalnation
-
-| id            | nationality   | 
-|---------------|---------------|
-| Vladi         | Germany       |
-| Pierre        | French        |
-
-
-### Table 2: totalshares
-
-| name          | shares   | 
-|---------------|----------|
-| Felix         | 20       |
-| Vladi         | 10       |
-
-### Table 3: totalanimal
-
-| name          | category   | 
-|---------------|------------|
-| bill          | chien      |
-| diego         | chat       |
+| animalname    | category   |owner_id|
+|---------------|------------|------  |
+| bill          | chien      |1       |
+| diego         | chat       |2       |
+|chris          | dog        | 3      |
+| juan          | perro       | 4      |
 
 
-My first, proposal is the following architecture. The pipeline starts with a **LaTeX expression**, which is processed by an LLM to gene to verbalize the **goal** of the query. Parallely also the database gives out the **context** of the query, meaning for in all tables all columns and their unique values are written as key-value pairs. The LLM is given the **LaTeX expression**, the **context** and the **goal** and with it is supposed to generate the SQL query, the **temp_query** . The **temp_query** is run on the database. If no result is given, the LLM is given the **temp_query** and again the **context** and the **goal** to generate another **temp_query**. This database can be run up to five times, until it is forced to terminate. A schema of the pipeline is given here
-![Alt text for the image](First_pipeline.png)
+### Task
 
-## Realtional expression and results
+Query "Get the names and the amount of shares of all people owning a dog."
 
-### Misspelled selection
-The first expression is the following. The error is that there it is written 'Vladimir' instead of 'Vladi'. Let's see, if our pipeline produces the correct result
-$$\Pi_{shares}(\sigma_{name='Vladimir'}(totalshares))$$
 
-Having run it three times, the pipeline recognizes the issue and always returned the correct result with **10**. 🥳
+### Soft binding 
 
-Also, I tried instead of writing **Vladi**, I wrote it in Russian **Влади**.
-$$\Pi_{shares}(\sigma_{name='Влади'}(totalshares))$$
-Just adding some text, remembering the LLM to use the correct language and the result, was still **10**. 🥳
+Now after having dealt with correcting small typos, it's time to deal with the soft binding. What if th data is badly represented. For that let's deal with the following example.
 
-### Join in the wrong attribute
 
-The next example is the following, where the query is miswritten, as in the table **totalnation** the column is called **id** instead of **name**.
+Okay, so having tried that the first_pipeline architecture, also occasionally works recognzing that dog, is also meant by the expression "chien" and "chat".
 
-$\Pi_{shares}(totalshares \bowtie_{name=name} totalnation)$
+How could this be improved? Maybe through embedding and similarity measures. 
 
-In all three test runs the program was able to find the right join condition **name=id** and then perceed. 🥳
+## Text approach. What if we try to write the data as text, possibly writing it to an index. And then retreiving when being asked the question.
 
-### Projection with wrong language
+First consider this very simple text_pipeline implemented in th the function **text_pipeline** in the **softbinding.py** file. Wit the prompt "Convert the following database entries into a descriptive text." the content is written to a text file. Then the LLM is given all this information as context and is supposed to answer the query with that. 
+![Alt text for the image](images/text_pipeline.png).
 
-As can be seen in the table **totalanimal** the animals are listed not in English but in French 🇫🇷. Therefore the LLM needs to translate dog to French which is with his name **diego**.
+However, the LLM seems to have problems linking the two databases based on the id. Even when explicitly mentioning the linkage it doesn't seem to work. Hm, seems like the approach is not going anywhere. Try another. Interestingly though, the first_pipe doesn work and gives out the correct answer to this query.
 
-$\Pi_{name}(\sigma_{category='dog'}(totalanimal))$
+### Task
 
-When running it three time two times it printed **bill** and one time **diego, bill**. Therefore, also quite decent. 
+“Find all songs by the artist who released the album Reputation in 2017.” 
 
-### TODO
+### Database Records
 
-Modify the pipeline such that also "dirty join" like for example Vladi and Vladimir be performed.
-Howerver, the database would have to be modified for that or some other sort of matching defined.
+#### ARTISTS
+| id | name             | language |
+|----|-------------------|----------|
+| 1  | Taylor Swift     | English  |
+| 2  | Reputation Artist| English  |
 
-### Execution:
+#### ALBUMS
+| id | artist_id | album_name | release_year |
+|----|-----------|------------|--------------|
+| 1  | 1         | Reputation | 2017         |
+| 2  | 2         | Reputation | 2017         |
 
-In order to reproduce the results get a link for Gemini at [link](https://ai.google.dev/gemini-api/?utm_source=google&utm_medium=cpc&utm_campaign=core-brand-eur-sem&utm_id=21341690381&gad_source=1&gclid=Cj0KCQjw4Oe4BhCcARIsADQ0cslvbZYqZx9qC0R4cRh8QWMlv1aYItsLmv1BzbyTBC1to-wwT4aI20UaAqiSEALw_wcB).
+#### SONGS
+| id | album_id | song_name      | duration |
+|----|----------|----------------|----------|
+| 1  | 1        | Delicate       | 3:52     |
+| 2  | 2        | New Year’s Day | 3:55     |
 
-Also, one needs to set up the tables with the correct user and password. I used Postgres and pgAdmin4.
+### Result
+
+First of all, the text pipelien is used again. It produces decent result understanding not one but multiple artists are made. A possible output was the following:
+
+Song 1 (ID 1): Delicate, with a duration of 3:52, is from the album "Reputation" (Album ID 1) by Taylor Swift (Artist ID 1) who sings in English. This album was released in 2017.
+ong 2 (ID 2): New Year's Day, with a duration of 3:55, is from the album "Reputation" (Album ID 2) by Reputation Artist (Artist ID 2) who also sings in English.  This album was also released in 2017. 
+
+However, the idea occured whether logical mistakes in the query can be understood. In our case this would be that there are multiple artists who released the same album.
+
+The idea of adding a text_logic_pipeline didn't work. The LLM mostly tries to give me the procedure.
+
+![Alt text for the image](images/text_logic_pipeline.png).
+
+Having adjusted the pipeline, especially providing exemplary input and outputs, the results produced are quite decent. (Reiteration of the result is not included).
+ However, the LLM sometimes didn't produce any result due to copyrights issues with Taylor Swift and often added the rest of the songs published by Taylor Swift
+
+
+
+
+
+| artist_name      | language | song_name      | duration   | album_id |
+|-------------------|----------|-----------------|-------------|----------|
+| Reputation Artist | English   | New Year’s Day | 3:55       | 2        |
+| Taylor Swift       | English   | Delicate       | 3:52       | 1        | 
+
+
+Another, proposal is the log_sql_pipeline. The query is modified to force the LLM to gieve out a specific structuin. Based on the tables it creates a SQL query and based on the query it outlines instructions in natural language on how to perceed. Based on these instructions the content is given and the
+LLM gives out an answer. The pipeline is shown here
+
+![Alt text for the image](images/logic_sql.png).
+
+This pipeline showed smaller risk of the LLM infering different songs from the album, as in the text_logic_pipeline. It however often inferred that Taylor Swift is the reputation artist.
+
+"The album Reputation was released by **Taylor Swift** in 2017. The artist **Taylor Swift** has released the following songs:
+
+* Delicate
+* New Year's Day 
+"
+
+
