@@ -6,13 +6,11 @@ from database import query_database
 from extractor import extract
 from other_gemini import ask_gemini
 
-
-    
 def write_tables_text( tables):
     # Get the directory of the current script
     current_directory = os.path.dirname(os.path.abspath(__file__))
     combined_text = ""
-
+    combined_context=""
 
     for t in tables:
         content_text = ""
@@ -27,6 +25,8 @@ def write_tables_text( tables):
             # Read the content from the existing files
             with open(content_file_path, 'r') as content_file:
                 content_text = content_file.read()
+            with open(context_file_path, 'r') as context_file:
+                context_text = context_file.read()
         else:
             # SQL queries for schema (context) and table data (content)
             unique = f'''SELECT 
@@ -81,11 +81,13 @@ Rows: [(1, 'bill', 'dog'), (2, 'diego', 'cat')]". The output should be: The anim
             with open(content_file_path, 'w') as content_file:
                 #content_file.write(f'''{t}\n{str(cond)} \n{rws}''')
                 content_file.write(content_text)
-
+            with open(context_file_path, 'w') as context_file:
+                context_file.write(f"The name of the table is {t} \n {str(cond)}")
+            context_text = f"The name of the table is {t} \n {str(cond)}"
 
         # Append each table's context and content to the main text
         combined_text += f"{content_text}\n"
-        context_text += f"{context_text}\n"
+        combined_context += f"{context_text}\n"
 
 
     #print(f"The combined descriptive text is:\n {combined_text}")
@@ -97,7 +99,7 @@ Rows: [(1, 'bill', 'dog'), (2, 'diego', 'cat')]". The output should be: The anim
     )'''
     final_text = combined_text
 
-    return final_text, context_text  # Return the combined descriptive text for all tables
+    return final_text, combined_context  # Return the combined descriptive text for all tables
 
 def logic_sql_pipeline(query, tables):
     # Generate context by writing or reading tables' info
@@ -106,22 +108,22 @@ def logic_sql_pipeline(query, tables):
     print(f"The query is {query}")
 
     #Get response
-    response=ask_gemini(f"Write a new query in natural text, according to this. Input:'What is Peter's height'? Output: Peter's height is [number]. Input{query}. Output:")
-    query=response
-    print(f"The new query is: {query}")
+    response=ask_gemini(f"Write a new query in natural text, according to this. Input:'FInd out what Peter's heighr is.' Output: 'Peter's height is [number]'. Input:'{query}'. Output:")
+    print(f"The new query is: {response}")
 
+    print(f"The context is {context}")
     #Get SQL query
     response = ask_gemini(f"Convert the following query to SQL: {query}. The strucutre of the database is the following: {context}.")
     print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
     print(f"SQL answer is: {query_database(sql_query, True)}")
-    
-    #Convert SQL to himan language
+
+    #Convert SQL to human language
     instructions = ask_gemini(f'''Verbalize this SQL query as instructions for an LLM: {sql_query} to natural language without any syntax. Write those instructions in an ordered way.''')
 
     print(f"The instructions are {instructions}")
-    output=ask_gemini(f"Perform the following instructions: {instructions} on the content {content}. Finally, answer the query: {query}.")
+    output=ask_gemini(f"Perform the following instructions: {instructions} on the content {content}. Finally, answer the query: {query}. In each step write an explanation which information you used and whay you concluded like a great teacher.")
     print(f"The output is {output}")
 
     

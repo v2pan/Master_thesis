@@ -1,1 +1,1 @@
-The person with the id 1 is named Pierre and owns 20 shares. The person with the id 2 is named Vladi and owns 10 shares. The person with the id 3 is named Diego and owns 15 shares. The person with the id 4 is named Marcel and owns 11 shares. 
+The person with the id 1 is named "Pierre" and owns 20 shares. The person with the id 2 is named "Vladi" and owns 10 shares. The person with the id 3 is named "Diego" and owns 15 shares. The person with the id 4 is named "Marcel" and owns 11 shares. 

@@ -1,1 +1,1 @@
-The song with id 1 has album_id 1, is named "Delicate" and has a duration of 3:52. The song with id 2 has album_id 2, is named "New Year’s Day" and has a duration of 3:55. 
+The song with the id 1 is on album with the id 1, has the name "Delicate" and a duration of 3:52. The song with the id 2 is on album with the id 2, has the name "New Year’s Day" and a duration of 3:55. 
