@@ -93,7 +93,7 @@ Having adjusted the pipeline, especially providing exemplary input and outputs, 
 | Taylor Swift       | English   | Delicate       | 3:52       | 1        | 
 
 
-Another, proposal is the log_sql_pipeline. The query is modified to force the LLM to gieve out a specific structuin. Based on the tables it creates a SQL query and based on the query it outlines instructions in natural language on how to perceed. Based on these instructions the content is given and the
+Another, proposal is the **log_sql_pipeline**. The query is modified to force the LLM to gieve out a specific structuin. Based on the tables it creates a SQL query and based on the query it outlines instructions in natural language on how to perceed. Based on these instructions the content is given and the
 LLM gives out an answer. The pipeline is shown here
 
 ![Alt text for the image](images/logic_sql.png).
@@ -107,3 +107,48 @@ This pipeline showed smaller risk of the LLM infering different songs from the a
 "
 
 
+## Row-wise playground
+
+
+Now tet's try to start with two tables, with only one row per table inside. Thus, the procedure has to be developed by row rather than by table.
+
+
+### Table 1: shareowner1row
+
+|id| name          | shares   | 
+|----|-------------|----------|
+|1   | Pierre       | 20      |
+
+
+### Table 2: animalowner1row
+
+| animalname    | category   |owner_id|
+|---------------|------------|------  |
+| bill          | chien      |1       |
+
+The query given is still the same:
+"Give me the names and the shares of all people owning a dog."
+
+The result are going to be implemented in the **row_pipeline_robustly_working**.
+
+There, the idea is to take for example each matching, for example with category=dog. Then for this category, each values from the column is taken and then a query is performed in this case it
+would be something like:
+
+Does 'dog' and 'chien have the same semantic meaning?
+
+If the answer is yes, then the LLM is prompted to include this into the query, the step where
+the soft binding actually occurs.
+
+So the result query would like for example like:
+
+SELECT T1.name, T1.shares
+FROM shareowner1row AS T1
+INNER JOIN animalowner1row AS T2 ON T1.id = T2.owner_id
+WHERE T2.category = 'dog' OR T2.category = 'chien';
+The final answer to the query is [('Pierre', 20)]
+
+However, for more rows this procedure seems to have problems as it can't isolate each bidning accurately and sometimes the soft bidning is done at the wrong place.
+
+Also it was tried to implement such a function directly in the Python extension for
+SQL plpython3u. However, it doesnÄt have access to an API like for example a LLM, so 
+this unfortunately can't be used.

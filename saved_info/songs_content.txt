@@ -1,1 +1,0 @@
-The song with the id 1 is on album with the id 1, has the name "Delicate" and a duration of 3:52. The song with the id 2 is on album with the id 2, has the name "New Year’s Day" and a duration of 3:55. 

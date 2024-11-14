@@ -1,5 +1,5 @@
 import psycopg2
-from gemini import post_gemini
+from archive.gemini import post_gemini
 import re
 
 from database import query_database

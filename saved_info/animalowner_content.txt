@@ -1,1 +1,0 @@
-The animal with the owner_id 1 has the animalname "bill" and is a chien. The animal with the owner_id 2 has the animalname "diego" and is a chat. The animal with the owner_id 3 has the animalname "chris" and is a dog. The animal with the owner_id 4 has the animalname "juan" and is a perro. 
