@@ -1,110 +1,11 @@
 
-### Soft binding 
+# Welcome to My Master Thesis! 😊
 
-Now after having dealt with correcting small typos, it's time to deal with the soft binding. What if teh data is badly represented. For that let's deal with the following example.
+Hello everyone, and welcome to my first interactions with my Master thesis!  Through this work, I aim to show my current progress in a nice manner, so that my progress can be tracked.
 
-### Table 1: shareowner
+Let's get started! 👋🏻
 
-|id| name          | shares   | 
-|----|-------------|----------|
-|1   | Pierre       | 20      |
-|2   | Vladi         | 10     |
-|3   | Diego       | 15      |
-|4   | Marcel         | 11     |
-
-### Table 2: animalowner
-
-| animalname    | category   |owner_id|
-|---------------|------------|------  |
-| bill          | chien      |1       |
-| diego         | chat       |2       |
-|chris          | dog        | 3      |
-| juan          | perro       | 4      |
-
-
-### Task
-
-Query "Get the names and the amount of shares of all people owning a dog."
-
-
-### Soft binding 
-
-Now after having dealt with correcting small typos, it's time to deal with the soft binding. What if th data is badly represented. For that let's deal with the following example.
-
-
-Okay, so having tried that the first_pipeline architecture, also occasionally works recognzing that dog, is also meant by the expression "chien" and "chat".
-
-How could this be improved? Maybe through embedding and similarity measures. 
-
-## Text approach. What if we try to write the data as text, possibly writing it to an index. And then retreiving when being asked the question.
-
-First consider this very simple text_pipeline implemented in th the function **text_pipeline** in the **softbinding.py** file. Wit the prompt "Convert the following database entries into a descriptive text." the content is written to a text file. Then the LLM is given all this information as context and is supposed to answer the query with that. 
-![Alt text for the image](images/text_pipeline.png).
-
-However, the LLM seems to have problems linking the two databases based on the id. Even when explicitly mentioning the linkage it doesn't seem to work. Hm, seems like the approach is not going anywhere. Try another. Interestingly though, the first_pipe doesn work and gives out the correct answer to this query.
-
-### Task
-
-“Find all songs by the artist who released the album Reputation in 2017.” 
-
-### Database Records
-
-#### ARTISTS
-| id | name             | language |
-|----|-------------------|----------|
-| 1  | Taylor Swift     | English  |
-| 2  | Reputation Artist| English  |
-
-#### ALBUMS
-| id | artist_id | album_name | release_year |
-|----|-----------|------------|--------------|
-| 1  | 1         | Reputation | 2017         |
-| 2  | 2         | Reputation | 2017         |
-
-#### SONGS
-| id | album_id | song_name      | duration |
-|----|----------|----------------|----------|
-| 1  | 1        | Delicate       | 3:52     |
-| 2  | 2        | New Year’s Day | 3:55     |
-
-### Result
-
-First of all, the text pipelien is used again. It produces decent result understanding not one but multiple artists are made. A possible output was the following:
-
-Song 1 (ID 1): Delicate, with a duration of 3:52, is from the album "Reputation" (Album ID 1) by Taylor Swift (Artist ID 1) who sings in English. This album was released in 2017.
-ong 2 (ID 2): New Year's Day, with a duration of 3:55, is from the album "Reputation" (Album ID 2) by Reputation Artist (Artist ID 2) who also sings in English.  This album was also released in 2017. 
-
-However, the idea occured whether logical mistakes in the query can be understood. In our case this would be that there are multiple artists who released the same album.
-
-The idea of adding a text_logic_pipeline didn't work. The LLM mostly tries to give me the procedure.
-
-![Alt text for the image](images/text_logic_pipeline.png).
-
-Having adjusted the pipeline, especially providing exemplary input and outputs, the results produced are quite decent. (Reiteration of the result is not included).
- However, the LLM sometimes didn't produce any result due to copyrights issues with Taylor Swift and often added the rest of the songs published by Taylor Swift
-
-
-
-
-
-| artist_name      | language | song_name      | duration   | album_id |
-|-------------------|----------|-----------------|-------------|----------|
-| Reputation Artist | English   | New Year’s Day | 3:55       | 2        |
-| Taylor Swift       | English   | Delicate       | 3:52       | 1        | 
-
-
-Another, proposal is the **log_sql_pipeline**. The query is modified to force the LLM to gieve out a specific structuin. Based on the tables it creates a SQL query and based on the query it outlines instructions in natural language on how to perceed. Based on these instructions the content is given and the
-LLM gives out an answer. The pipeline is shown here
-
-![Alt text for the image](images/logic_sql.png).
-
-This pipeline showed smaller risk of the LLM infering different songs from the album, as in the text_logic_pipeline. It however often inferred that Taylor Swift is the reputation artist.
-
-"The album Reputation was released by **Taylor Swift** in 2017. The artist **Taylor Swift** has released the following songs:
-
-* Delicate
-* New Year's Day 
-"
+---
 
 
 ## Row-wise playground
@@ -127,28 +28,99 @@ Now tet's try to start with two tables, with only one row per table inside. Thus
 | bill          | chien      |1       |
 
 The query given is still the same:
-"Give me the names and the shares of all people owning a dog."
+"Give me the names and the shares of all people owning a dog.", which written in predicate calculus would be:
+{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}
 
-The result are going to be implemented in the **row_pipeline_robustly_working**.
 
-There, the idea is to take for example each matching, for example with category=dog. Then for this category, each values from the column is taken and then a query is performed in this case it
-would be something like:
 
-Does 'dog' and 'chien have the same semantic meaning?
+The results for the 18th November can be seen in the pipeline **row_calculus_pipeline**. The pipeline is not so easy to overlook, so here the idea in pseudocde:
 
-If the answer is yes, then the LLM is prompted to include this into the query, the step where
-the soft binding actually occurs.
+## Pseudocde
 
-So the result query would like for example like:
+GENERATE context
+GEMINII GENERATE initial SQL query based on context (!Important to not renamne the tables and not not have subqueries)
+EXTRACT_where_conditions_sqlparse
+PARSE the query using the library sqlparse
+GENERATE list conditions using a where clause like for example [['animalowner1row.category;', "(2, <Comparison '=' at 0x72DFE159C7C0>)", 'dog']]
+Substitute all reference like 'animalowner1row.category;' to SELECT queries
 
-SELECT T1.name, T1.shares
-FROM shareowner1row AS T1
-INNER JOIN animalowner1row AS T2 ON T1.id = T2.owner_id
-WHERE T2.category = 'dog' OR T2.category = 'chien';
-The final answer to the query is [('Pierre', 20)]
+execute_queries_on_conditions()
+Run those only those rewritten statements on the database and substitute them
+compare_semantics_in_list() (So far only works with one string and another list(0 to many Strings))
+Retrieves the originally queried String and last
+Iteration over every combination
+GEMINI: Does '{a}' and '{b}' have the same semantic meaning?"
+If YES: same_meaning_list.append
+GENERATE SQL query with same_meaning_list
+EXTRACT sql_query
+query_database(sql_query)
 
-However, for more rows this procedure seems to have problems as it can't isolate each bidning accurately and sometimes the soft bidning is done at the wrong place.
+'''
+1. **Gather Context:**
+   - Obtain schema information (table names, column names, data types, constraints) for relevant tables.  Store this as structured data (e.g., a dictionary or list of dictionaries).
 
-Also it was tried to implement such a function directly in the Python extension for
-SQL plpython3u. However, it doesnÄt have access to an API like for example a LLM, so 
-this unfortunately can't be used.
+2. **Initial SQL Generation:**
+   - Use a large language model (LLM) like Gemini to translate the input row calculus query into an initial SQL query.
+   - Constraints: The LLM must not rename tables, and the generated SQL should avoid subqueries, using JOINs instead.
+
+3. **WHERE Clause Extraction and Preprocessing:**
+   - Parse the initial SQL query using `sqlparse`.
+   - Extract the WHERE clause.
+   - Identify conditions within the WHERE clause.  Represent each condition as a list: `[left_operand, operator, right_operand]`.
+   - For each condition, if the left operand or the right operand  or the ' references a column (e.g., `table.column`), replace it with a corresponding `SELECT` statement: `SELECT column FROM table`.
+
+4. **Database Query Execution:**
+   - Execute the modified `SELECT` statements against the database to obtain the actual values.
+   - Replace the original `left_operand` or `left_operand` placeholders with the query results in the `conditions` list.
+
+5. **Semantic Comparison:**
+   - For each condition in the list:
+     - Compare the semantic meaning of the `left_operand` value (obtained from the database query in step 4) and the `right_operand` or `left_operand` using the LLM.
+     - If the LLM determines they are semantically equivalent, add them to the list.
+
+6. **SQL Query Optimization (based on semantic comparisons):**
+   - If semantically equivalent conditions exist, adjust WHERE clause of the SQL query accordingly. This involves merging conditions found in the previous step. 
+
+7. **Final Query Execution:**
+   - Execute the optimized SQL query against the database.
+   - Return the results.
+
+The results with one row, where quite good, so I extended it to multiple
+
+I have performed a short evaluation with multiple rows, I used this example:
+
+### Table 1: shareowner
+
+|id| name          | shares   | 
+|----|-------------|----------|
+|1   | Pierre       | 20      |
+|2   | Vladi         | 10     |
+|3   | Diego       | 15      |
+|4   | Marcel         | 11     |
+
+### Table 2: animalowner
+
+| animalname    | category   |owner_id|
+|---------------|------------|------  |
+| bill          | chien      |1       |
+| diego         | chat       |2       |
+|chris          | dog        | 3      |
+| juan          | perro       | 4      |
+
+Witht the query:
+
+{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}
+
+The result should be:
+[('Pierre\n', 20), ('Diego', 15), ('Marcel', 11)], as **dog** should have the same semantic meaning as **(chien, perro )**
+
+Out of 3 times the desired result was returned 3 times 🥳
+
+Now of course, there are some limitations
+
+- so far only where clause
+- dependency to have clear structure without subclauses and without renaming
+- not covered case where there is not a '='
+- How much tokens are being used? If too frequently, quota exhaustion
+
+Still, a first step forward 😊

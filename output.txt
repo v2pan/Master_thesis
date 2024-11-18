@@ -1,0 +1,2 @@
+[[('chien',), ('chat\n',)], "(2, <Comparison '=' at 0x72DFE159C7C0>)", 'dog']
+[[('bill',), ('diego',)], "(2, <Comparison '=' at 0x72DFE159CAC0>)", 'bill']

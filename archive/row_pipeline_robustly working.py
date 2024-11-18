@@ -224,4 +224,5 @@ def logic_sql_pipeline(query, tables):
 #logic_sql_pipeline(query, ["songs", "artists", "albums"])
 
 logic_sql_pipeline(f'''Get the names and the amount of shares of all people owning a dog.''',['shareowner1row', 'animalowner1row'])
+
 #logic_sql_pipeline(f'''Get the names and the amount of shares of all people owning a dog, who's name is diego''',['shareowner1row', 'animalowner1row'])
