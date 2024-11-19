@@ -1,12 +1,16 @@
 
-# Welcome to My Master Thesis! 😊
+# Welcome to My Master's Thesis! 😊
 
-Hello everyone, and welcome to my first interactions with my Master thesis!  Through this work, I aim to show my current progress in a nice manner, so that my progress can be tracked.
+Hello everyone, and welcome to my Master thesis!  Through this work, I aim to show my current progress in a nice manner, so that my progress can be tracked.
 
 Let's get started! 👋🏻
 
 ---
 
+In the **archive** folder one can observe old pipelines as well as their description.
+
+## Execute for yourself
+Everyone trying to execute this for yourself.
 
 ## Row-wise playground
 
@@ -124,3 +128,30 @@ Now of course, there are some limitations
 - How much tokens are being used? If too frequently, quota exhaustion
 
 Still, a first step forward 😊
+
+
+So let's try another example, where we don't but a filtering condition 
+
+
+### Table 3: doctors
+
+| id   | name   |patients_pd|
+|------|------------|------  |
+| 1    | Peter      |  ten      |
+| 2    | Giovanni    | 11       |
+|   3  | Hans        | fourty      |
+| 4   |  Lukas       | 44      |
+
+
+For this the pipeline **row_calculus_pipeline_unequal** was added. The main moficiation that instead of leveraging the a predefined prompt like in the **row_calculus_pipeline**, it uses  the comparison of the WHERE clause to generate a prompt by itself, which is then used as a comparison. For the `<` symbol it generates something around:
+{left} is smaller than {true}.
+Also the binding prompt was modified providiing a one-shot demonstration.
+
+f'''Write an updated SQL query like this, only using equalities. Only return the updated query.
+        Input: SELECT name, hair FROM person WHERE person.bodypart='eyes'; [('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
+        Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'ojos' ;
+        Input: {sql_query} {semantic_rows}
+        Output:'''
+
+
+The pipeline also good results for the example from the predecessor **row_calculus_pipeline**. Therefore, it can be regarded as an improvement.

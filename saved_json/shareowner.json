@@ -1,0 +1,44 @@
+{
+    "table_data": [
+        {
+            "id": 1,
+            "name": "Pierre\n",
+            "shares": 20
+        },
+        {
+            "id": 2,
+            "name": "Vladi\n",
+            "shares": 10
+        },
+        {
+            "id": 3,
+            "name": "Diego",
+            "shares": 15
+        },
+        {
+            "id": 4,
+            "name": "Marcel",
+            "shares": 11
+        }
+    ],
+    "metadata": [
+        {
+            "column_name": "id",
+            "data_type": "int4",
+            "is_not_null": true,
+            "is_primary_key": true
+        },
+        {
+            "column_name": "name",
+            "data_type": "text",
+            "is_not_null": false,
+            "is_primary_key": false
+        },
+        {
+            "column_name": "shares",
+            "data_type": "int4",
+            "is_not_null": false,
+            "is_primary_key": false
+        }
+    ]
+}

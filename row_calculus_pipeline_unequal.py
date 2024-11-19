@@ -133,6 +133,7 @@ def extract_where_conditions_sqlparse(sql_query):
         if where_clause:
             conditions = []
             for token in where_clause.tokens:
+                where_clause_str = str(where_clause).strip()
                 if isinstance(token, sqlparse.sql.Comparison):
                     left = str(token.left).strip()
                     right = str(token.right).strip()
@@ -153,8 +154,8 @@ def extract_where_conditions_sqlparse(sql_query):
                         #Handle literal values (remove quotes)
                         right = right.replace("'", "")
 
-
-                    conditions.append([left, operator, right])
+                    print(where_clause.get_name)
+                    conditions.append([left, operator,where_clause_str, right])
                 elif isinstance(token, sqlparse.sql.IdentifierList):
                     print("Warning: Complex IdentifierList in WHERE clause not fully handled.")
 
@@ -214,18 +215,30 @@ def compare_semantics_in_list(input_list):
             temp_list = None
             temp_string = None
             
+            #Auxiliary variable to determine which part of the list is the string and which is the list
+            left=None
             # Determine which part of the list is the string and which is the list, comparing them against on another
             # Cases where both are different not yet covered
             if type(outer_list[0]) == str:
                 temp_string = outer_list[0]
                 temp_list = outer_list[-1]
+                left=True
             else:
                 temp_string = outer_list[-1]
-                temp_list = outer_list[0] 
+                temp_list = outer_list[0]
+                left=False
+            condition=outer_list[1]
+            print(type(condition))
+            phrase=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
+                              Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
+                              Output: is the same as 
+                              Input:{condition}.
+                              Output:''')
+            print(f"The phrase is:\n {phrase}. ")
 
             print(f"temp_string: {temp_string}")
             print(f"temp_list: {temp_list}")
-            condition= outer_list[1]
+
             # Compare the string with the items in the list using gemini_json
             same_meaning_list = []
             seen_items = set()  # To track items we've already added
@@ -237,17 +250,22 @@ def compare_semantics_in_list(input_list):
                     continue
                 
                 #Actual logic, this is where the semantic binding occurs
-                prompt = f"Does '{temp_string}' and '{item}' have the same semantic meaning?"
+                if left:
+                    prompt = f"'{temp_string}  {phrase} {item}'"
+                else:
+                    prompt = f" '{item}  {phrase} {temp_string}'"
+                prompt=ask_gemini(f" Reformulate the followign prompt to natural lagnuage if necessary {prompt}")
                 response = gemini_json(prompt, response_type=bool)
 
                 # If the response is True, add the item to the list
                 if response:
                     same_meaning_list.append(item)
                     seen_items.add(item)  # Track this item as already processed
-            
+            #Appending the Where clause to the list
+            same_meaning_list.append(outer_list[-2])  # Add the original string to the list
             # If there are any items that have the same meaning, add temp_string and the matching items to the result list
             if same_meaning_list:
-                result_list.append([temp_string] + same_meaning_list)
+                result_list.append( same_meaning_list)
     
     return result_list
 
@@ -256,15 +274,15 @@ def compare_semantics_in_list(input_list):
 def row_calculus_pipeline(query, tables):
     # Generate context by writing or reading tables' info
     #Gets context by querying database
-    #context = get_context(tables)
+    context = get_context(tables)
 
     #Gets context by reading JSON files
-    context= get_context_json(tables)
+    #context= get_context_json(tables)
 
     print(f"The context is {context}")
     print(f"The query is {query}")
 
-    response = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. The structure of the database is the following: {context}.")
+    response = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. The structure of the database is the following: {context}.")
     #print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
@@ -278,22 +296,37 @@ def row_calculus_pipeline(query, tables):
     # Build the list of semantic pairs as a string
     semantic_rows = ''.join(f"{i}\n" for i in semantic_list)
 
-    # Use the result in the f-string
-    response = ask_gemini(
-        f"Modify the SQL query {sql_query} based on the assumption that the following expressions in each row have the same meaning:\n{semantic_rows}"
-    )
-
-    sql_query = extract(response, start_marker="```sql",end_marker="```" )
-    print(f"The final query is {sql_query}")
-    query_database(sql_query)
+    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query.
+        Input: SELECT name, hair FROM person WHERE person.bodypart='eyes'; [('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
+        Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'ojos' ;
+        Input: {sql_query} {semantic_rows}
+        Output:'''
+    print(f"The final prompt is {final_prompt}")
+    # Try to modify the query with our chosen binding
+    response = ask_gemini(final_prompt)
+    print(f"The response is {response}")
+    try:
+        sql_query = extract(response, start_marker="```sql",end_marker="```" )
+        if sql_query is None:
+            sql_query = extract(response, start_marker="SELECT",end_marker=";",inclusive=True )
+    except:
+        pass
+    if sql_query is None:
+        print("No SQL query found in response.")
+    else:
+        query_database(sql_query)
     
+
+#Shareowner and Animalowner examples with equality
 
 #calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''
 #row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
 calculus='''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}'''
 row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
 
-
+#Doctors example with inequality
+#calculus='''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}'''
+#row_calculus_pipeline(calculus, ['doctors'])
 # ----------------------------------------------------
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #Only used for testing purposes

@@ -1,0 +1,44 @@
+{
+    "table_data": [
+        {
+            "owner_id": 1,
+            "animalname": "bill",
+            "category": "chien"
+        },
+        {
+            "owner_id": 2,
+            "animalname": "diego",
+            "category": "chat"
+        },
+        {
+            "owner_id": 3,
+            "animalname": "chris",
+            "category": "dog"
+        },
+        {
+            "owner_id": 4,
+            "animalname": "juan",
+            "category": "perro"
+        }
+    ],
+    "metadata": [
+        {
+            "column_name": "owner_id",
+            "data_type": "int4",
+            "is_not_null": true,
+            "is_primary_key": true
+        },
+        {
+            "column_name": "animalname",
+            "data_type": "text",
+            "is_not_null": false,
+            "is_primary_key": false
+        },
+        {
+            "column_name": "category",
+            "data_type": "text",
+            "is_not_null": false,
+            "is_primary_key": false
+        }
+    ]
+}

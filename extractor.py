@@ -30,14 +30,27 @@ def extract(response, start_marker="§-+",end_marker="§-+", multiple=False, inc
     
     else:    
         # Find the start and end of the new query in the response
-        try:
-            start_index = response.find(start_marker)
-            end_index = response.find(end_marker, start_index + len(start_marker))
-        except:
-            return None        # Extract the modified query if it exists
-        if start_index != -1 and end_index != -1:
-            new_query = response[start_index + len(start_marker):end_index].strip()
+        if not inclusive:
+            try:
+                start_index = response.find(start_marker)
+                end_index = response.find(end_marker, start_index + len(start_marker))
+            except:
+                return None        # Extract the modified query if it exists
+            if start_index != -1 and end_index != -1:
+                new_query = response[start_index + len(start_marker):end_index].strip()
+            else:
+                new_query=None
+            
+            return new_query
         else:
-            new_query=None
-        
-        return new_query
+            try:
+                start_index = response.find(start_marker)
+                end_index = response.find(end_marker, start_index + len(start_marker))
+            except:
+                return None        # Extract the modified query if it exists
+            if start_index != -1 and end_index != -1:
+                new_query = response[start_index :end_index + 1].strip()
+            else:
+                new_query=None
+            
+            return new_query 
