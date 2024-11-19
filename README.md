@@ -116,7 +116,7 @@ Witht the query:
 {name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}
 
 The result should be:
-[('Pierre\n', 20), ('Diego', 15), ('Marcel', 11)], as **dog** should have the same semantic meaning as **(chien, perro )**
+[('Pierre\n', 20), ('Diego', 15), ('Marcel', 11)], as **dog** should have the same semantic meaning as **(chien, perro)**
 
 Out of 3 times the desired result was returned 3 times 🥳
 
@@ -155,3 +155,5 @@ f'''Write an updated SQL query like this, only using equalities. Only return the
 
 
 The pipeline also good results for the example from the predecessor **row_calculus_pipeline**. Therefore, it can be regarded as an improvement.
+
+Now the question arose, having shown that the pipeline can handle equalities and smaller/bigger comparisons. Can it handle unequalities? So far it is returning the excat oposit-

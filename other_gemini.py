@@ -11,6 +11,12 @@ genai.configure(api_key=api_key)
 def ask_gemini(prompt):
     model = genai.GenerativeModel("gemini-1.5-flash")
     result = model.generate_content(contents=prompt)
+    print(type(result.usage_metadata.total_token_count))
+    usage_metadata = {
+    "prompt_token_count": result.usage_metadata.prompt_token_count,
+    "candidates_token_count": result.usage_metadata.total_token_count,
+    "total_token_count": result.usage_metadata.total_token_count,
+}
     return result.text
 
 
@@ -62,3 +68,4 @@ class CATEGORY(typing.TypedDict):
 
 # Access and modify attributes using dot notation
 #  # Output: {'query': 'SELECT region FROM customerdetails', 'category': 'west'}
+

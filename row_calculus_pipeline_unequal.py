@@ -9,6 +9,7 @@ from other_gemini import gemini_json,ask_gemini
 from extractor import extract
 import copy
 
+#Metadata to keep track of use 
 
 def get_context(tables):
     # Get the directory of the current script
@@ -230,8 +231,12 @@ def compare_semantics_in_list(input_list):
             condition=outer_list[1]
             print(type(condition))
             phrase=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
+                              Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
+                              Output: is smaller than
+                              Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
+                              Output: does not have the same meaning as (also in antoher language)
                               Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
-                              Output: is the same as 
+                              Output: has the same meaning as (also in antoher language)
                               Input:{condition}.
                               Output:''')
             print(f"The phrase is:\n {phrase}. ")
@@ -245,17 +250,22 @@ def compare_semantics_in_list(input_list):
             
             # Iterate over the items in temp_list and compare with temp_string
             for item in temp_list:
-                # If item is identical to itself, skip
-                if temp_string in item or item in seen_items:
-                    continue
+                
+                # # If item is identical to itself, skip
+                # if temp_string in item or item in seen_items:
+                #     continue
                 
                 #Actual logic, this is where the semantic binding occurs
                 if left:
                     prompt = f"'{temp_string}  {phrase} {item}'"
                 else:
                     prompt = f" '{item}  {phrase} {temp_string}'"
-                prompt=ask_gemini(f" Reformulate the followign prompt to natural lagnuage if necessary {prompt}")
-                response = gemini_json(prompt, response_type=bool)
+                gemini_prompt=ask_gemini(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}.
+                                        Input: " '('two',)  is bigger than \n 9
+                                        Output: "two is bigger than 9
+                                        Input: {prompt}
+                                        Output:''')
+                response = gemini_json(gemini_prompt, response_type=bool)
 
                 # If the response is True, add the item to the list
                 if response:
@@ -296,10 +306,10 @@ def row_calculus_pipeline(query, tables):
     # Build the list of semantic pairs as a string
     semantic_rows = ''.join(f"{i}\n" for i in semantic_list)
 
-    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query.
-        Input: SELECT name, hair FROM person WHERE person.bodypart='eyes'; [('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
-        Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'ojos' ;
-        Input: {sql_query} {semantic_rows}
+    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query. USE only the binding variables like written in bidning.
+        Input: sql:SELECT name, hair FROM person WHERE person.bodypart='eyes'; binding :[('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
+        Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'augen';
+        Input: sql:{sql_query} binding: {semantic_rows}
         Output:'''
     print(f"The final prompt is {final_prompt}")
     # Try to modify the query with our chosen binding
@@ -318,11 +328,14 @@ def row_calculus_pipeline(query, tables):
     
 
 #Shareowner and Animalowner examples with equality
-
 #calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''
 #row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
 calculus='''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}'''
 row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
+
+#Negation example
+#calculus = '''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ¬ANIMALOWNER(id, _, 'dog'))}'''
+#row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
 
 #Doctors example with inequality
 #calculus='''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}'''
