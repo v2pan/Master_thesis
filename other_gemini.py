@@ -1,23 +1,35 @@
 import google.generativeai as genai
 import json
-# import base64
-# import vertexai
-# from vertexai.generative_models import GenerationConfig, GenerativeModel, Part
 import typing_extensions as typing
+from database import query_database
+
 with open("api_key.txt", "r") as file:
     api_key = file.read().strip()  # Read the file and remove any surrounding whitespace
 genai.configure(api_key=api_key)
 
-def ask_gemini(prompt):
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    result = model.generate_content(contents=prompt)
-    print(type(result.usage_metadata.total_token_count))
-    usage_metadata = {
-    "prompt_token_count": result.usage_metadata.prompt_token_count,
-    "candidates_token_count": result.usage_metadata.total_token_count,
-    "total_token_count": result.usage_metadata.total_token_count,
-}
-    return result.text
+#For the model gemini-1.5-flash, the rate limits are
+# 15 RPM
+# 1 million TPM
+# 1,500 RPD
+
+def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model="gemini-1.5-flash"):  # Add optional argument
+    model = genai.GenerativeModel(model)
+    result = model.generate_content(contents=prompt,
+    generation_config=genai.types.GenerationConfig(
+        # Only one candidate for now.
+        max_output_tokens=max_token,
+        temperature=temp,
+    ),)
+    
+    if return_metadata:
+        usage_metadata = {
+            "prompt_token_count": result.usage_metadata.prompt_token_count,
+            "candidates_token_count": result.usage_metadata.candidates_token_count,
+            "total_token_count": result.usage_metadata.total_token_count,
+        }
+        return result.text, usage_metadata
+    else:
+        return result.text  # Return only text if metadata not requested
 
 
 # Function to get embeddings from OpenAI
@@ -45,7 +57,7 @@ def gemini_json(prompt,response_type):
         dict: The response from the Gemini API as a JSON dictionary.
 
     """
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-1.5-flash-8b")
     result = model.generate_content(
         #"Answer the following questions [Does 'dog' and 'chien' have the same semantic meaning?, Does 'dog' and 'chat have the same semantic meaning?, Does dog and cat have the same semantic meaning?]",
         prompt,
@@ -53,7 +65,7 @@ def gemini_json(prompt,response_type):
             response_mime_type="application/json", response_schema=response_type
         ),
     )
-    print(f"The result text is {result.text}")
+    #print(f"The result text is {result.text}")
     json_data=json.loads(result.text)
     return json_data
 #Define Filter class for ret
@@ -61,11 +73,14 @@ class QUERY(typing.TypedDict):
     query: str
 class CATEGORY(typing.TypedDict):
     category: str
+class Table(typing.TypedDict):
+    category: str
 
 
-# Create an instance of the FILTER class
+
+# response = gemini_json(prompt, response_type=list[bool])  # Expect a list of booleans back
+# print(response)
 
 
-# Access and modify attributes using dot notation
-#  # Output: {'query': 'SELECT region FROM customerdetails', 'category': 'west'}
-
+# print(gemini_json(" 'chien'  has a different meaning than 'dog'",response_type=bool))
+#print(gemini_json("2+2 equals 5",response_type=bool))

@@ -10,6 +10,24 @@ from extractor import extract
 import copy
 
 #Metadata to keep track of use 
+usage_metadata_total = {
+            "prompt_token_count": 0,
+            "candidates_token_count": 0,
+            "total_token_count": 0,
+        }
+
+def update_metadata(metadata):
+    """
+    Updates the usage metadata with the values from the input metadata dictionary.
+
+    Args:
+    - metadata (dict): The metadata dictionary to update the usage metadata with.
+    """
+    global usage_metadata_total
+    usage_metadata_total["prompt_token_count"] += metadata["prompt_token_count"]
+    usage_metadata_total["candidates_token_count"] += metadata["candidates_token_count"]
+    usage_metadata_total["total_token_count"] += metadata["total_token_count"]
+
 
 def get_context(tables):
     # Get the directory of the current script
@@ -230,7 +248,7 @@ def compare_semantics_in_list(input_list):
                 left=False
             condition=outer_list[1]
             print(type(condition))
-            phrase=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
+            phrase,temp_meta=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
                               Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
                               Output: is smaller than
                               Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
@@ -238,7 +256,10 @@ def compare_semantics_in_list(input_list):
                               Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
                               Output: has the same meaning as (also in antoher language)
                               Input:{condition}.
-                              Output:''')
+                              Output:''',True, max_token=100)
+            
+            #Update the metadata
+            update_metadata(temp_meta)
             print(f"The phrase is:\n {phrase}. ")
 
             print(f"temp_string: {temp_string}")
@@ -260,11 +281,13 @@ def compare_semantics_in_list(input_list):
                     prompt = f"'{temp_string}  {phrase} {item}'"
                 else:
                     prompt = f" '{item}  {phrase} {temp_string}'"
-                gemini_prompt=ask_gemini(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}.
+                gemini_prompt, temp_meta=ask_gemini(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}.
                                         Input: " '('two',)  is bigger than \n 9
                                         Output: "two is bigger than 9
                                         Input: {prompt}
-                                        Output:''')
+                                        Output:''', True, max_token=100)
+                #Update the metadata
+                update_metadata(temp_meta)
                 response = gemini_json(gemini_prompt, response_type=bool)
 
                 # If the response is True, add the item to the list
@@ -292,7 +315,10 @@ def row_calculus_pipeline(query, tables):
     print(f"The context is {context}")
     print(f"The query is {query}")
 
-    response = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. The structure of the database is the following: {context}.")
+    response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. The structure of the database is the following: {context}.", True,max_token=1000)
+    #Update the metadata
+    update_metadata(temp_meta)
+
     #print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
@@ -313,7 +339,10 @@ def row_calculus_pipeline(query, tables):
         Output:'''
     print(f"The final prompt is {final_prompt}")
     # Try to modify the query with our chosen binding
-    response = ask_gemini(final_prompt)
+    response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
+    #Update the metadata
+    update_metadata(temp_meta)
+
     print(f"The response is {response}")
     try:
         sql_query = extract(response, start_marker="```sql",end_marker="```" )
@@ -325,13 +354,12 @@ def row_calculus_pipeline(query, tables):
         print("No SQL query found in response.")
     else:
         query_database(sql_query)
-    
-
+    print(usage_metadata_total)
 #Shareowner and Animalowner examples with equality
-#calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''
-#row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
-calculus='''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}'''
-row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
+calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''
+row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
+#calculus='''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}'''
+#row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
 
 #Negation example
 #calculus = '''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ¬ANIMALOWNER(id, _, 'dog'))}'''

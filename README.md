@@ -58,9 +58,7 @@ compare_semantics_in_list() (So far only works with one string and another list(
 GENERATE SQL query with same_meaning_list<br>
 EXTRACT sql_query<br>
 query_database(sql_query)<br>
-
-
-<pre>
+</pre>
 
 
 '''
@@ -160,4 +158,36 @@ f'''Write an updated SQL query like this, only using equalities. Only return the
 
 The pipeline also good results for the example from the predecessor **row_calculus_pipeline**. Therefore, it can be regarded as an improvement.
 
-Now the question arose, having shown that the pipeline can handle equalities and smaller/bigger comparisons. Can it handle unequalities? So far it is returning the excat oposit-
+20.11
+
+So a few advancements have been made. The most recent pipeline is the *row_calculus_pipeline*. It is the most recent one, it now can handle additionally comparisons (comprising numbers written as text), equalities and not-equalities. Howevever, it can't process multiple WHERE arguments in a WHERE clause. 
+
+The updated pseudocode is:
+
+
+<pre>
+GENERATE context 
+GEMINII GENERATE initial SQL query based on context
+conditions2<-EXTRACT_where_conditions_sqlparse(sql_query)<br>
+   PARSE the query using the library sqlparse<br>
+   GENERATE list conditions using a where clause like for example [['animalowner1row.category;', "(2, <Comparison '=' at 0x72DFE159C7C0>)", 'dog']]<br>
+   Substitute all reference like 'animalowner1row.category;' to SELECT queries<br>
+
+newlist2<-execute_queries_on_conditions(conditions2)<br>
+   Run those only those rewritten statements (written into SQL statements) -> get list of all values
+semantic_list<-compare_semantics_in_list(newlist2) <br>
+   result_list={}
+   Iteration over newlist2<br>:
+      temp_string <-outer_list[0]
+      temp_list<- outer_list[-1]
+      phrase = GENERATE GEMINI (for example: "is smaller than")
+      Iteration over temp_list:
+         GEMININ( {a} phrase {b})
+      If YES: 
+         same_meaning_list.append<br>
+      result_list.append(same_meaning_list)
+   
+GENERATE new SQL query with semantic list <br>
+EXTRACT sql_query<br>
+query_database(sql_query)<br>
+</pre>
