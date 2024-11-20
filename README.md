@@ -158,9 +158,9 @@ f'''Write an updated SQL query like this, only using equalities. Only return the
 
 The pipeline also good results for the example from the predecessor **row_calculus_pipeline**. Therefore, it can be regarded as an improvement.
 
-20.11
+# 20.11
 
-So a few advancements have been made. The most recent pipeline is the *row_calculus_pipeline*. It is the most recent one, it now can handle additionally comparisons (comprising numbers written as text), equalities and not-equalities. Howevever, it can't process multiple WHERE arguments in a WHERE clause. 
+So a few advancements have been made. The most recent pipeline is the *row_calculus_pipeline_comparison*. It is the most recent one, it now can handle additionally comparisons (comprising numbers written as text), equalities and not-equalities. Howevever, it can't process multiple WHERE arguments in a WHERE clause. 
 
 The updated pseudocode is:
 
@@ -191,3 +191,6 @@ GENERATE new SQL query with semantic list <br>
 EXTRACT sql_query<br>
 query_database(sql_query)<br>
 </pre>
+
+The idea is that the LLM generates the phrase with which it queries the two values
+by itself. Also some prompts were adjusted using 1-shot or 2-shot learning.
