@@ -40,24 +40,28 @@ The query given is still the same:
 The results for the 18th November can be seen in the pipeline **row_calculus_pipeline**. The pipeline is not so easy to overlook, so here the idea in pseudocde:
 
 ## Pseudocde
-
-GENERATE context
+<pre>
+GENERATE context 
 GEMINII GENERATE initial SQL query based on context (!Important to not renamne the tables and not not have subqueries)
-EXTRACT_where_conditions_sqlparse
-PARSE the query using the library sqlparse
-GENERATE list conditions using a where clause like for example [['animalowner1row.category;', "(2, <Comparison '=' at 0x72DFE159C7C0>)", 'dog']]
-Substitute all reference like 'animalowner1row.category;' to SELECT queries
+EXTRACT_where_conditions_sqlparse<br>
+   PARSE the query using the library sqlparse<br>
+   GENERATE list conditions using a where clause like for example [['animalowner1row.category;', "(2, <Comparison '=' at 0x72DFE159C7C0>)", 'dog']]<br>
+   Substitute all reference like 'animalowner1row.category;' to SELECT queries<br>
 
-execute_queries_on_conditions()
-Run those only those rewritten statements on the database and substitute them
-compare_semantics_in_list() (So far only works with one string and another list(0 to many Strings))
-Retrieves the originally queried String and last
-Iteration over every combination
-GEMINI: Does '{a}' and '{b}' have the same semantic meaning?"
-If YES: same_meaning_list.append
-GENERATE SQL query with same_meaning_list
-EXTRACT sql_query
-query_database(sql_query)
+execute_queries_on_conditions()<br>
+   Run those only those rewritten statements (written into SQL statements) on the database and substitute them
+compare_semantics_in_list() (So far only works with one string and another list(0 to many Strings))<br>
+   Retrieves the originally queried String and last<br>
+   Iteration over every combination<br>
+   GEMINI: Does '{a}' and '{b}' have the same semantic meaning?"<br>
+   If YES: same_meaning_list.append<br>
+GENERATE SQL query with same_meaning_list<br>
+EXTRACT sql_query<br>
+query_database(sql_query)<br>
+
+
+<pre>
+
 
 '''
 1. **Gather Context:**
