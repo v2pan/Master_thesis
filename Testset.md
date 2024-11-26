@@ -113,7 +113,7 @@ Date mismatch, Tournaments won by player born in January
 
 # Example Influencers
 
-### Table 7: influencers
+### Table 8: influencers
 
 |media_name|  clicks  | 
 |----------|---------    |
@@ -122,18 +122,55 @@ Date mismatch, Tournaments won by player born in January
 |surviver1000   | 1 million|
 | princess   | thousand  |
 
-### Table 7: followers
+### Table 9: followers
 
 |  id  | following   | adult |
 |---------------|------------|------  |
-| 1          | surviver1000  | True      |
-| 3         | makeuptutorial  | False       |
-|2        | surviver1000       | True
-| 3          | princess       | True
+| 1          | surviver1000  | True   |
+| 3         | makeuptutorial  | False |
+|2        | surviver1000       | True |
+| 3          | princess       | True  |
 
 
 Clicks is written in a completely different format.<br>
 
 **Calculus** {  media_name |  influencers(media_name, > 500) ∧ followers(id, media_name, _) } <br>
+
+**Result** [[('makeuptutorial'), ('surviver1000')]] <br>
+
+
+# Example Join
+
+
+### Table 8: children_table
+
+|id|  children  | 
+|----------|----|
+|0        | 4    |
+| 1         | 1|
+| 2         | 1 |
+| 3         | 2  |
+
+### Table 9: fathers
+
+|  id  | name   |
+|---------------|------------|
+| zero          | Gerhard |
+| one         | Joachim |
+| four        | Simon |
+| two          | Dieter  |
+
+
+Check whether the new Join works <br>
+
+**Calculus** ∃id (children_table(id, _) ∧ fathers(id, _)) <br> 
+=> Resulting  query: 
+SELECT children_table.id, children_table.children, fathers.name FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id
+                   	WHEN 'zero' THEN 0
+                        WHEN 'one' THEN 1
+                        WHEN 'two' THEN 2
+                        WHEN 'four' THEN 4
+                        ELSE NULL
+                    END;<br>
 
 **Result** [[('makeuptutorial'), ('surviver1000')]] <br>

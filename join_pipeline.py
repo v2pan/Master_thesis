@@ -35,7 +35,7 @@ def update_metadata(metadata):
 
 
 retries = 4
-def get_relevant_tables(calculus, ):
+def get_relevant_tables(calculus ):
     """
     Retrieves relevant tables from a database, handling retries and potential errors.
 
@@ -203,6 +203,8 @@ def extract_where_conditions_sqlparse(sql_query):
                     left = str(token.left).strip()
                     right = str(token.right).strip()
                     operator = str(token.token_next(0)).strip()
+                    # Extract the pure operator
+                    operator = re.sub(r'[^\w\s]', '', operator)
 
                     #Process Left Operand
                     left_is_column = re.fullmatch(r'\w+\.\w+', left)  # More robust column check
@@ -324,7 +326,10 @@ def compare_semantics_in_list(input_list):
 
             # Compare the string with the items in the list using gemini_json
             same_meaning_list = []
-            seen_items = set()  # To track items we've already added
+            #seen_items = set()  # To track items we've already added
+
+            #Final prompt with list
+            total_prompt=f"Answer the following questions with True or False. \n"
             # Iterate over the items in temp_list and compare with temp_string
             for item in temp_list:
                 item=item[0]
@@ -335,11 +340,13 @@ def compare_semantics_in_list(input_list):
                 #Deletes unnecessary "\n"
                 item=item.replace("\n", "")
                 temp_string=temp_string.replace("\n", "")
+                phrase=phrase.replace("\n", "")
                 #Actual logic, this is where the semantic binding occurs
                 if left:
-                    prompt = f"'{temp_string}'  {phrase} '{item}'"
+                    prompt = f"'{temp_string}'  {phrase} '{item}' \n"
                 else:
-                    prompt = f" '{item}'  {phrase} '{temp_string}'"
+                    prompt = f" '{item}'  {phrase} '{temp_string}' \n"
+                total_prompt+=prompt
                 # prompt, temp_meta=ask_gemini(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}. 
                 #                         Input: " '('two',)  is bigger than \n 9
                 #                         Output: "two is bigger than 9
@@ -350,13 +357,15 @@ def compare_semantics_in_list(input_list):
                 #prompt = prompt+f". Keep in mind that the goal is {goal}."
                 
                 #prompt+=f"Keep in mind that the goal is: \n {goal}."
-                prompt=prompt.replace("\n", "")
-                response = gemini_json(prompt, response_type=bool)
-
+                #prompt=prompt.replace("\n", "")
+            response = gemini_json(total_prompt, response_type=list[bool])
+            relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
+            for i in relevant_items:
+                same_meaning_list.append(i)
                 # If the response is True, add the item to the list
-                if response:
-                    same_meaning_list.append(item)
-                    seen_items.add(item)  # Track this item as already processed
+            # if response:
+            #     same_meaning_list.append(item)
+                #seen_items.add(item)  # Track this item as already processed
             
             
             #Appending, the item itself if not recognized by the LLM
@@ -448,33 +457,6 @@ def row_calculus_pipeline(query):
     if result:
         return result
 
-#Shareowner and Animalowner examples with equality
-# calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''
-# row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
-calculus='''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}'''
+
+calculus='''∃id (childre_table(id, _) ∧ fathers(id, _))'''
 row_calculus_pipeline(calculus)
-
-#Negation example
-# calculus = '''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ¬ANIMALOWNER(id, _, 'dog'))}'''
-# row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
-
-#Doctors example with inequality
-# calculus='''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}'''
-# row_calculus_pipeline(calculus, ['doctors'])
-# -> Right Answer: [(1, 'Peter', 'ten'), (2, 'Giovanni','11')]
-
-#Doctors example with inequality and two WHERE clauses/ Now two WHERE clauses do not work
-# calculus='''{id, name, patients_pd | doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12}'''
-# row_calculus_pipeline(calculus)
-#row_calculus_pipeline(calculus, ['doctors'])
-# -> Right Answer: [(1, 'Peter', 'ten')]
-
-#Swift Example
-# calculus='''ARTISTS(a,_,_), ALBUMS(_,a,"Reputation",2017),SONGS(_,a2,song_name,_),ALBUMS(a2,a,_)'''
-# row_calculus_pipeline(calculus, ['artists', 'albums', 'songs'])
-
-# calculus='''∃id ∃shares ∃name (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id, _, 'dog') ∧ Result(name, shares))'''
-# row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
-
-# calculus='''∃id ∃shares ∃name (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id, _, 'dog'))'''
-# row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])

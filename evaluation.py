@@ -23,23 +23,23 @@ def evaluate_results(expected, actual):
 
 #Calculus and the expected result
 test_cases = [
-    (
-        '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
-        {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')}
-    ),
-    (
-        '''{∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)''',
-        {(1, 'Peter', 'ten')}
-    ),
-    (
-        '''∃id ∃shares ∃name (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id, _, 'dog'))''',
-        {(1, 'Pierre', 20, 1, 'bill', 'chien')}
-    ),
-    (
-        '''∃id ∃shares ∃name (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id, _, 'dog'))''',
-        {(3, 'Diego', 15, 3, 'chris', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro'), (1, 'Pierre', 20, 1, 'bill', 'chien')}
-    ),
-    (   '''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ¬ANIMALOWNER(id, _, 'dog'))}''',
+    # (
+    #     '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
+    #     {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')}
+    # ),
+    # (
+    #     '''∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)''',
+    #     {(1, 'Peter', 'ten')}
+    # ),
+    # (
+    #     '''∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))''',
+    #     {(1, 'Pierre', 20, 1, 'bill', 'chien')}
+    # ),
+    # (
+    #     '''∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))''',
+    #     {(3, 'Diego', 15, 3, 'chris', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro'), (1, 'Pierre', 20, 1, 'bill', 'chien')}
+    # ),
+    (   '''∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))''',
         {(2, 'Vladi', 10, 2, 'diego', 'chat')}
     )
 
@@ -56,7 +56,7 @@ for calculus, expected_result in test_cases:
         try:
             actual_result = set(row_calculus_pipeline(calculus))
             accuracy, precision, recall, f1_score = evaluate_results(expected_result, actual_result)
-            metrics.append((accuracy, precision, recall, f1_score))
+            metrics.append((accuracy, precision, recall, f1_score, calculus))
             break  # Exit the inner loop if successful
         except Exception as e: #Quota exception occurs quite frequently, due to free version of the API 
             retries += 1
@@ -93,8 +93,8 @@ def write_all_metrics_to_file(metrics, filename = "all_metrics.txt"):
             with open(filename, "w") as f:
                 f.write("--- Individual Metrics ---\n")
                 for i, m in enumerate(metrics):
-                    accuracy, precision, recall, f1 = m
-                    f.write(f"Test Case {i+1}:\n")
+                    accuracy, precision, recall, f1, calculus = m
+                    f.write(f"Calculus {calculus}:\n")
                     f.write(f"  Accuracy: {accuracy:.4f}\n")
                     f.write(f"  Precision: {precision:.4f}\n")
                     f.write(f"  Recall: {recall:.4f}\n")

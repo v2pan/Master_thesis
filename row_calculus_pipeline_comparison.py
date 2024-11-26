@@ -357,6 +357,14 @@ def compare_semantics_in_list(input_list):
                 #prompt+=f"Keep in mind that the goal is: \n {goal}."
                 #prompt=prompt.replace("\n", "")
             response = gemini_json(total_prompt, response_type=list[bool])
+
+            #Check if response has same length
+            if len(response)!=len(temp_list):
+                print("Error")
+                print("The response and the temp_list have different lengths")
+                print(f"The response is {response}")
+                print(f"The temp_list is {temp_list}")
+                break
             relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
             for i in relevant_items:
                 same_meaning_list.append(i)
@@ -458,8 +466,8 @@ def row_calculus_pipeline(query):
 #Shareowner and Animalowner examples with equality
 # calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''
 # row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
-calculus='''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}'''
-row_calculus_pipeline(calculus)
+# calculus='''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}'''
+# row_calculus_pipeline(calculus)
 
 #Negation example
 # calculus = '''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ¬ANIMALOWNER(id, _, 'dog'))}'''
@@ -485,3 +493,6 @@ row_calculus_pipeline(calculus)
 
 # calculus='''∃id ∃shares ∃name (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id, _, 'dog'))'''
 # row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
+
+# calculus='''∃id (childre_table(id, _) ∧ fathers(id, _))'''
+# row_calculus_pipeline(calculus)
