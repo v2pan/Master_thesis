@@ -1,25 +1,28 @@
-# import google.generativeai as genai
+from other_gemini import gemini_json
+from database import query_database
 
-# with open("api_key.txt", "r") as file:
-#     api_key = file.read().strip()  # Read the file and remove any surrounding whitespace
-# genai.configure(api_key=api_key)
+def get_relevant_tables (calculus):
 
-# model = genai.GenerativeModel("gemini-1.5-flash")
-# chat = model.start_chat(
-#     history=[
-#         {"role": "user", "parts": "Hello. I am Vladimir"},
-#         {"role": "model", "parts": "Hello Vladimir. What would you like to know?"},
-#     ]
-# )
-# response = chat.send_message("I have 2 dogs in my house.", stream=False)
-# for chunk in response:
-#     print(chunk.text)
-#     print("_" * 80)
-# response = chat.send_message("What is my name?", stream=False)
-# for chunk in response:
-#     print(chunk.text)
-#     print("_" * 80)
+    prompt='''SELECT table_name 
+    FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_type = 'BASE TABLE';'''
+    result=query_database(prompt,printing=False) #Result is a list 
 
-# print(chat.history)
+    #Extract the pure names
+    count=0
+    for i in result:
+        result[count]=i[0]
+        count+=1
+    print(result)
 
-print('Peter' in '("Peter",)')
+    input_prompt = f""
+    for i in result:
+        #Only one entrance in each list -> is the name itself without any quotes
+        input_prompt+=f"Does table '{i}' occur in the expression '{calculus}?  \n"
+    categories=gemini_json(prompt=input_prompt,response_type=list[bool])
+    relevant_tables = [result[i] for i, is_relevant in enumerate(categories) if is_relevant]
+    return relevant_tables
+
+
+calculus='''∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))'''
+print(get_relevant_tables(calculus))

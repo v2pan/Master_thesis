@@ -9,6 +9,71 @@ from other_gemini import gemini_json,ask_gemini
 from extractor import extract
 import copy
 
+#SOTA 26/11/2024
+
+
+#Metadata to keep track of use 
+usage_metadata_total = {
+            "prompt_token_count": 0,
+            "candidates_token_count": 0,
+            "total_token_count": 0,
+            "total_calls": 0
+        }
+
+def update_metadata(metadata):
+    """
+    Updates the usage metadata with the values from the input metadata dictionary.
+
+    Args:
+    - metadata (dict): The metadata dictionary to update the usage metadata with.
+    """
+    global usage_metadata_total
+    usage_metadata_total["prompt_token_count"] += metadata["prompt_token_count"]
+    usage_metadata_total["candidates_token_count"] += metadata["candidates_token_count"]
+    usage_metadata_total["total_token_count"] += metadata["total_token_count"]
+    usage_metadata_total["total_calls"] += 1
+
+
+retries = 4
+def get_relevant_tables(calculus, ):
+    """
+    Retrieves relevant tables from a database, handling retries and potential errors.
+
+    Args:
+        calculus: The expression to check against.
+        retries: The number of retry attempts if tables cannot be found.
+
+    Returns:
+        A list of relevant table names if found, otherwise None.
+    """
+
+    prompt = """SELECT table_name 
+               FROM information_schema.tables
+               WHERE table_schema = 'public' AND table_type = 'BASE TABLE';"""
+    retries = 4
+    count = 0
+    while count < retries:
+        try:
+            result = query_database(prompt, printing=False)  # Assuming this is your DB query function
+
+            # Extract table names (more efficient method):
+            table_names = [row[0] for row in result]
+
+            input_prompt = ""
+            for table_name in table_names:
+                input_prompt += f"Does table '{table_name}' occur in the expression '{calculus}'?  \n"
+
+            categories = gemini_json(prompt=input_prompt, response_type=list[bool])
+            relevant_tables = [table_names[i] for i, is_relevant in enumerate(categories) if is_relevant]
+
+            return relevant_tables  #Return tables if successfully found
+
+        except Exception as e:  # Catch potential errors (e.g., database connection issues)
+            count += 1
+            print(f"Attempt {count+1}/{retries} failed: {e}. Retrying...")
+
+    print(f"Exceeded maximum retries ({retries}). Could not find relevant tables.")
+    return None
 
 def get_context(tables):
     # Get the directory of the current script
@@ -133,6 +198,7 @@ def extract_where_conditions_sqlparse(sql_query):
         if where_clause:
             conditions = []
             for token in where_clause.tokens:
+                where_clause_str = str(where_clause).strip()
                 if isinstance(token, sqlparse.sql.Comparison):
                     left = str(token.left).strip()
                     right = str(token.right).strip()
@@ -153,8 +219,8 @@ def extract_where_conditions_sqlparse(sql_query):
                         #Handle literal values (remove quotes)
                         right = right.replace("'", "")
 
-
-                    conditions.append([left, operator, right])
+                    print(where_clause.get_name)
+                    conditions.append([left, operator,where_clause_str, right])
                 elif isinstance(token, sqlparse.sql.IdentifierList):
                     print("Warning: Complex IdentifierList in WHERE clause not fully handled.")
 
@@ -214,30 +280,77 @@ def compare_semantics_in_list(input_list):
             temp_list = None
             temp_string = None
             
+            #Auxiliary variable to determine which part of the list is the string and which is the list
+            left=None
             # Determine which part of the list is the string and which is the list, comparing them against on another
             # Cases where both are different not yet covered
             if type(outer_list[0]) == str:
                 temp_string = outer_list[0]
                 temp_list = outer_list[-1]
+                left=True
             else:
                 temp_string = outer_list[-1]
-                temp_list = outer_list[0] 
+                temp_list = outer_list[0]
+                left=False
+            condition=outer_list[1]
+            
+            #Add a goal to make sure LLM takes right decision
+            goal=ask_gemini(f'''Write out the goal for this clause in natural language. Focus on the
+                            semantic meaning. {outer_list[-2]}. Be brief.
+                            Input: 'WHERE person.id <> 2'
+                            Output: Retrieve instances where the id of the person is not 2
+                            Input : {outer_list[-2]}
+                            Output:
+                            ''')
+            print(f"The goal is {goal}")
+            phrase,temp_meta=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
+                              Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
+                              Output: is smaller than
+                              Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
+                              Output: has a different meaning than
+                              Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
+                              Output: has a different meaning than
+                              Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
+                              Output: has the same meaning as (also in antoher language) or is the same as
+                              Input:{condition}.
+                              Output:''',True, max_token=100)
+            
+            #Update the metadata
+            update_metadata(temp_meta)
+            print(f"The phrase is:\n {phrase}. ")
 
             print(f"temp_string: {temp_string}")
             print(f"temp_list: {temp_list}")
-            condition= outer_list[1]
+
             # Compare the string with the items in the list using gemini_json
             same_meaning_list = []
             seen_items = set()  # To track items we've already added
-            
             # Iterate over the items in temp_list and compare with temp_string
             for item in temp_list:
-                # If item is identical to itself, skip
-                if temp_string in item or item in seen_items:
-                    continue
-                
+                item=item[0]
+                # # If item is identical to itself, skip
+                # if temp_string in item or item in seen_items:
+                #     continue
+
+                #Deletes unnecessary "\n"
+                item=item.replace("\n", "")
+                temp_string=temp_string.replace("\n", "")
                 #Actual logic, this is where the semantic binding occurs
-                prompt = f"Does '{temp_string}' and '{item}' have the same semantic meaning?"
+                if left:
+                    prompt = f"'{temp_string}'  {phrase} '{item}'"
+                else:
+                    prompt = f" '{item}'  {phrase} '{temp_string}'"
+                # prompt, temp_meta=ask_gemini(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}. 
+                #                         Input: " '('two',)  is bigger than \n 9
+                #                         Output: "two is bigger than 9
+                #                         Input: {prompt}
+                #                         Output:''', True, max_token=100)
+                # #Update the metadata
+                # update_metadata(temp_meta)
+                #prompt = prompt+f". Keep in mind that the goal is {goal}."
+                
+                #prompt+=f"Keep in mind that the goal is: \n {goal}."
+                prompt=prompt.replace("\n", "")
                 response = gemini_json(prompt, response_type=bool)
 
                 # If the response is True, add the item to the list
@@ -245,26 +358,55 @@ def compare_semantics_in_list(input_list):
                     same_meaning_list.append(item)
                     seen_items.add(item)  # Track this item as already processed
             
+            
+            #Appending, the item itself if not recognized by the LLM
+            # if temp_string not in same_meaning_list:
+            #     for i in temp_list:
+            #         if temp_string in i:
+            #             same_meaning_list.append(temp_string)
+            #             break
+            same_meaning_list.append(outer_list[-2])  # Add the original string to the list
             # If there are any items that have the same meaning, add temp_string and the matching items to the result list
             if same_meaning_list:
-                result_list.append([temp_string] + same_meaning_list)
+                result_list.append( same_meaning_list)
     
     return result_list
 
 
 
-def row_calculus_pipeline(query, tables):
+def row_calculus_pipeline(query):
     # Generate context by writing or reading tables' info
     #Gets context by querying database
-    #context = get_context(tables)
+    retries=4
+    count=0
+    while count<retries:
+        tables = get_relevant_tables(query)
+        
+        if tables is not None:
+            break
+        else:
+            count+=1
+
+    
+    
+
+    print(f"The relevant tables are {tables}")
+    context = get_context(tables)
 
     #Gets context by reading JSON files
-    context= get_context_json(tables)
+    #context= get_context_json(tables)
 
     print(f"The context is {context}")
     print(f"The query is {query}")
 
-    response = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. The structure of the database is the following: {context}.")
+    #Used for relational calculus
+    #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
+
+    #Used for predicate calculus, selecting all rows
+    response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
+    #Update the metadata
+    update_metadata(temp_meta)
+
     #print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
@@ -278,56 +420,61 @@ def row_calculus_pipeline(query, tables):
     # Build the list of semantic pairs as a string
     semantic_rows = ''.join(f"{i}\n" for i in semantic_list)
 
-    # Use the result in the f-string
-    response = ask_gemini(
-        f"Modify the SQL query {sql_query} based on the assumption that the following expressions in each row have the same meaning:\n{semantic_rows}"
-    )
+    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query. USE only the binding variables like written in bidning. Always end with a ';'.
+        Input: sql:SELECT name, hair FROM person WHERE person.bodypart='eyes'; binding :[('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
+        Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'augen';
+        Input: SELECT * FROM animals WHERE animal.legs<5 and animal.category='insect'; binding: [['three' , 'four', '2', "WHERE animal.legs<5 and animal.category='insect';"], ['INSECTS', "WHERE animal.legs<5 and animal.category='insect';"]]
+        Output: SELECT * FROM animals WHERE animal.some_column IN ('three', 'four', '2') AND animal.category = 'INSECTS';
+        Input: sql:{sql_query}; binding: {semantic_rows}
+        Output:'''
+    print(f"The final prompt is {final_prompt}")
+    # Try to modify the query with our chosen binding
+    response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
+    #Update the metadata
+    update_metadata(temp_meta)
 
-    sql_query = extract(response, start_marker="```sql",end_marker="```" )
-    print(f"The final query is {sql_query}")
-    query_database(sql_query)
-    
+    print(f"The response is {response}")
+    try:
+        sql_query = extract(response, start_marker="```sql",end_marker="```" )
+        if sql_query is None:
+            sql_query = extract(response, start_marker="SELECT",end_marker=";",inclusive=True )
+    except:
+        pass
+    if sql_query is None:
+        print("No SQL query found in response.")
+    else:
+        result=query_database(sql_query)
+    print(usage_metadata_total)
+    if result:
+        return result
 
-#calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''
-#row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
+#Shareowner and Animalowner examples with equality
+# calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''
+# row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
 calculus='''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}'''
-row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
+row_calculus_pipeline(calculus)
 
+#Negation example
+# calculus = '''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ¬ANIMALOWNER(id, _, 'dog'))}'''
+# row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
 
-# ----------------------------------------------------
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#Only used for testing purposes
-# def write_list_to_text_file(new_list, filename="output.txt"):
-#     """
-#     Writes the list of conditions (new_list) to a text file.
+#Doctors example with inequality
+# calculus='''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}'''
+# row_calculus_pipeline(calculus, ['doctors'])
+# -> Right Answer: [(1, 'Peter', 'ten'), (2, 'Giovanni','11')]
 
-#     Args:
-#     - new_list (list of lists): The list to write to the text file.
-#     - filename (str): The name of the text file to write the list into.
-#     """
-#     with open(filename, "w") as file:
-#         # Iterate through the list of lists
-#         for sublist in new_list:
-#             # Write each sublist as a string in the file
-#             file.write(str(sublist) + "\n")
+#Doctors example with inequality and two WHERE clauses/ Now two WHERE clauses do not work
+# calculus='''{id, name, patients_pd | doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12}'''
+# row_calculus_pipeline(calculus)
+#row_calculus_pipeline(calculus, ['doctors'])
+# -> Right Answer: [(1, 'Peter', 'ten')]
 
-# def retrieve_values_from_text_file(filename="output.txt"):
-#     """
-#     Retrieves the conditions and their semantic meanings from the text file.
+#Swift Example
+# calculus='''ARTISTS(a,_,_), ALBUMS(_,a,"Reputation",2017),SONGS(_,a2,song_name,_),ALBUMS(a2,a,_)'''
+# row_calculus_pipeline(calculus, ['artists', 'albums', 'songs'])
 
-#     Args:
-#     - filename (str): The name of the text file to read from.
+# calculus='''∃id ∃shares ∃name (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id, _, 'dog') ∧ Result(name, shares))'''
+# row_calculus_pipeline(calculus, ['shareowner1row', 'animalowner1row'])
 
-#     Returns:
-#     - result_list (list of lists): The parsed list of semantic expressions.
-#     """
-#     result_list = []
-    
-#     with open(filename, "r") as file:
-#         # Read the file line by line
-#         for line in file:
-#             # Convert the string representation of each sublist back into a list
-#             sublist = eval(line.strip())  # Using eval to safely interpret the string as a list
-#             result_list.append(sublist)
-
-#     return result_list
+# calculus='''∃id ∃shares ∃name (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id, _, 'dog'))'''
+# row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])

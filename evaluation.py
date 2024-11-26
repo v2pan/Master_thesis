@@ -2,56 +2,59 @@ import time
 from row_calculus_pipeline_comparison import row_calculus_pipeline
 
 def evaluate_results(expected, actual):
-    """Calculates accuracy, precision, recall, and F1-score."""
-    expected_set = set(expected)
-    actual_set = set(actual)
+    """Calculates accuracy, precision, recall, and F1-score, handling tuples."""
+    if type(expected)!=set:
+        set(expected)
+    if type(actual)!=set:
+        set(actual)
+    expected_frozensets = {frozenset(t) for t in expected}
+    actual_frozensets = {frozenset(t) for t in actual}
 
-    tp = len(expected_set.intersection(actual_set))  # True positives
-    fp = len(actual_set - expected_set)  # False positives
-    fn = len(expected_set - actual_set)  # False negatives
+    tp = len(expected_frozensets.intersection(actual_frozensets))  # True positives
+    fp = len(actual_frozensets - expected_frozensets)  # False positives
+    fn = len(expected_frozensets - actual_frozensets)  # False negatives
 
-    accuracy = (tp) / (tp + fp + fn) if (tp + fp + fn) > 0 else 0 #Avoid division by zero
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0 #Avoid division by zero
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0 #Avoid division by zero
-    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0 #Avoid division by zero
+    accuracy = (tp) / (tp + fp + fn) if (tp + fp + fn) > 0 else 0  # Avoid division by zero
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0  # Avoid division by zero
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0  # Avoid division by zero
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0  # Avoid division by zero
 
     return accuracy, precision, recall, f1_score
 
-
+#Calculus and the expected result
 test_cases = [
     (
-        '''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}''',
-        ['doctors'],
+        '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
         {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')}
     ),
     (
-        '''{id, name, patients_pd | doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12}''',
-        ['doctors'],
+        '''{∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)''',
         {(1, 'Peter', 'ten')}
     ),
     (
-        '''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}''',
-        ['shareowner1row', 'animalowner1row'],
-        {('Pierre', 20)}
+        '''∃id ∃shares ∃name (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id, _, 'dog'))''',
+        {(1, 'Pierre', 20, 1, 'bill', 'chien')}
     ),
     (
-        '''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id , _, 'dog'))}''',
-        ['shareowner', 'animalowner'],
-        {('Diego', 15), ('Marcel', 11), ('Pierre', 20)}
+        '''∃id ∃shares ∃name (SHAREOWNER(id, name, shares) ∧ ANIMALOWNER(id, _, 'dog'))''',
+        {(3, 'Diego', 15, 3, 'chris', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro'), (1, 'Pierre', 20, 1, 'bill', 'chien')}
     ),
+    (   '''{name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ¬ANIMALOWNER(id, _, 'dog'))}''',
+        {(2, 'Vladi', 10, 2, 'diego', 'chat')}
+    )
 
 ]
 
-max_retries = 3
+max_retries = 10
 retry_delay = 60
 
 metrics = []  # List to store metrics for each test case
 
-for calculus, tables, expected_result in test_cases:
+for calculus, expected_result in test_cases:
     retries = 0
     while retries < max_retries:
         try:
-            actual_result = set(row_calculus_pipeline(calculus, tables))
+            actual_result = set(row_calculus_pipeline(calculus))
             accuracy, precision, recall, f1_score = evaluate_results(expected_result, actual_result)
             metrics.append((accuracy, precision, recall, f1_score))
             break  # Exit the inner loop if successful
@@ -82,3 +85,33 @@ if metrics:  # Check if there are any metrics (to avoid errors if all tests fail
     print(f"Mean F1-score: {f1_score_mean:.4f}")
 else:
     print("No successful test cases to calculate mean metrics.")
+
+def write_all_metrics_to_file(metrics, filename = "all_metrics.txt"):
+    """Writes all individual metrics to a text file."""
+    if metrics:
+        try:
+            with open(filename, "w") as f:
+                f.write("--- Individual Metrics ---\n")
+                for i, m in enumerate(metrics):
+                    accuracy, precision, recall, f1 = m
+                    f.write(f"Test Case {i+1}:\n")
+                    f.write(f"  Accuracy: {accuracy:.4f}\n")
+                    f.write(f"  Precision: {precision:.4f}\n")
+                    f.write(f"  Recall: {recall:.4f}\n")
+                    f.write(f"  F1-score: {f1:.4f}\n")
+                f.write("\n--- Overall Metrics ---\n")
+                accuracy_mean = sum(m[0] for m in metrics) / len(metrics)
+                precision_mean = sum(m[1] for m in metrics) / len(metrics)
+                recall_mean = sum(m[2] for m in metrics) / len(metrics)
+                f1_score_mean = sum(m[3] for m in metrics) / len(metrics)
+                f.write(f"Mean Accuracy: {accuracy_mean:.4f}\n")
+                f.write(f"Mean Precision: {precision_mean:.4f}\n")
+                f.write(f"Mean Recall: {recall_mean:.4f}\n")
+                f.write(f"Mean F1-score: {f1_score_mean:.4f}\n")
+            print(f"Metrics written to '{filename}'")
+        except OSError as e:
+            print(f"Error writing metrics to file: {e}")
+    else:
+        print("No metrics to write to file.")
+
+write_all_metrics_to_file(metrics)

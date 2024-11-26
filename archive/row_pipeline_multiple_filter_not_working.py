@@ -2,6 +2,7 @@ import os
 from database import query_database
 from extractor import extract
 from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
+from database import query_database
 
 
 
