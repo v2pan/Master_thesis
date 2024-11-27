@@ -1,9 +1,9 @@
 --- Individual Metrics ---
 Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
-  Accuracy: 0.6667
-  Precision: 0.6667
+  Accuracy: 1.0000
+  Precision: 1.0000
   Recall: 1.0000
-  F1-score: 0.8000
+  F1-score: 1.0000
 Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
   Accuracy: 0.5000
   Precision: 0.5000
@@ -41,7 +41,7 @@ Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
   F1-score: 1.0000
 
 --- Overall Metrics ---
-Mean Accuracy: 0.8125
-Mean Precision: 0.8125
+Mean Accuracy: 0.8542
+Mean Precision: 0.8542
 Mean Recall: 1.0000
-Mean F1-score: 0.8708
+Mean F1-score: 0.8958

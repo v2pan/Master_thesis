@@ -1,311 +1,83 @@
-import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
 import sqlparse
 import re
+from row_calculus_pipeline import execute_queries_on_conditions,  update_metadata, get_context, get_relevant_tables
+from other_gemini import ask_gemini, gemini_json
 from database import query_database
-from other_gemini import gemini_json,ask_gemini
 from extractor import extract
 import copy
 
-#SOTA 26/11/2024
 
+#Trying out to implement the Join WHERE multiple things are linked
+#Creation of a dictionary to store the semantic pairs
 
-#Metadata to keep track of use 
-usage_metadata_total = {
-            "prompt_token_count": 0,
-            "candidates_token_count": 0,
-            "total_token_count": 0,
-            "total_calls": 0
-        }
-
-def update_metadata(metadata):
+def extract_join_conditions_sqlparse(sql_query: str):
     """
-    Updates the usage metadata with the values from the input metadata dictionary.
-
-    Args:
-    - metadata (dict): The metadata dictionary to update the usage metadata with.
-    """
-    global usage_metadata_total
-    usage_metadata_total["prompt_token_count"] += metadata["prompt_token_count"]
-    usage_metadata_total["candidates_token_count"] += metadata["candidates_token_count"]
-    usage_metadata_total["total_token_count"] += metadata["total_token_count"]
-    usage_metadata_total["total_calls"] += 1
-
-
-retries = 4
-def get_relevant_tables(calculus ):
-    """
-    Retrieves relevant tables from a database, handling retries and potential errors.
-
-    Args:
-        calculus: The expression to check against.
-        retries: The number of retry attempts if tables cannot be found.
-
-    Returns:
-        A list of relevant table names if found, otherwise None.
-    """
-
-    prompt = """SELECT table_name 
-               FROM information_schema.tables
-               WHERE table_schema = 'public' AND table_type = 'BASE TABLE';"""
-    retries = 4
-    count = 0
-    while count < retries:
-        try:
-            result = query_database(prompt, printing=False)  # Assuming this is your DB query function
-
-            # Extract table names (more efficient method):
-            table_names = [row[0] for row in result]
-
-            input_prompt = ""
-            for table_name in table_names:
-                input_prompt += f"Does table '{table_name}' occur in the expression '{calculus}'?  \n"
-
-            categories = gemini_json(prompt=input_prompt, response_type=list[bool])
-            relevant_tables = [table_names[i] for i, is_relevant in enumerate(categories) if is_relevant]
-
-            return relevant_tables  #Return tables if successfully found
-
-        except Exception as e:  # Catch potential errors (e.g., database connection issues)
-            count += 1
-            print(f"Attempt {count+1}/{retries} failed: {e}. Retrying...")
-
-    print(f"Exceeded maximum retries ({retries}). Could not find relevant tables.")
-    return None
-
-def get_context(tables):
-    # Get the directory of the current script
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    combined_context = ""
-
-    for t in tables:
-        context_text = ""
-        
-        # Define file paths for content and context
-        context_file_path = os.path.join(current_directory, 'saved_info', f'{t}_context.txt')
-
-        # Check if content and context files already exist
-        if os.path.exists(context_file_path):
-            with open(context_file_path, 'r') as context_file:
-                context_text = context_file.read()
-        else:
-            # SQL query for schema (context) with constraints
-            unique = f'''SELECT 
-                c.column_name,
-                c.is_nullable,
-                c.data_type,
-                constraints.constraint_type
-            FROM 
-                information_schema.columns c
-            LEFT JOIN (
-                SELECT 
-                    kcu.column_name,
-                    tc.constraint_type
-                FROM 
-                    information_schema.table_constraints tc
-                JOIN 
-                    information_schema.key_column_usage kcu
-                ON 
-                    tc.constraint_name = kcu.constraint_name
-                WHERE 
-                    tc.table_name = '{t}'
-            ) AS constraints 
-            ON c.column_name = constraints.column_name
-            WHERE 
-                c.table_name = '{t}';
-            '''
-
-            # SQL query to get column names in the correct order
-            column_names_query = f'''SELECT 
-                c.column_name
-            FROM 
-                information_schema.columns c
-            WHERE 
-                c.table_name = '{t}'
-            ORDER BY 
-                c.ordinal_position;
-            '''
-
-            # Fetch data from the database
-            cond = query_database(unique, False)
-            column_names = query_database(column_names_query, False)  # Assuming query_database returns results as strings
-            
-            # Convert column names to a formatted string for the context
-            column_names_text = "\n".join([col[0] for col in column_names])  # Assuming `query_database` returns list of tuples (col_name, ...)
-
-            # Combine schema information and column names
-            with open(context_file_path, 'w') as context_file:
-                context_file.write(f"The name of the table is {t}\n\n")
-                context_file.write(f"Columns in the table {t} (in correct order):\n{column_names_text}\n\n")
-                context_file.write(f"Schema Information:\n{str(cond)}")
-            
-            context_text = f"The name of the table is {t}\n\n"
-            context_text += f"Columns in the table {t} (in correct order):\n{column_names_text}\n\n"
-            context_text += f"Schema Information:\n{str(cond)}"
-
-        # Append each table's context and content to the main text
-        combined_context += f"{context_text}\n"
-
-
-    #print(f"The combined descriptive text is:\n {combined_text}")
-    print("--------------------")
-    
-    # Final combination of descriptive texts, with inter-table relationships
-    '''final_text = ask_gemini(
-        f"Combine and describe the relationships between the following tables if necessary. {combined_text}"
-    )'''
-
-    return combined_context  # Return the combined descriptive text for all tables
-
-#Retrieve the context from the saved JSON files
-def get_context_json(tables):
-    # Get the directory of the current script
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    combined_context = ""
-
-    for t in tables:
-        context_text = ""
-        
-        # Define file paths for content and context
-        context_file_path = os.path.join(current_directory, 'saved_json', f'{t}.json')
-
-        # Check if content and context files already exist
-        if os.path.exists(context_file_path):
-            with open(context_file_path, 'r') as context_file:
-                context_text = context_file.read()
-        else:
-            print(f"The data for table {t} is not available in JSON format.")
-
-        # Append each table's context and content to the main text
-        combined_context += f"For the table {t}\n{context_text}\n"
-    
-    return combined_context  # Return the combined descriptive text for all tables
-
-def extract_where_conditions_sqlparse(sql_query):
-    """
-    Extracts WHERE clause conditions, handling both left and right operands.  More robust than simple string parsing.
+    Extracts JOIN conditions (equality joins only) using sqlparse.
     """
     try:
         parsed = sqlparse.parse(sql_query)[0]
-        where_clause = None
+        join_conditions = []
+
         for token in parsed.tokens:
-            if isinstance(token, sqlparse.sql.Where):
-                where_clause = token
-                break
+            if isinstance(token, sqlparse.sql.Comparison):
 
-        if where_clause:
-            conditions = []
-            for token in where_clause.tokens:
-                where_clause_str = str(where_clause).strip()
-                if isinstance(token, sqlparse.sql.Comparison):
-                    left = str(token.left).strip()
-                    right = str(token.right).strip()
-                    operator = str(token.token_next(0)).strip()
-                    # Extract the pure operator
-                    operator = re.sub(r'[^\w\s]', '', operator)
+                # Extract join condition (assuming equality join only)
+                left = str(token.left).strip()
+                right = str(token.right).strip()
+                operator = str(token.token_next(0)).strip() # Get the operator token
 
-                    #Process Left Operand
-                    left_is_column = re.fullmatch(r'\w+\.\w+', left)  # More robust column check
-                    if left_is_column:
-                        table_name, column_name = left.split('.')
-                        left = f"SELECT {column_name} FROM {table_name};"
-                    
-                    # Process Right Operand
-                    right_is_column = re.fullmatch(r'\w+\.\w+', right) # More robust column check
-                    if right_is_column:
-                        table_name, column_name = right.split('.')
-                        right = f"SELECT {column_name} FROM {table_name};"
-                    else:
-                        #Handle literal values (remove quotes)
-                        right = right.replace("'", "")
+                #Order to keep track of what is on the left and right side of the join
+                order = [copy.deepcopy(left), copy.deepcopy(right)]
 
-                    print(where_clause.get_name)
-                    conditions.append([left, operator,where_clause_str, right])
-                elif isinstance(token, sqlparse.sql.IdentifierList):
-                    print("Warning: Complex IdentifierList in WHERE clause not fully handled.")
+                # Process operands to get SQL queries:
+                left_is_column = re.fullmatch(r'\w+\.\w+', left)
+                if left_is_column:
+                    table_name, column_name = left.split('.')
+                    left = f"SELECT {column_name} FROM {table_name};"
 
-            return conditions
-        else:
-            return [] #No WHERE clause found.
+                right_is_column = re.fullmatch(r'\w+\.\w+', right)
+                if right_is_column:
+                    table_name, column_name = right.split('.')
+                    right = f"SELECT {column_name} FROM {table_name};"
+                else:
+                    right = right.replace("'", "")  # Remove quotes from literals
+
+                join_conditions.append([left, operator, right])
+        return join_conditions, order
     except (IndexError, sqlparse.exceptions.ParseException) as e:
         print(f"Error parsing SQL query: {e}")
-        return [] #Return empty list on parse error.
-
-def execute_queries_on_conditions(conditions_list):
-    """
-    Executes `query_database` for each item in the list of conditions
-    that contains both 'SELECT' and 'FROM' in the string.
-    If a condition contains both 'SELECT' and 'FROM', it replaces the
-    condition in the original list with the result of `query_database`.
+        return []
     
-    Args:
-    - conditions_list (list of lists): List of conditions to check.
-    
-    Returns:
-    - The modified list
+
+def compare_semantics_in_list(input_list,order):
     """
-    copy_list=copy.deepcopy(conditions_list)
-    # Iterate over each item in the list of conditions
-    for outer_index, list_outer in enumerate(copy_list):
-        for inner_index, item in enumerate(list_outer):
-            
-            # Check if the condition contains both "SELECT" and "FROM"
-            if isinstance(item, str) and 'SELECT' in item and 'FROM' in item:
-                # Execute the query if it contains the correct keywords
-                query_result = query_database(item,False)
-                
-                # Replace the condition with the query result
-                copy_list[outer_index][inner_index] = query_result
-    return copy_list
-
-
-
-
-def compare_semantics_in_list(input_list):
-    """
-    Compare each pair of expressions in a sublist to determine if they have the same semantic meaning
-    using the gemini_json function. 
+    Compares each unique item from the first list in each sublist against every element in the second list to find semantically equivalent expressions using gemini_json.
 
     Args:
-    - input_list (list of lists): The input list of expressions and comparisons.
+        input_list (list of lists):  Each sublist contains [left_list, condition, right_list, original_expression].
 
     Returns:
-    - result_list (list of lists): A list of lists where each sublist contains expressions with the same semantic meaning.
+        result_list (list of lists): A list where each sublist contains semantically equivalent expressions.
     """
-    result_list = []  # We will build this list to store the results
-    
-    # Iterate over each sublist in the input list
+    dict = {}
+    #Iteration over all JOINs
     for outer_list in input_list:
-        if (type(outer_list[0]) == str and type(outer_list[-1]) == list) or (type(outer_list[-1]) == str and type(outer_list[0]) == list):
-            temp_list = None
-            temp_string = None
-            
-            #Auxiliary variable to determine which part of the list is the string and which is the list
-            left=None
-            # Determine which part of the list is the string and which is the list, comparing them against on another
-            # Cases where both are different not yet covered
-            if type(outer_list[0]) == str:
-                temp_string = outer_list[0]
-                temp_list = outer_list[-1]
-                left=True
-            else:
-                temp_string = outer_list[-1]
-                temp_list = outer_list[0]
-                left=False
-            condition=outer_list[1]
-            
-            #Add a goal to make sure LLM takes right decision
-            goal=ask_gemini(f'''Write out the goal for this clause in natural language. Focus on the
-                            semantic meaning. {outer_list[-2]}. Be brief.
+        if isinstance(outer_list[0], list) and isinstance(outer_list[-1], list):
+            temp_list1 = outer_list[0]
+            temp_list2 = outer_list[-1]
+            condition = outer_list[1]
+            original_expression = outer_list[2]  # Access the original expression
+
+            goal = ask_gemini(f"""Write out the goal for this clause in natural language. Focus on the
+                            semantic meaning. {original_expression}. Be brief.
                             Input: 'WHERE person.id <> 2'
                             Output: Retrieve instances where the id of the person is not 2
-                            Input : {outer_list[-2]}
+                            Input : {original_expression}
                             Output:
-                            ''')
-            print(f"The goal is {goal}")
-            phrase,temp_meta=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
+                            """)
+            print(f"The goal is: {goal}")
+
+            phrase, temp_meta = ask_gemini(f"""Write the output in natural language and ignore possible numbers.
                               Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
                               Output: is smaller than
                               Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
@@ -313,79 +85,44 @@ def compare_semantics_in_list(input_list):
                               Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
                               Output: has a different meaning than
                               Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
-                              Output: has the same meaning as (also in antoher language) or is the same as
+                              Output: has the same meaning as (also in another language) or is the same as
                               Input:{condition}.
-                              Output:''',True, max_token=100)
-            
-            #Update the metadata
+                              Output:""", True, max_token=100)
             update_metadata(temp_meta)
-            print(f"The phrase is:\n {phrase}. ")
+            print(f"The phrase is: {phrase}")
 
-            print(f"temp_string: {temp_string}")
-            print(f"temp_list: {temp_list}")
-
-            # Compare the string with the items in the list using gemini_json
             same_meaning_list = []
-            #seen_items = set()  # To track items we've already added
-
-            #Final prompt with list
-            total_prompt=f"Answer the following questions with True or False. \n"
-            # Iterate over the items in temp_list and compare with temp_string
-            for item in temp_list:
-                item=item[0]
-                # # If item is identical to itself, skip
-                # if temp_string in item or item in seen_items:
-                #     continue
-
-                #Deletes unnecessary "\n"
-                item=item.replace("\n", "")
-                temp_string=temp_string.replace("\n", "")
-                phrase=phrase.replace("\n", "")
-                #Actual logic, this is where the semantic binding occurs
-                if left:
-                    prompt = f"'{temp_string}'  {phrase} '{item}' \n"
-                else:
-                    prompt = f" '{item}'  {phrase} '{temp_string}' \n"
-                total_prompt+=prompt
-                # prompt, temp_meta=ask_gemini(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}. 
-                #                         Input: " '('two',)  is bigger than \n 9
-                #                         Output: "two is bigger than 9
-                #                         Input: {prompt}
-                #                         Output:''', True, max_token=100)
-                # #Update the metadata
-                # update_metadata(temp_meta)
-                #prompt = prompt+f". Keep in mind that the goal is {goal}."
-                
-                #prompt+=f"Keep in mind that the goal is: \n {goal}."
-                #prompt=prompt.replace("\n", "")
-            response = gemini_json(total_prompt, response_type=list[bool])
-            relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
-            for i in relevant_items:
-                same_meaning_list.append(i)
-                # If the response is True, add the item to the list
-            # if response:
-            #     same_meaning_list.append(item)
-                #seen_items.add(item)  # Track this item as already processed
+            seen_items = set()  # Track unique items from temp_list1
             
-            
-            #Appending, the item itself if not recognized by the LLM
-            # if temp_string not in same_meaning_list:
-            #     for i in temp_list:
-            #         if temp_string in i:
-            #             same_meaning_list.append(temp_string)
-            #             break
-            same_meaning_list.append(outer_list[-2])  # Add the original string to the list
-            # If there are any items that have the same meaning, add temp_string and the matching items to the result list
-            if same_meaning_list:
-                result_list.append( same_meaning_list)
-    
-    return result_list
+            #Iteration over all items from one list
+            for item in temp_list1:
+                item_str = item[0]
+                if item_str in seen_items:
+                    continue
+                seen_items.add(item_str)
+
+                total_prompt = f"Answer the following questions with True or False.\n"
+
+                #Iteation over all items from another list
+                for other_item in temp_list2:
+                    other_item_str = other_item[0]
+                    prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
+                    total_prompt += prompt
+
+                #Get response from LL
+                response = gemini_json(total_prompt, response_type=list[bool])
+                relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
+                #Add relevant semantic equivalents to the list
+                dict[item_str] = relevant_items
+    print(f"The key belongs to {order[0]}")
+    print(f"The value belongs to {order[1]}")       
+
+    return dict
+
+def join_pipeline(query):
 
 
-
-def row_calculus_pipeline(query):
-    # Generate context by writing or reading tables' info
-    #Gets context by querying database
+    #Get the relevant tables
     retries=4
     count=0
     while count<retries:
@@ -395,18 +132,12 @@ def row_calculus_pipeline(query):
             break
         else:
             count+=1
-
-    
-    
-
     print(f"The relevant tables are {tables}")
     context = get_context(tables)
 
     #Gets context by reading JSON files
     #context= get_context_json(tables)
 
-    print(f"The context is {context}")
-    print(f"The query is {query}")
 
     #Used for relational calculus
     #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
@@ -416,33 +147,41 @@ def row_calculus_pipeline(query):
     #Update the metadata
     update_metadata(temp_meta)
 
-    #print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
 
-    conditions2 = extract_where_conditions_sqlparse(sql_query)
-    new_list = execute_queries_on_conditions(conditions2)
     # Example usage
-    semantic_list=compare_semantics_in_list(new_list)
-    print(f"The semantics list is {semantic_list}")
+    join_conditions, order = extract_join_conditions_sqlparse(sql_query)
+    print(join_conditions)
+    new_list = execute_queries_on_conditions(join_conditions)
+    print(new_list)
+    semantic_dic= compare_semantics_in_list(new_list, order)
+    print(semantic_dic)
 
-    # Build the list of semantic pairs as a string
-    semantic_rows = ''.join(f"{i}\n" for i in semantic_list)
-
-    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query. USE only the binding variables like written in bidning. Always end with a ';'.
-        Input: sql:SELECT name, hair FROM person WHERE person.bodypart='eyes'; binding :[('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
-        Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'augen';
-        Input: SELECT * FROM animals WHERE animal.legs<5 and animal.category='insect'; binding: [['three' , 'four', '2', "WHERE animal.legs<5 and animal.category='insect';"], ['INSECTS', "WHERE animal.legs<5 and animal.category='insect';"]]
-        Output: SELECT * FROM animals WHERE animal.some_column IN ('three', 'four', '2') AND animal.category = 'INSECTS';
-        Input: sql:{sql_query}; binding: {semantic_rows}
-        Output:'''
-    print(f"The final prompt is {final_prompt}")
+    #Final prompt for modification of the query
+    final_prompt=f''' First reason on what value the CASE statement is necessary, if it is to be applied. Then write  an updated SQL query, if needed. Update the Join conditions using the CAST statement if necessary. The dictionary tells us which parts have the same meaning semantically and therefore should be treated equally when executed on a join.  Always end with a ';'. Make sure to use the CASE statement on the KEY value.
+            Input sql: SELECT suppliers.name, products.value FROM suppliers JOIN products ON suppliers.id = products.supplier_id; binding: {{'uno': ['one'], 'dos': ['two'], 'tres': ['three']}}; order: The key belongs to products.supplier_id, The values belong to suppliers.id.
+            Output: SELECT suppliers.name, products.value FROM suppliers JOIN products ON suppliers.id = CASE products.supplier_id
+            WHEN 'uno' THEN 'one'
+            WHEN 'dos' THEN 'two'
+            WHEN 'tres' THEN 'three'
+            END;
+            Input sql: SELECT employees.fullname, departments.dept_name FROM departments JOIN employees ON departments.id  = employees.department_id; binding: {{'Acme Corp': ['Acme Corp'], 'Sales Dep': ['Sales Department'], 'Engeneering': ['Engineering']}}; order: The key belongs to departments.id, The values belong to employees.department_id.
+            Output: SELECT employees.fullname, departments.dept_name FROM employees JOIN departments ON employees.department_id = CASE departments.id
+            WHEN 'Acme Corp' THEN 'Acme Corp'
+            WHEN 'Sales Dep' THemployees.department_idEN 'Sales Department'
+            WHEN 'Engeneering' THEN 'Engineering'
+            END;
+            Input: sql:{sql_query}; binding: {semantic_dic}; order: The key belongs to {order[0]}, The values belong to {order[1]};
+            Output:'''
+    print(f"The final prompt is \n {final_prompt}")
     # Try to modify the query with our chosen binding
     response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
     #Update the metadata
     update_metadata(temp_meta)
-
     print(f"The response is {response}")
+
+    #Extract query and get result
     try:
         sql_query = extract(response, start_marker="```sql",end_marker="```" )
         if sql_query is None:
@@ -452,11 +191,21 @@ def row_calculus_pipeline(query):
     if sql_query is None:
         print("No SQL query found in response.")
     else:
-        result=query_database(sql_query)
-    print(usage_metadata_total)
+        print(f"The SQL query is: {sql_query}")
+        result=query_database(sql_query,printing=False)
     if result:
-        return result
+            return result
 
 
-calculus='''∃id (childre_table(id, _) ∧ fathers(id, _))'''
-row_calculus_pipeline(calculus)
+# sql_query = '''SELECT 
+#     children_table.id, 
+#     children_table.children, 
+#     fathers.name
+# FROM 
+#     children_table
+# INNER JOIN 
+#     fathers ON fathers.id = children_table.id;'''
+
+# calculus='''∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))'''
+
+# print(join_pipeline(calculus))

@@ -1,5 +1,6 @@
 import time
-from row_calculus_pipeline_comparison import row_calculus_pipeline
+from row_calculus_pipeline import row_calculus_pipeline
+from join_pipeline import join_pipeline
 
 def evaluate_results(expected, actual):
     """Calculates accuracy, precision, recall, and F1-score, handling tuples."""
@@ -23,24 +24,44 @@ def evaluate_results(expected, actual):
 
 #Calculus and the expected result
 test_cases = [
-    # (
-    #     '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
-    #     {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')}
-    # ),
-    # (
-    #     '''∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)''',
-    #     {(1, 'Peter', 'ten')}
-    # ),
-    # (
-    #     '''∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))''',
-    #     {(1, 'Pierre', 20, 1, 'bill', 'chien')}
-    # ),
-    # (
-    #     '''∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))''',
-    #     {(3, 'Diego', 15, 3, 'chris', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro'), (1, 'Pierre', 20, 1, 'bill', 'chien')}
-    # ),
+    (
+        '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
+        {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)''',
+        {(1, 'Peter', 'ten')},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))''',
+        {(1, 'Pierre', 20, 1, 'bill', 'chien')},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))''',
+        {(3, 'Diego', 15, 3, 'chris', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro'), (1, 'Pierre', 20, 1, 'bill', 'chien')},
+        "row_calculus_pipeline"
+    ),
     (   '''∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))''',
-        {(2, 'Vladi', 10, 2, 'diego', 'chat')}
+        {(2, 'Vladi', 10, 2, 'diego', 'chat')},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))''',
+        {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2, 1, 'two', 'Dieter')},
+        "join_pipeline"
+    ),
+    (
+        '''∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))''',
+        {(4, 'Michael', '18.01.1997', 4, 'Berlin Open', 4.0), (3, 'Xi', 'January 1986', 3, 'Warsaw Open', 3.0), (3, 'Xi', 'January 1986', 3, 'Osaka Open', 0.5)},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))''',
+        {('surviver1000', '1 million', 1, 'surviver1000', True), ('makeuptutorial', '1000 thousand', 3, 'makeuptutorial', False), ('surviver1000', '1 million', 2, 'surviver1000', True), ('princess', 'one thousand', 3, 'princess', True)},
+        "row_calculus_pipeline"
     )
 
 ]
@@ -50,11 +71,17 @@ retry_delay = 60
 
 metrics = []  # List to store metrics for each test case
 
-for calculus, expected_result in test_cases:
+for calculus, expected_result, pipeline in test_cases:
     retries = 0
     while retries < max_retries:
         try:
-            actual_result = set(row_calculus_pipeline(calculus))
+            if pipeline=="row_calculus_pipeline":
+                actual_result = set(row_calculus_pipeline(calculus))
+            elif pipeline=="join_pipeline":
+                actual_result = set(join_pipeline(calculus))
+            else:
+                print("Pipeline not found")
+                break
             accuracy, precision, recall, f1_score = evaluate_results(expected_result, actual_result)
             metrics.append((accuracy, precision, recall, f1_score, calculus))
             break  # Exit the inner loop if successful

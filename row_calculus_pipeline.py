@@ -9,7 +9,7 @@ from other_gemini import gemini_json,ask_gemini
 from extractor import extract
 import copy
 
-#SOTA 26/11/2024
+#SOTA 27/11/2024
 
 
 #Metadata to keep track of use 
@@ -20,6 +20,7 @@ usage_metadata_total = {
             "total_calls": 0
         }
 
+#Function to update metadata
 def update_metadata(metadata):
     """
     Updates the usage metadata with the values from the input metadata dictionary.
@@ -34,6 +35,7 @@ def update_metadata(metadata):
     usage_metadata_total["total_calls"] += 1
 
 
+#Automatic retrieval of relevant tables from the database
 retries = 4
 def get_relevant_tables(calculus ):
     """
@@ -46,7 +48,7 @@ def get_relevant_tables(calculus ):
     Returns:
         A list of relevant table names if found, otherwise None.
     """
-
+    #Get information on all tables in the database
     prompt = """SELECT table_name 
                FROM information_schema.tables
                WHERE table_schema = 'public' AND table_type = 'BASE TABLE';"""
@@ -54,15 +56,18 @@ def get_relevant_tables(calculus ):
     count = 0
     while count < retries:
         try:
-            result = query_database(prompt, printing=False)  # Assuming this is your DB query function
+            #Get all tables
+            result = query_database(prompt, printing=False)  
 
-            # Extract table names (more efficient method):
+            # Extract table names:
             table_names = [row[0] for row in result]
 
+            #Prompt construction for LLM to access relevance
             input_prompt = ""
             for table_name in table_names:
                 input_prompt += f"Does table '{table_name}' occur in the expression '{calculus}'?  \n"
 
+            #Extracting relevant tables by asking LLM boolean calls
             categories = gemini_json(prompt=input_prompt, response_type=list[bool])
             relevant_tables = [table_names[i] for i, is_relevant in enumerate(categories) if is_relevant]
 
@@ -72,10 +77,25 @@ def get_relevant_tables(calculus ):
             count += 1
             print(f"Attempt {count+1}/{retries} failed: {e}. Retrying...")
 
+    #If maximun is exceeded
     print(f"Exceeded maximum retries ({retries}). Could not find relevant tables.")
     return None
 
+#Function to get the context of each table like constraints, schema, column names etc.
 def get_context(tables):
+    """
+    Retrieves schema information (column names, data types, nullability, constraints) for specified tables from a database.
+
+    Args:
+        tables: A list of table names (strings).
+
+    Returns:
+        A string containing the combined schema information for all tables.  Information for each table is separated by newline characters.  If context for a table already exists in a file (see below), it reads the file content. Otherwise, it queries the database and saves that information.
+    
+    Notes:
+        This function assumes the existence of a `query_database` function (not shown here) that takes an SQL query and a boolean value as input and returns the query result.
+        The function expects files named "<table_name>_context.txt" in a subdirectory "saved_info" in the same directory as the script.  It will save context information to these files if the files do not exist.
+    """
     # Get the directory of the current script
     current_directory = os.path.dirname(os.path.abspath(__file__))
     combined_context = ""
@@ -148,19 +168,22 @@ def get_context(tables):
         # Append each table's context and content to the main text
         combined_context += f"{context_text}\n"
 
-
-    #print(f"The combined descriptive text is:\n {combined_text}")
-    print("--------------------")
-    
-    # Final combination of descriptive texts, with inter-table relationships
-    '''final_text = ask_gemini(
-        f"Combine and describe the relationships between the following tables if necessary. {combined_text}"
-    )'''
-
     return combined_context  # Return the combined descriptive text for all tables
 
 #Retrieve the context from the saved JSON files
 def get_context_json(tables):
+    """
+    Retrieves schema information for specified tables from JSON files.
+
+    Args:
+        tables: A list of table names (strings).
+
+    Returns:
+        A string containing the combined schema information for all tables. The information for each table is separated by newline characters.  If a JSON file for a table is not found, a message indicating that the data is not available will be included in the output string.  Returns an empty string if no tables are provided.
+
+    Notes:
+        This function expects JSON files named "<table_name>.json" in a subdirectory "saved_json" relative to the location of this script.  The content of each JSON file should represent the schema information for the corresponding table.  Error handling is minimal; it only prints a message if a file is not found but continues to process other tables.
+    """
     # Get the directory of the current script
     current_directory = os.path.dirname(os.path.abspath(__file__))
     combined_context = ""
@@ -183,34 +206,49 @@ def get_context_json(tables):
     
     return combined_context  # Return the combined descriptive text for all tables
 
+
+#Function to extract WHERE conditions from SQL query
 def extract_where_conditions_sqlparse(sql_query):
     """
-    Extracts WHERE clause conditions, handling both left and right operands.  More robust than simple string parsing.
+    Extracts WHERE clause conditions from an SQL query string, processing comparisons and handling potential errors.
+
+    Args:
+        sql_query: The SQL query string to parse.
+
+    Returns:
+        A list of lists, where each inner list represents a WHERE clause condition and contains:
+            - The left operand (as an SQL SELECT statement if it's a column reference, otherwise the original string).
+            - The comparison operator.
+            - The entire WHERE clause string
+            - The right operand (as an SQL SELECT statement if it's a column reference, otherwise the original string, with quotes removed if it's a literal).
+
+        Returns an empty list if no WHERE clause is found or if an error occurs during parsing.  Prints a warning if a complex IdentifierList is encountered in the WHERE clause.
     """
     try:
         parsed = sqlparse.parse(sql_query)[0]
         where_clause = None
+        #Iterate over all tokens
         for token in parsed.tokens:
-            if isinstance(token, sqlparse.sql.Where):
+            if isinstance(token, sqlparse.sql.Where): #Check if is a WHERE clause
                 where_clause = token
                 break
 
         if where_clause:
-            conditions = []
+            conditions = [] # List to store conditions of WHERE clause
             for token in where_clause.tokens:
                 where_clause_str = str(where_clause).strip()
                 if isinstance(token, sqlparse.sql.Comparison):
-                    left = str(token.left).strip()
-                    right = str(token.right).strip()
-                    operator = str(token.token_next(0)).strip()
+                    left = str(token.left).strip() #Left part
+                    right = str(token.right).strip() #Right part
+                    operator = str(token.token_next(0)).strip() #Operator
 
-                    #Process Left Operand
-                    left_is_column = re.fullmatch(r'\w+\.\w+', left)  # More robust column check
+                    #Process Left Operand to SQL query
+                    left_is_column = re.fullmatch(r'\w+\.\w+', left)  
                     if left_is_column:
                         table_name, column_name = left.split('.')
                         left = f"SELECT {column_name} FROM {table_name};"
                     
-                    # Process Right Operand
+                    # Process Right Operand to SQL query
                     right_is_column = re.fullmatch(r'\w+\.\w+', right) # More robust column check
                     if right_is_column:
                         table_name, column_name = right.split('.')
@@ -220,6 +258,7 @@ def extract_where_conditions_sqlparse(sql_query):
                         right = right.replace("'", "")
 
                     print(where_clause.get_name)
+                    #Add to list of conditions
                     conditions.append([left, operator,where_clause_str, right])
                 elif isinstance(token, sqlparse.sql.IdentifierList):
                     print("Warning: Complex IdentifierList in WHERE clause not fully handled.")
@@ -276,6 +315,7 @@ def compare_semantics_in_list(input_list):
     
     # Iterate over each sublist in the input list
     for outer_list in input_list:
+        #Identify the binding and the elemetn
         if (type(outer_list[0]) == str and type(outer_list[-1]) == list) or (type(outer_list[-1]) == str and type(outer_list[0]) == list):
             temp_list = None
             temp_string = None
@@ -294,15 +334,17 @@ def compare_semantics_in_list(input_list):
                 left=False
             condition=outer_list[1]
             
-            #Add a goal to make sure LLM takes right decision
-            goal=ask_gemini(f'''Write out the goal for this clause in natural language. Focus on the
+            #Let LLM generate a goal to make sure LLM takes right decision
+            goal,temp_meta=ask_gemini(f'''Write out the goal for this clause in natural language. Focus on the
                             semantic meaning. {outer_list[-2]}. Be brief.
                             Input: 'WHERE person.id <> 2'
                             Output: Retrieve instances where the id of the person is not 2
                             Input : {outer_list[-2]}
                             Output:
-                            ''')
+                            ''', True, max_token=100)
             print(f"The goal is {goal}")
+            update_metadata(temp_meta)
+            #Ask LLM to generate a phrase for the comparison
             phrase,temp_meta=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
                               Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
                               Output: is smaller than
@@ -324,16 +366,13 @@ def compare_semantics_in_list(input_list):
 
             # Compare the string with the items in the list using gemini_json
             same_meaning_list = []
-            #seen_items = set()  # To track items we've already added
+            #
 
             #Final prompt with list
             total_prompt=f"Answer the following questions with True or False. \n"
             # Iterate over the items in temp_list and compare with temp_string
             for item in temp_list:
                 item=item[0]
-                # # If item is identical to itself, skip
-                # if temp_string in item or item in seen_items:
-                #     continue
 
                 #Deletes unnecessary "\n"
                 item=item.replace("\n", "")
@@ -344,18 +383,10 @@ def compare_semantics_in_list(input_list):
                     prompt = f"'{temp_string}'  {phrase} '{item}' \n"
                 else:
                     prompt = f" '{item}'  {phrase} '{temp_string}' \n"
+                #Add condition to the prompt
                 total_prompt+=prompt
-                # prompt, temp_meta=ask_gemini(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}. 
-                #                         Input: " '('two',)  is bigger than \n 9
-                #                         Output: "two is bigger than 9
-                #                         Input: {prompt}
-                #                         Output:''', True, max_token=100)
-                # #Update the metadata
-                # update_metadata(temp_meta)
-                #prompt = prompt+f". Keep in mind that the goal is {goal}."
-                
-                #prompt+=f"Keep in mind that the goal is: \n {goal}."
-                #prompt=prompt.replace("\n", "")
+
+            #Figure out the binding by giving out a list of lists    
             response = gemini_json(total_prompt, response_type=list[bool])
 
             #Check if response has same length
@@ -365,33 +396,25 @@ def compare_semantics_in_list(input_list):
                 print(f"The response is {response}")
                 print(f"The temp_list is {temp_list}")
                 break
+
+            #Retrieve the relevant items
             relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
             for i in relevant_items:
                 same_meaning_list.append(i)
-                # If the response is True, add the item to the list
-            # if response:
-            #     same_meaning_list.append(item)
-                #seen_items.add(item)  # Track this item as already processed
-            
-            
-            #Appending, the item itself if not recognized by the LLM
-            # if temp_string not in same_meaning_list:
-            #     for i in temp_list:
-            #         if temp_string in i:
-            #             same_meaning_list.append(temp_string)
-            #             break
-            same_meaning_list.append(outer_list[-2])  # Add the original string to the list
+
+            #Add the where clause
+            same_meaning_list.append(outer_list[-2]) 
             # If there are any items that have the same meaning, add temp_string and the matching items to the result list
             if same_meaning_list:
-                result_list.append( same_meaning_list)
+                result_list.append(same_meaning_list)
     
     return result_list
 
 
-
+#The pipeline itself
 def row_calculus_pipeline(query):
-    # Generate context by writing or reading tables' info
-    #Gets context by querying database
+    
+    #Get context
     retries=4
     count=0
     while count<retries:
@@ -408,6 +431,7 @@ def row_calculus_pipeline(query):
     print(f"The relevant tables are {tables}")
     context = get_context(tables)
 
+    #Optional, if were to use JSON files
     #Gets context by reading JSON files
     #context= get_context_json(tables)
 
@@ -419,22 +443,24 @@ def row_calculus_pipeline(query):
 
     #Used for predicate calculus, selecting all rows
     response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
+    
     #Update the metadata
     update_metadata(temp_meta)
 
-    #print(f"The response query is:\n {response}")
+    #Extract the SQL query from the response
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
 
-    conditions2 = extract_where_conditions_sqlparse(sql_query)
-    new_list = execute_queries_on_conditions(conditions2)
-    # Example usage
-    semantic_list=compare_semantics_in_list(new_list)
+    #INNER LOGIC: Analyze SQL query, retrieve necessary items to retrieve, compare them using the LLM
+    conditions = extract_where_conditions_sqlparse(sql_query)
+    query_results = execute_queries_on_conditions(conditions)
+    semantic_list=compare_semantics_in_list(query_results)
     print(f"The semantics list is {semantic_list}")
 
     # Build the list of semantic pairs as a string
     semantic_rows = ''.join(f"{i}\n" for i in semantic_list)
 
+    #Prompt asking LLM to integrate binding
     final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query. USE only the binding variables like written in bidning. Always end with a ';'.
         Input: sql:SELECT name, hair FROM person WHERE person.bodypart='eyes'; binding :[('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
         Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'augen';
@@ -443,12 +469,15 @@ def row_calculus_pipeline(query):
         Input: sql:{sql_query}; binding: {semantic_rows}
         Output:'''
     print(f"The final prompt is {final_prompt}")
+
     # Try to modify the query with our chosen binding
     response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
     #Update the metadata
     update_metadata(temp_meta)
 
     print(f"The response is {response}")
+
+    #Extract the SQL query from the response
     try:
         sql_query = extract(response, start_marker="```sql",end_marker="```" )
         if sql_query is None:
@@ -459,7 +488,9 @@ def row_calculus_pipeline(query):
         print("No SQL query found in response.")
     else:
         result=query_database(sql_query)
+    #Print total usage
     print(usage_metadata_total)
+    #Return result
     if result:
         return result
 
@@ -474,8 +505,8 @@ def row_calculus_pipeline(query):
 # row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
 
 #Doctors example with inequality
-# calculus='''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}'''
-# row_calculus_pipeline(calculus, ['doctors'])
+calculus='''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}'''
+row_calculus_pipeline(calculus)
 # -> Right Answer: [(1, 'Peter', 'ten'), (2, 'Giovanni','11')]
 
 #Doctors example with inequality and two WHERE clauses/ Now two WHERE clauses do not work
@@ -495,4 +526,7 @@ def row_calculus_pipeline(query):
 # row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
 
 # calculus='''∃id (childre_table(id, _) ∧ fathers(id, _))'''
+# row_calculus_pipeline(calculus)
+
+# calculus='''∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))'''
 # row_calculus_pipeline(calculus)

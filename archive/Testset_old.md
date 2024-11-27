@@ -1,8 +1,3 @@
-Here one can find the examples used in the **evluation.py** file listed. These examples
-try to cover different types of semantic missmatches like different formats, different spelling,
-numbers written as text and so on.
-
-
 # Shareowner and Animalowner examples
 
 
@@ -25,19 +20,16 @@ numbers written as text and so on.
 | juan          | perro       | 4      |
 
 Different language example<br> 
-**calculus** : ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog')) <br>
+**calculus** :{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}''' <br>
 
 
-**Result**: {(3, 'Diego', 15, 3, 'chris', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro'), (1, 'Pierre', 20, 1, 'bill', 'chien')} <br>
+**Result**:[('Pierre\n', 20), ('Diego', 15),('Marcel', 11)] <br>
 
 Nengation and different langauge example<br>
-**calculus** : ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')) <br>
+**calculus** : {name, shares | ∃id (SHAREOWNER(id, name, shares) ∧ ¬ANIMALOWNER(id, _, 'dog'))} <br>
 
 
-**Result**:{(2, 'Vladi', 10, 2, 'diego', 'chat')} <br>
-
-**calculus**: ∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog')),
-**Result**: {(1, 'Pierre', 20, 1, 'bill', 'chien')},
+**Result**:[('Vladi', 10)] <br>
 
 # Doctor example
 
@@ -52,17 +44,17 @@ Nengation and different langauge example<br>
 | 5  | Dr. Smith| 150    |
 
 Doctors example with inequality<br>
-**calculus=** ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12) <br>
-**Result**  {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')} <br>
+**calculus=** {id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}<br>
+**Result**  [(1, 'Peter', 'ten'), (2, 'Giovanni','11')]<br>
 
 Doctors example with inequality and two WHERE clauses<br>
-**calculus** ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12) <br>
-**Result** {(1, 'Peter', 'ten')} <br>
+**calculus** {id, name, patients_pd | doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12}<br>
+**Result**  [(1, 'Peter', 'ten')] <br>
 
 
 
 
-# Taylor Swift Example (not used, provided by supervision)
+# Taylor Swift Example
 
 ### Table 4: artists 
 
@@ -108,15 +100,15 @@ Initial example provided<br>
 
 | winner_id    | name   |price_money in million|
 |---------------|------------|------  |
-| 4          | Berlin Open     |4      |
+| 3          | Berlin Open     |4      |
 | 3         | Warsaw Open       | 3       |
 |2        | Jakarta Open        | 1.5      |
 | 3          | Osaka Open       | 0.5     |
 
 Date mismatch, Tournaments won by player born in January
-**Calculus** ∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))
+**Calculus** {  name, price_money |  tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money) }
 
-**Result** {(4, 'Michael', '18.01.1997', 4, 'Berlin Open', 4.0), (3, 'Xi', 'January 1986', 3, 'Warsaw Open', 3.0), (3, 'Xi', 'January 1986', 3, 'Osaka Open', 0.5)}<br>
+**Result** [[( 'Paul', 1.5), ('Xi', 7)]] <br>
 
 
 # Example Influencers
@@ -128,7 +120,7 @@ Date mismatch, Tournaments won by player born in January
 |makeuptutorial   | 1000 thousand|
 | outsideguy   | 50|
 |surviver1000   | 1 million|
-| princess   | one thousand  |
+| princess   | thousand  |
 
 ### Table 9: followers
 
@@ -142,9 +134,9 @@ Date mismatch, Tournaments won by player born in January
 
 Clicks is written in a completely different format.<br>
 
-**Calculus** ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)) <br>
+**Calculus** {  media_name |  influencers(media_name, > 500) ∧ followers(id, media_name, _) } <br>
 
-**Result** {('surviver1000', '1 million', 1, 'surviver1000', True), ('makeuptutorial', '1000 thousand', 3, 'makeuptutorial', False), ('surviver1000', '1 million', 2, 'surviver1000', True), ('princess', 'one thousand', 3, 'princess', True)} <br>
+**Result** [[('makeuptutorial'), ('surviver1000')]] <br>
 
 
 # Example Join
@@ -171,16 +163,14 @@ Clicks is written in a completely different format.<br>
 
 Check whether the new Join works <br>
 
-**Calculus** ∃id (children_table(id, _) ∧ fathers(id, _)) <br>
-
-=> Resulting  query should be: <br>
-SELECT children_table.id, children_table.children, fathers.name <br>
-FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id <br>
-                   	WHEN 'zero' THEN 0 <br>
-                        WHEN 'one' THEN 1 <br>
-                        WHEN 'two' THEN 2 <br>
-                        WHEN 'four' THEN 4 <br>
-                        ELSE NULL<br>
+**Calculus** ∃id (children_table(id, _) ∧ fathers(id, _)) <br> 
+=> Resulting  query: 
+SELECT children_table.id, children_table.children, fathers.name FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id
+                   	WHEN 'zero' THEN 0
+                        WHEN 'one' THEN 1
+                        WHEN 'two' THEN 2
+                        WHEN 'four' THEN 4
+                        ELSE NULL
                     END;<br>
 
 **Result** [[('makeuptutorial'), ('surviver1000')]] <br>

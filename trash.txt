@@ -1,7 +1,0 @@
-Input: sql: SELECT children_table.id, children_table.children, fathers.name FROM children_table INNER JOIN  fathers ON children_table.id = fathers.id binding: {'zero': [0], 'one': [1], 'four': [], 'two': [2]}
-Output:  SELECT children_table.id, children_table.children, fathers.name FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id
-                   	WHEN 'zero' THEN 0
-                        WHEN 'one' THEN 1
-                        WHEN 'two' THEN 2
-                        WHEN 'four' THEN 4
-                        ELSE NULL  -- Handle cases where there's no match
