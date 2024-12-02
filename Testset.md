@@ -183,4 +183,4 @@ FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id <
                         ELSE NULL<br>
                     END;<br>
 
-**Result** [[('makeuptutorial'), ('surviver1000')]] <br>
+**Result** {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2, 1, 'two', 'Dieter')} <br>
