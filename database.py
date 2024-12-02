@@ -7,6 +7,11 @@ DB_HOST = "localhost"
 #DB_PORT = "5432"
 DB_PORT = "5433" #For Postgres17
 
+#Define an exception class for query execution errors
+class QueryExecutionError(Exception):
+    pass
+
+
 def query_database(query, printing=True):
     # Connect to PostgreSQL database
     try:
@@ -45,13 +50,16 @@ def query_database(query, printing=True):
                 if printing:
                     print(f"The final answer to the query is {rows}")
         except Exception as e:
+            #Delete if necessary
+            raise QueryExecutionError("Custom query execution error message")
             print(f"An error occurred when executing the query: {e}")
             rows = None
         # Close the cursor and connection
         cursor.close()
         connection.close()
         return rows
-
+    except QueryExecutionError as e:
+        raise QueryExecutionError
     except Exception as e:
         print(f"An error occurred when accessing the database: {e}")
         return None  # Return None to indicate a broader error

@@ -156,7 +156,7 @@ Clicks is written in a completely different format.<br>
 |----------|----|
 |0        | 4    |
 | 1         | 1|
-| 2         | 1 |
+| 2         | many |
 | 3         | 2  |
 
 ### Table 9: fathers
@@ -183,4 +183,8 @@ FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id <
                         ELSE NULL<br>
                     END;<br>
 
-**Result** {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2, 1, 'two', 'Dieter')} <br>
+**Result** {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2, 'many', 'two', 'Dieter')} <br>
+
+**Calculus**: ∃id (children_table(id, >1) ∧ fathers(id, _)) (Use of combined pipelines)
+**Result**: {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')}
+

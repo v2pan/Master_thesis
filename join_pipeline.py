@@ -2,7 +2,7 @@ import sqlparse
 import re
 from row_calculus_pipeline import execute_queries_on_conditions,  update_metadata, get_context, get_relevant_tables
 from other_gemini import ask_gemini, gemini_json
-from database import query_database
+from database import query_database, QueryExecutionError
 from extractor import extract
 import copy
 
@@ -117,9 +117,9 @@ def compare_semantics_in_list(input_list,order):
     print(f"The key belongs to {order[0]}")
     print(f"The value belongs to {order[1]}")       
 
-    return dict
+    return dict, order
 
-def join_pipeline(query):
+def join_pipeline(query, return_query=False):
 
 
     #Get the relevant tables
@@ -132,6 +132,8 @@ def join_pipeline(query):
             break
         else:
             count+=1
+    if tables is None:
+        re
     print(f"The relevant tables are {tables}")
     context = get_context(tables)
 
@@ -155,11 +157,11 @@ def join_pipeline(query):
     print(join_conditions)
     new_list = execute_queries_on_conditions(join_conditions)
     print(new_list)
-    semantic_dic= compare_semantics_in_list(new_list, order)
+    semantic_dic, order= compare_semantics_in_list(new_list, order)
     print(semantic_dic)
 
     #Final prompt for modification of the query
-    final_prompt=f''' First reason on what value the CASE statement is necessary, if it is to be applied. Then write  an updated SQL query, if needed. Update the Join conditions using the CAST statement if necessary. The dictionary tells us which parts have the same meaning semantically and therefore should be treated equally when executed on a join.  Always end with a ';'. Make sure to use the CASE statement on the KEY value.
+    final_prompt=f''' First reason on what value the CASE statement is necessary, if it is to be applied. Then write  an updated SQL query, if needed. Update the Join conditions using the CASE statement if necessary. The dictionary tells us which parts have the same meaning semantically and therefore should be treated equally when executed on a join.  Always end with a ';'. The key belongs to {order[0]}. The value belongs to {order[1]}.  Make sure to use the CASE statement on the KEY value and convert them to the corresponding value. Alway put the CASE statement after the ON statement. 
             Input sql: SELECT suppliers.name, products.value FROM suppliers JOIN products ON suppliers.id = products.supplier_id; binding: {{'uno': ['one'], 'dos': ['two'], 'tres': ['three']}}; order: The key belongs to products.supplier_id, The values belong to suppliers.id.
             Output: SELECT suppliers.name, products.value FROM suppliers JOIN products ON suppliers.id = CASE products.supplier_id
             WHEN 'uno' THEN 'one'
@@ -175,27 +177,39 @@ def join_pipeline(query):
             Input: sql:{sql_query}; binding: {semantic_dic}; order: The key belongs to {order[0]}, The values belong to {order[1]};
             Output:'''
     print(f"The final prompt is \n {final_prompt}")
-    # Try to modify the query with our chosen binding
-    response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
-    #Update the metadata
-    update_metadata(temp_meta)
-    print(f"The response is {response}")
 
-    #Extract query and get result
-    try:
-        sql_query = extract(response, start_marker="```sql",end_marker="```" )
+    retries_left=3
+    while retries_left>0:
+
+        # Try to modify the query with our chosen binding
+        response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
+        #Update the metadata
+        update_metadata(temp_meta)
+        print(f"The response is {response}")
+
+        #Extract query and get result
+        try:
+            sql_query = extract(response, start_marker="```sql",end_marker="```" )
+            if sql_query is None:
+                sql_query = extract(response, start_marker="SELECT",end_marker=";",inclusive=True )
+        except:
+            pass
         if sql_query is None:
-            sql_query = extract(response, start_marker="SELECT",end_marker=";",inclusive=True )
-    except:
-        pass
-    if sql_query is None:
-        print("No SQL query found in response.")
-    else:
-        print(f"The SQL query is: {sql_query}")
-        result=query_database(sql_query,printing=False)
-    if result:
+            print("No SQL query found in response.")
+            return None
+        else:
+            print(f"The SQL query is: {sql_query}")
+            #If only query is to be returned, going on with another pipeline
+            if return_query:
+                return sql_query
+            
+            try:
+                result=query_database(sql_query,printing=False)
+            except QueryExecutionError:
+                retries_left-=1
+                print("Query not executable")
+                result=None
             return result
-
 
 # sql_query = '''SELECT 
 #     children_table.id, 
@@ -206,6 +220,8 @@ def join_pipeline(query):
 # INNER JOIN 
 #     fathers ON fathers.id = children_table.id;'''
 
-# calculus='''∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))'''
+#calculus='''∃id (children_table(id, _) ∧ fathers(id, _))'''
+#calculus='''∃id (children_table(id, _) ∧ fathers(id, 'German'))'''
 
-# print(join_pipeline(calculus))
+
+#print(join_pipeline(calculus))

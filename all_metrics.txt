@@ -1,47 +1,12 @@
 --- Individual Metrics ---
-Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
-  Accuracy: 0.6667
-  Precision: 0.6667
-  Recall: 1.0000
-  F1-score: 0.8000
-Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
-  Accuracy: 0.5000
-  Precision: 0.5000
-  Recall: 1.0000
-  F1-score: 0.6667
-Calculus ∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog')):
-  Accuracy: 1.0000
-  Precision: 1.0000
-  Recall: 1.0000
-  F1-score: 1.0000
-Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog')):
-  Accuracy: 1.0000
-  Precision: 1.0000
-  Recall: 1.0000
-  F1-score: 1.0000
-Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
-  Accuracy: 0.3333
-  Precision: 0.3333
-  Recall: 1.0000
-  F1-score: 0.5000
-Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
-  Accuracy: 1.0000
-  Precision: 1.0000
-  Recall: 1.0000
-  F1-score: 1.0000
-Calculus ∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money)):
-  Accuracy: 1.0000
-  Precision: 1.0000
-  Recall: 1.0000
-  F1-score: 1.0000
-Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
+Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
   Accuracy: 1.0000
   Precision: 1.0000
   Recall: 1.0000
   F1-score: 1.0000
 
 --- Overall Metrics ---
-Mean Accuracy: 0.8125
-Mean Precision: 0.8125
+Mean Accuracy: 1.0000
+Mean Precision: 1.0000
 Mean Recall: 1.0000
-Mean F1-score: 0.8708
+Mean F1-score: 1.0000

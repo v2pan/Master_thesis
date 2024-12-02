@@ -2,6 +2,10 @@ import google.generativeai as genai
 import json
 import typing_extensions as typing
 from database import query_database
+from google.api_core.exceptions import ResourceExhausted
+
+class RessourceError(Exception):
+    pass
 
 with open("api_key.txt", "r") as file:
     api_key = file.read().strip()  # Read the file and remove any surrounding whitespace
@@ -14,12 +18,16 @@ genai.configure(api_key=api_key)
 
 def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model="gemini-1.5-flash"):  # Add optional argument
     model = genai.GenerativeModel(model)
-    result = model.generate_content(contents=prompt,
-    generation_config=genai.types.GenerationConfig(
+    try:
+        result = model.generate_content(contents=prompt,
+        generation_config=genai.types.GenerationConfig(
         # Only one candidate for now.
         max_output_tokens=max_token,
         temperature=temp,
     ),)
+    except ResourceExhausted as e:
+        print("Time exception has occured")
+        raise RessourceError("API rate limit exceeded!")
     
     if return_metadata:
         usage_metadata = {
@@ -28,6 +36,7 @@ def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model="g
             "total_token_count": result.usage_metadata.total_token_count,
         }
         return result.text, usage_metadata
+        
     else:
         return result.text  # Return only text if metadata not requested
 

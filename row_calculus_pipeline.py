@@ -63,14 +63,24 @@ def get_relevant_tables(calculus ):
             table_names = [row[0] for row in result]
 
             #Prompt construction for LLM to access relevance
-            input_prompt = ""
+            input_prompt = f"Return a list of length {len(table_names)} one answer for each question. \n"
             for table_name in table_names:
                 input_prompt += f"Does table '{table_name}' occur in the expression '{calculus}'?  \n"
 
-            #Extracting relevant tables by asking LLM boolean calls
-            categories = gemini_json(prompt=input_prompt, response_type=list[bool])
-            relevant_tables = [table_names[i] for i, is_relevant in enumerate(categories) if is_relevant]
+            #Three attempts to get correct amount of answer for the LLM
+            attemps=4
+            while attemps>0:
+                #Extracting relevant tables by asking LLM boolean calls
+                categories = gemini_json(prompt=input_prompt, response_type=list[bool])
 
+                if len(table_names)!=len(categories):
+                    print("Error: Tables do not have the same length.")
+                    attemps-=1
+                else:
+                    break
+
+            relevant_tables = [table_names[i] for i, is_relevant in enumerate(categories) if is_relevant]
+            
             return relevant_tables  #Return tables if successfully found
 
         except Exception as e:  # Catch potential errors (e.g., database connection issues)
@@ -375,9 +385,12 @@ def compare_semantics_in_list(input_list):
                 item=item[0]
 
                 #Deletes unnecessary "\n"
-                item=item.replace("\n", "")
-                temp_string=temp_string.replace("\n", "")
-                phrase=phrase.replace("\n", "")
+                if type(item)!=int:
+                    item=item.replace("\n", "")
+                if type(temp_string)!=int:
+                    temp_string=temp_string.replace("\n", "")
+                if type(phrase)!=int:
+                    phrase=phrase.replace("\n", "")
                 #Actual logic, this is where the semantic binding occurs
                 if left:
                     prompt = f"'{temp_string}'  {phrase} '{item}' \n"
@@ -425,7 +438,8 @@ def row_calculus_pipeline(query):
         else:
             count+=1
 
-    
+    if tables is None:
+        return None
     
 
     print(f"The relevant tables are {tables}")
@@ -461,9 +475,11 @@ def row_calculus_pipeline(query):
     semantic_rows = ''.join(f"{i}\n" for i in semantic_list)
 
     #Prompt asking LLM to integrate binding
-    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query. USE only the binding variables like written in bidning. Always end with a ';'.
+    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query. USE only the binding variables like written in bidning. If there is a CASE statement leave it intact, only change the WHERE clause, nothing else. Always end with a ';'.
         Input: sql:SELECT name, hair FROM person WHERE person.bodypart='eyes'; binding :[('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
         Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'augen';
+        Input: sql:SELECT e.name, d.name AS department_name, CASE WHEN e.salary > 50000 THEN 'High' WHEN e.salary > 30000 THEN 'Medium' ELSE 'Low' END AS salary_status FROM employees e JOIN departments d ON e.department_id = d.id WHERE d.id = 1; binding: [(1,), (2,), 'WHERE d.id =']
+        Output: SELECT e.name, d.name AS department_name, CASE WHEN e.salary > 50000 THEN 'High' WHEN e.salary > 30000 THEN 'Medium' ELSE 'Low' END AS salary_status FROM employees e JOIN departments d ON e.department_id = d.id WHERE d.id = 1 OR d.id = 2;
         Input: SELECT * FROM animals WHERE animal.legs<5 and animal.category='insect'; binding: [['three' , 'four', '2', "WHERE animal.legs<5 and animal.category='insect';"], ['INSECTS', "WHERE animal.legs<5 and animal.category='insect';"]]
         Output: SELECT * FROM animals WHERE animal.some_column IN ('three', 'four', '2') AND animal.category = 'INSECTS';
         Input: sql:{sql_query}; binding: {semantic_rows}
@@ -505,8 +521,8 @@ def row_calculus_pipeline(query):
 # row_calculus_pipeline(calculus, ['shareowner', 'animalowner'])
 
 #Doctors example with inequality
-calculus='''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}'''
-row_calculus_pipeline(calculus)
+# calculus='''{id, name, patients_pd | doctors(id, name, patients_pd) ∧ patients_pd < 12}'''
+# row_calculus_pipeline(calculus)
 # -> Right Answer: [(1, 'Peter', 'ten'), (2, 'Giovanni','11')]
 
 #Doctors example with inequality and two WHERE clauses/ Now two WHERE clauses do not work
