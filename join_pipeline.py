@@ -25,7 +25,7 @@ def extract_join_conditions_sqlparse(sql_query: str):
                 left = str(token.left).strip()
                 right = str(token.right).strip()
                 operator = str(token.token_next(0)).strip() # Get the operator token
-
+                comp=str(token.normalized).strip()
                 #Order to keep track of what is on the left and right side of the join
                 order = [copy.deepcopy(left), copy.deepcopy(right)]
 
@@ -42,7 +42,7 @@ def extract_join_conditions_sqlparse(sql_query: str):
                 else:
                     right = right.replace("'", "")  # Remove quotes from literals
 
-                join_conditions.append([left, operator, right])
+                join_conditions.append([left, operator, comp,  right])
         return join_conditions, order
     except (IndexError, sqlparse.exceptions.ParseException) as e:
         print(f"Error parsing SQL query: {e}")
@@ -157,6 +157,7 @@ def join_pipeline(query, return_query=False):
     print(join_conditions)
     new_list = execute_queries_on_conditions(join_conditions)
     print(new_list)
+    #TODO: Multiple dictinoaries for multiple JOINs
     semantic_dic, order= compare_semantics_in_list(new_list, order)
     print(semantic_dic)
 
@@ -222,6 +223,5 @@ def join_pipeline(query, return_query=False):
 
 #calculus='''∃id (children_table(id, _) ∧ fathers(id, _))'''
 #calculus='''∃id (children_table(id, _) ∧ fathers(id, 'German'))'''
-
-
-#print(join_pipeline(calculus))
+calculus='''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )'''
+print(join_pipeline(calculus))

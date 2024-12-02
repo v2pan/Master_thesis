@@ -26,45 +26,45 @@ def evaluate_results(expected, actual):
 
 #Calculus and the expected result
 test_cases = [
-    # (
-    #     '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
-    #     {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')},
-    #     "row_calculus_pipeline"
-    # ),
-    # (
-    #     '''∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)''',
-    #     {(1, 'Peter', 'ten')},
-    #     "row_calculus_pipeline"
-    # ),
-    # (
-    #     '''∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))''',
-    #     {(1, 'Pierre', 20, 1, 'bill', 'chien')},
-    #     "row_calculus_pipeline"
-    # ),
-    # (
-    #     '''∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))''',
-    #     {(3, 'Diego', 15, 3, 'chris', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro'), (1, 'Pierre', 20, 1, 'bill', 'chien')},
-    #     "row_calculus_pipeline"
-    # ),
-    # (   '''∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))''',
-    #     {(2, 'Vladi', 10, 2, 'diego', 'chat')},
-    #     "row_calculus_pipeline"
-    # ),
-    # (
-    #     '''∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))''',
-    #     {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2,'many', 'two', 'Dieter')},
-    #     "join_pipeline"
-    # ),
-    # (
-    #     '''∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))''',
-    #     {(4, 'Michael', '18.01.1997', 4, 'Berlin Open', 4.0), (3, 'Xi', 'January 1986', 3, 'Warsaw Open', 3.0), (3, 'Xi', 'January 1986', 3, 'Osaka Open', 0.5)},
-    #     "row_calculus_pipeline"
-    # ),
-    # (
-    #     '''∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))''',
-    #     {('surviver1000', '1 million', 1, 'surviver1000', True), ('makeuptutorial', '1000 thousand', 3, 'makeuptutorial', False), ('surviver1000', '1 million', 2, 'surviver1000', True), ('princess', 'one thousand', 3, 'princess', True)},
-    #     "row_calculus_pipeline"
-    # ),
+    (
+        '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
+        {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)''',
+        {(1, 'Peter', 'ten')},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))''',
+        {(1, 'Pierre', 20, 1, 'bill', 'chien')},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))''',
+        {(3, 'Diego', 15, 3, 'chris', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro'), (1, 'Pierre', 20, 1, 'bill', 'chien')},
+        "row_calculus_pipeline"
+    ),
+    (   '''∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))''',
+        {(2, 'Vladi', 10, 2, 'diego', 'chat')},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))''',
+        {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2,'many', 'two', 'Dieter')},
+        "join_pipeline"
+    ),
+    (
+        '''∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))''',
+        {(4, 'Michael', '18.01.1997', 4, 'Berlin Open', 4.0), (3, 'Xi', 'January 1986', 3, 'Warsaw Open', 3.0), (3, 'Xi', 'January 1986', 3, 'Osaka Open', 0.5)},
+        "row_calculus_pipeline"
+    ),
+    (
+        '''∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))''',
+        {('surviver1000', '1 million', 1, 'surviver1000', True), ('makeuptutorial', '1000 thousand', 3, 'makeuptutorial', False), ('surviver1000', '1 million', 2, 'surviver1000', True), ('princess', 'one thousand', 3, 'princess', True)},
+        "row_calculus_pipeline"
+    ),
     (
         '''∃id (children_table(id, >1) ∧ fathers(id, _))''',
         {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')},

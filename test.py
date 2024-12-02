@@ -1,5 +1,4 @@
-#File reserved for testing purposes during development
-from combined_pipeline import combined_pipeline
+from row_calculus_pipeline import row_calculus_pipeline
 
-calculus='''∃id (children_table(id, >1) ∧ fathers(id, ))'''
-combined_pipeline(calculus)
+
+

@@ -62,6 +62,8 @@ Doctors example with inequality and two WHERE clauses<br>
 
 
 
+
+
 # Taylor Swift Example (not used, provided by supervision)
 
 ### Table 4: artists 
@@ -168,6 +170,17 @@ Clicks is written in a completely different format.<br>
 | four        | Simon |
 | two          | Dieter  |
 
+### Table 10: mothers
+
+|  id  | name   |
+|---------------|------------|
+| 1          | Julia |
+| 2        | Petra |
+| 3        | Claudia |
+| 4          | Lena  |
+
+
+
 
 Check whether the new Join works <br>
 
@@ -185,6 +198,9 @@ FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id <
 
 **Result** {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2, 'many', 'two', 'Dieter')} <br>
 
-**Calculus**: ∃id (children_table(id, >1) ∧ fathers(id, _)) (Use of combined pipelines)
-**Result**: {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')}
+**Calculus**: ∃id (children_table(id, >1) ∧ fathers(id, _)) (Use of combined pipelines)<br>
+**Result**: {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')} <br>
 
+Multiple Join example, !!!!!EXPERIMENTAL SO FAR!!!!! <br>
+**Calculus**: ∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) ) (Use of combined pipelines)<br>
+**Result**: {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')} <br>
