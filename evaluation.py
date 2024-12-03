@@ -56,6 +56,11 @@ test_cases = [
         "join_pipeline"
     ),
     (
+        '''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )''',
+        {(1, '1', 'one', 'Joachim', 1, 'Julia'), (2, 'many', 'two', 'Dieter', 2, 'Petra')},
+        "join_pipeline"
+    ),
+    (
         '''∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))''',
         {(4, 'Michael', '18.01.1997', 4, 'Berlin Open', 4.0), (3, 'Xi', 'January 1986', 3, 'Warsaw Open', 3.0), (3, 'Xi', 'January 1986', 3, 'Osaka Open', 0.5)},
         "row_calculus_pipeline"

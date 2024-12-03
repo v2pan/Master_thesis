@@ -198,9 +198,9 @@ FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id <
 
 **Result** {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2, 'many', 'two', 'Dieter')} <br>
 
-**Calculus**: ∃id (children_table(id, >1) ∧ fathers(id, _)) (Use of combined pipelines)<br>
+**Calculus**: ∃id (children_table(id, >1) ∧ fathers(id, _)) (Use of combined pipelines, both join and where)<br>
 **Result**: {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')} <br>
 
-Multiple Join example, !!!!!EXPERIMENTAL SO FAR!!!!! <br>
+Multiple Join example, Now works extra logic was added to accomodate it<br>
 **Calculus**: ∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) ) (Use of combined pipelines)<br>
 **Result**: {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')} <br>

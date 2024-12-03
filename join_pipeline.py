@@ -17,7 +17,7 @@ def extract_join_conditions_sqlparse(sql_query: str):
     try:
         parsed = sqlparse.parse(sql_query)[0]
         join_conditions = []
-
+        order_list=[]
         for token in parsed.tokens:
             if isinstance(token, sqlparse.sql.Comparison):
 
@@ -43,7 +43,8 @@ def extract_join_conditions_sqlparse(sql_query: str):
                     right = right.replace("'", "")  # Remove quotes from literals
 
                 join_conditions.append([left, operator, comp,  right])
-        return join_conditions, order
+                order_list.append(order)
+        return join_conditions, order_list
     except (IndexError, sqlparse.exceptions.ParseException) as e:
         print(f"Error parsing SQL query: {e}")
         return []
@@ -59,65 +60,86 @@ def compare_semantics_in_list(input_list,order):
     Returns:
         result_list (list of lists): A list where each sublist contains semantically equivalent expressions.
     """
-    dict = {}
+    dict_list = []
     #Iteration over all JOINs
+    counter=0
     for outer_list in input_list:
         if isinstance(outer_list[0], list) and isinstance(outer_list[-1], list):
+            dict={}
             temp_list1 = outer_list[0]
             temp_list2 = outer_list[-1]
-            condition = outer_list[1]
-            original_expression = outer_list[2]  # Access the original expression
 
-            goal = ask_gemini(f"""Write out the goal for this clause in natural language. Focus on the
-                            semantic meaning. {original_expression}. Be brief.
-                            Input: 'WHERE person.id <> 2'
-                            Output: Retrieve instances where the id of the person is not 2
-                            Input : {original_expression}
-                            Output:
-                            """)
-            print(f"The goal is: {goal}")
+            #Inspect whether some some JOINs can be exectued without change (only if there are >1 JOIN inputs.)
+            if len(input_list)<2: #Change down to 2
+                necessary=True
+            else:
+                prompt=f'''Do you think based on the following list {temp_list1} with type {type(temp_list1[0][0])} and {temp_list2} with type {type(temp_list2[0][0])} that some elements have the same semantic meaning but are expressed in a different format?
+                An example would be if the types were different or the formats (e.g., '18 January 2012' and '18.01.2012'), if elements had the same meaning in different languages (e.g., 'bridge' and 'brücke') or if numbers would be written as text.
+                Considering the provided lists represent what they represent, one in {type(temp_list1[0][0])} format and the other in {type(temp_list2[0][0])} format, does a case where different types represent the same semantic meaning occur in the list? If the types are different, always answer 'true'.True or False.'''
+                #Check if it is necessary to rewrite the JOIN condition
+                necessary=gemini_json(prompt, response_type=bool)
+            if necessary:
+                condition = outer_list[1]
+                original_expression = outer_list[2]  # Access the original expression
 
-            phrase, temp_meta = ask_gemini(f"""Write the output in natural language and ignore possible numbers.
-                              Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
-                              Output: is smaller than
-                              Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
-                              Output: has a different meaning than
-                              Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
-                              Output: has a different meaning than
-                              Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
-                              Output: has the same meaning as (also in another language) or is the same as
-                              Input:{condition}.
-                              Output:""", True, max_token=100)
-            update_metadata(temp_meta)
-            print(f"The phrase is: {phrase}")
+                goal = ask_gemini(f"""Write out the goal for this clause in natural language. Focus on the
+                                semantic meaning. {original_expression}. Be brief.
+                                Input: 'WHERE person.id <> 2'
+                                Output: Retrieve instances where the id of the person is not 2
+                                Input : {original_expression}
+                                Output:
+                                """)
+                print(f"The goal is: {goal}")
 
-            same_meaning_list = []
-            seen_items = set()  # Track unique items from temp_list1
-            
-            #Iteration over all items from one list
-            for item in temp_list1:
-                item_str = item[0]
-                if item_str in seen_items:
-                    continue
-                seen_items.add(item_str)
+                phrase, temp_meta = ask_gemini(f"""Write the output in natural language and ignore possible numbers.
+                                Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
+                                Output: is smaller than
+                                Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
+                                Output: has a different meaning than
+                                Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
+                                Output: has a different meaning than
+                                Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
+                                Output: has the same meaning as (also in another language) or is the same as
+                                Input:{condition}.
+                                Output:""", True, max_token=100)
+                update_metadata(temp_meta)
+                print(f"The phrase is: {phrase}")
 
-                total_prompt = f"Answer the following questions with True or False.\n"
+                same_meaning_list = []
+                seen_items = set()  # Track unique items from temp_list1
+                
+                #Iteration over all items from one list
+                for item in temp_list1:
+                    item_str = item[0]
+                    if item_str in seen_items:
+                        continue
+                    seen_items.add(item_str)
 
-                #Iteation over all items from another list
-                for other_item in temp_list2:
-                    other_item_str = other_item[0]
-                    prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
-                    total_prompt += prompt
+                    total_prompt = f"Answer the following questions with True or False.\n"
 
-                #Get response from LL
-                response = gemini_json(total_prompt, response_type=list[bool])
-                relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
-                #Add relevant semantic equivalents to the list
-                dict[item_str] = relevant_items
-    print(f"The key belongs to {order[0]}")
-    print(f"The value belongs to {order[1]}")       
+                    #Iteation over all items from another list
+                    for other_item in temp_list2:
+                        other_item_str = other_item[0]
+                        prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
+                        total_prompt += prompt
 
-    return dict, order
+                    #Get response from LLM
+                    response = gemini_json(total_prompt, response_type=list[bool])
+                    relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
+                    #Add relevant semantic equivalents to the list
+                    dict[item_str] = relevant_items
+                    
+
+                print(f"The key belongs to {order[counter][0]}")
+                print(f"The value belongs to {order[counter][1]}")     
+                dict_list.append(dict)
+                #Increase counter
+                counter+=1
+            else:
+                dict_list.append(dict)
+         
+
+    return dict_list, order
 
 def join_pipeline(query, return_query=False):
 
@@ -160,9 +182,15 @@ def join_pipeline(query, return_query=False):
     #TODO: Multiple dictinoaries for multiple JOINs
     semantic_dic, order= compare_semantics_in_list(new_list, order)
     print(semantic_dic)
+    print(order)
 
+    #Create the binding string for, necessary for multiple JOINs
+    binding_str = ""
+    for i in range(len(semantic_dic)):
+        binding_str += f"binding {i}: {semantic_dic[i]}. The key belongs to {order[i][0]}, The values belong to {order[i][1]}\n"
     #Final prompt for modification of the query
-    final_prompt=f''' First reason on what value the CASE statement is necessary, if it is to be applied. Then write  an updated SQL query, if needed. Update the Join conditions using the CASE statement if necessary. The dictionary tells us which parts have the same meaning semantically and therefore should be treated equally when executed on a join.  Always end with a ';'. The key belongs to {order[0]}. The value belongs to {order[1]}.  Make sure to use the CASE statement on the KEY value and convert them to the corresponding value. Alway put the CASE statement after the ON statement. 
+    if len(semantic_dic)<2:
+        final_prompt=f''' First reason on what value the CASE statement is necessary, if it is to be applied. Then write  an updated SQL query, if needed. Update the Join conditions using the CASE statement if necessary. The dictionary tells us which parts have the same meaning semantically and therefore should be treated equally when executed on a join.  Always end with a ';'. The key belongs to {order[0][0]}. The value belongs to {order[0][1]}.  Make sure to use the CASE statement on the KEY value and convert them to the corresponding value. Alway put the CASE statement after the ON statement. 
             Input sql: SELECT suppliers.name, products.value FROM suppliers JOIN products ON suppliers.id = products.supplier_id; binding: {{'uno': ['one'], 'dos': ['two'], 'tres': ['three']}}; order: The key belongs to products.supplier_id, The values belong to suppliers.id.
             Output: SELECT suppliers.name, products.value FROM suppliers JOIN products ON suppliers.id = CASE products.supplier_id
             WHEN 'uno' THEN 'one'
@@ -175,13 +203,42 @@ def join_pipeline(query, return_query=False):
             WHEN 'Sales Dep' THemployees.department_idEN 'Sales Department'
             WHEN 'Engeneering' THEN 'Engineering'
             END;
-            Input: sql:{sql_query}; binding: {semantic_dic}; order: The key belongs to {order[0]}, The values belong to {order[1]};
+            Input: sql:{sql_query}; binding: {semantic_dic[0]}; order: The key belongs to {order[0][0]}, The values belong to {order[0][1]};
             Output:'''
-    print(f"The final prompt is \n {final_prompt}")
+    
+    #If multiple JOINs are present, the prompt is different, different problem as important what is substituted by what
+    else:
+        final_prompt=f''' Reason about in what position the CASE statement for modifying the JOIN would make sense. Then write an updated SQL query, if needed. The dictionary tells us which parts have the same meaning semantically and therefore should be treated equally when executed on a join.  Always end with a ';'.  Foe each non-empty dictionary add the CASE statement only to the corresponding JOIN. Think aboout how you could place the CASE statement such that it doesn't have to be applied multiple times, when applying once cleverly would be enough. Alway put the CASE statement after the ON statement. Think about whether it makes sense to substitute the key by the value or the value by the key 
+                Input: SELECT students.name, courses.title 
+                FROM students 
+                JOIN enrollments ON students.id = enrollments.student_id 
+                JOIN courses ON enrollments.course_id = courses.id;
+                binding 1: {{'CS101': ['Introduction to Computer Science'], 'MATH201': ['Calculus II']}}; The key belongs to courses.id, The values belong to enrollments.course_id.
+                binding 2: {{}}. The key belongs to enrollments.student_id. The value belongs to student_id.
+                Output: SELECT students.name, courses.title FROM students JOIN enrollments ON students.id = enrollments.student_id JOIN courses ON enrollments.course_id = CASE courses.id WHEN 'CS101' THEN 'Introduction to Computer Science' WHEN 'MATH201' THEN 'Calculus II' END;
+                Input: SELECT *
+                FROM widgets
+                INNER JOIN gizmos ON widgets.part_id = gizmos.id
+                INNER JOIN sprockets ON widgets.part_id = sprockets.id;
+                binding1: {{1: ['Gear A'], 2: ['Gear B'], 3: ['Gear C']}}; The key belongs to widgets.part_id, The values belong to gizmos.id.
+                binding 2: {{}}; The key belongs to widgets.sprocket_id, The values belong to sprockets.id.
+                Output: SELECT * 
+                FROM widgets 
+                INNER JOIN gizmos ON widgets.part_id = CASE gizmos.id 
+                                                        WHEN 'Gear A' THEN 1 
+                                                        WHEN 'Gear B' THEN 2 
+                                                        WHEN 'Gear C' THEN 3 
+                                                        ELSE NULL  -- Add NULL in else clause
+                                                    END
+                INNER JOIN sprockets ON widgets.sprocket_id = sprockets.id;
+                Input: sql:{sql_query}; 
+                binding: {binding_str};
+                Output:'''
+    
 
     retries_left=3
     while retries_left>0:
-
+        print(f"The final prompt is \n {final_prompt}")
         # Try to modify the query with our chosen binding
         response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
         #Update the metadata
@@ -222,6 +279,5 @@ def join_pipeline(query, return_query=False):
 #     fathers ON fathers.id = children_table.id;'''
 
 #calculus='''∃id (children_table(id, _) ∧ fathers(id, _))'''
-#calculus='''∃id (children_table(id, _) ∧ fathers(id, 'German'))'''
-calculus='''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )'''
-print(join_pipeline(calculus))
+#calculus='''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )'''
+#print(join_pipeline(calculus))

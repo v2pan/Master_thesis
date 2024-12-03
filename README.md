@@ -19,7 +19,7 @@ psql -h localhost -p 5433 -U postgres -d my_new_database
 
 # SOTA
 
-The SOTA for the 27th November can be seen in the pipeline **row_calculus_pipeline** and for the join the **join_pipeline**. The pseudocode  for the **row_calculus_pipeline** is given here:
+The SOTA for the 3rd of December can be seen in the pipeline **row_calculus_pipeline** and for the join the **join_pipeline**. Also there exists the **combined_pipeline**, which is just a combination of the previously mentioned two pipelines. The pseudocode  for the **row_calculus_pipeline** is given here:
 
 
 <pre>
@@ -61,7 +61,8 @@ return result<br>
 The idea is that the LLM generates the phrase with which it queries the two values
 by itself. Also some prompts were adjusted using 1-shot or 2-shot learning. 
 
-Also the **join_pieline** was implemented, which accounts for examples where during the join procedure the binding is modified using the CASE statement. The logic is pretty similar,
+Also the **join_pipeline** was implemented, which accounts for examples where during the join procedure the binding is modified using the CASE statement. The logic is pretty similar and a seperate pseudocode is not listed. The JOIN pipeline 
+can now also handle multiple JOINs and distingusih when to use a CASE statement and when not
 but this time accounting for the fact that two list have to be compared rather than a string and a list.
 
 
@@ -72,10 +73,10 @@ Using the examples pointed out in **Testset.md** one can see the examples used i
 <pre>
 --- Individual Metrics ---
 Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
-  Accuracy: 0.6667
-  Precision: 0.6667
+  Accuracy: 0.4000
+  Precision: 0.4000
   Recall: 1.0000
-  F1-score: 0.8000
+  F1-score: 0.5714
 Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
   Accuracy: 0.5000
   Precision: 0.5000
@@ -92,11 +93,16 @@ Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(i
   Recall: 1.0000
   F1-score: 1.0000
 Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
-  Accuracy: 0.3333
-  Precision: 0.3333
-  Recall: 1.0000
-  F1-score: 0.5000
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
 Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
+  Accuracy: 0.2000
+  Precision: 0.3333
+  Recall: 0.3333
+  F1-score: 0.3333
+Calculus ∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) ):
   Accuracy: 1.0000
   Precision: 1.0000
   Recall: 1.0000
@@ -107,15 +113,21 @@ Calculus ∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price
   Recall: 1.0000
   F1-score: 1.0000
 Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
+  Accuracy: 0.7500
+  Precision: 1.0000
+  Recall: 0.7500
+  F1-score: 0.8571
+Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
   Accuracy: 1.0000
   Precision: 1.0000
   Recall: 1.0000
   F1-score: 1.0000
 
 --- Overall Metrics ---
-Mean Accuracy: 0.8125
-Mean Precision: 0.8125
-Mean Recall: 1.0000
-Mean F1-score: 0.8708
+Mean Accuracy: 0.6850
+Mean Precision: 0.7233
+Mean Recall: 0.8083
+Mean F1-score: 0.7429
+
 
 </pre>
