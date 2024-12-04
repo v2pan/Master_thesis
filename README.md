@@ -15,11 +15,12 @@ Everyone trying to execute this for yourself. What is needed is a Postgres datab
 psql -h localhost -p 5433 -U postgres -d my_new_database
 \i path_to_database.sql
 2. Adjust the connection details in the database.py file
-3. Execute the **evaluation.py** file, evaluate the results by looking at the **all_metrics-txt** file.
+3. Put a **api_key.txt** file inside of your repository. Get an API key for Gemini from  this [link](https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Faistudio.google.com%2Fapikey%3F_gl%3D1*7la1jo*_ga*MTk5NjU0NjI5Ni4xNzI4Mzk0NDI1*_ga_P1DBVKWT6V*MTczMzMzMDExNi40OS4wLjE3MzMzMzAxMTYuMC4wLjIwNzE4NDIzNzE.&followup=https%3A%2F%2Faistudio.google.com%2Fapikey%3F_gl%3D1*7la1jo*_ga*MTk5NjU0NjI5Ni4xNzI4Mzk0NDI1*_ga_P1DBVKWT6V*MTczMzMzMDExNi40OS4wLjE3MzMzMzAxMTYuMC4wLjIwNzE4NDIzNzE.&ifkv=AcMMx-cgPRy-Na5Uk6-Y0SPg2IKv4vGdWFZfpm_pHtAWq2oKvGhvMcHVvHyORe9A9j-8TUwVP1MU&passive=1209600&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S-132392570%3A1733330134082602&ddm=1).
+4. Execute the **evaluation.py** file, evaluate the results by looking at the **all_metrics-txt** file.
 
 # SOTA
 
-The SOTA for the 3rd of December can be seen in the pipeline **row_calculus_pipeline** and for the join the **join_pipeline**. Also there exists the **combined_pipeline**, which is just a combination of the previously mentioned two pipelines. The pseudocode  for the **row_calculus_pipeline** is given here:
+The SOTA for the 4th of December can be seen in the pipeline **row_calculus_pipeline** and for the join the **join_pipeline**. Also there exists the **combined_pipeline**, which is just a combination of the previously mentioned two pipelines. The pseudocode  for the **row_calculus_pipeline** is given here:
 
 
 <pre>
@@ -61,9 +62,8 @@ return result<br>
 The idea is that the LLM generates the phrase with which it queries the two values
 by itself. Also some prompts were adjusted using 1-shot or 2-shot learning. 
 
-Also the **join_pipeline** was implemented, which accounts for examples where during the join procedure the binding is modified using the CASE statement. The logic is pretty similar and a seperate pseudocode is not listed. The JOIN pipeline 
-can now also handle multiple JOINs and distingusih when to use a CASE statement and when not
-but this time accounting for the fact that two list have to be compared rather than a string and a list.
+Also the **join_pipeline** was implemented, which accounts for examples where during the join procedure the binding is modified using the CASE statement. The logic is pretty similar to that of the **row_calculus_pipeline** and a seperate pseudocode is not listed. The JOIN pipeline 
+can now also handle multiple JOINs and distingusih in which case to use a CASE statement at all.
 
 
 # Results 
@@ -71,7 +71,7 @@ but this time accounting for the fact that two list have to be compared rather t
 Using the examples pointed out in **Testset.md** one can see the examples used is **evaluation.py**. The metrics are written to **all_metrics.txt** THe most current results are:
 
 <pre>
---- Individual Metrics ---
+---- Individual Metrics ---
 Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
   Accuracy: 0.4000
   Precision: 0.4000
@@ -93,10 +93,10 @@ Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(i
   Recall: 1.0000
   F1-score: 1.0000
 Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
-  Accuracy: 0.0000
-  Precision: 0.0000
-  Recall: 0.0000
-  F1-score: 0.0000
+  Accuracy: 0.3333
+  Precision: 0.3333
+  Recall: 1.0000
+  F1-score: 0.5000
 Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
   Accuracy: 0.2000
   Precision: 0.3333
@@ -122,12 +122,26 @@ Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
   Precision: 1.0000
   Recall: 1.0000
   F1-score: 1.0000
+Calculus ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+Calculus ∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+Calculus ∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
 
 --- Overall Metrics ---
-Mean Accuracy: 0.6850
-Mean Precision: 0.7233
-Mean Recall: 0.8083
-Mean F1-score: 0.7429
-
+Mean Accuracy: 0.6295
+Mean Precision: 0.6590
+Mean Recall: 0.7756
+Mean F1-score: 0.6868
 
 </pre>
