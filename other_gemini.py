@@ -66,17 +66,21 @@ def gemini_json(prompt,response_type):
         dict: The response from the Gemini API as a JSON dictionary.
 
     """
-    model = genai.GenerativeModel("gemini-1.5-flash-8b")
-    result = model.generate_content(
-        #"Answer the following questions [Does 'dog' and 'chien' have the same semantic meaning?, Does 'dog' and 'chat have the same semantic meaning?, Does dog and cat have the same semantic meaning?]",
-        prompt,
-        generation_config=genai.GenerationConfig(
-            response_mime_type="application/json", response_schema=response_type
-        ),
-    )
-    #print(f"The result text is {result.text}")
-    json_data=json.loads(result.text)
-    return json_data
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash-8b")
+        result = model.generate_content(
+            #"Answer the following questions [Does 'dog' and 'chien' have the same semantic meaning?, Does 'dog' and 'chat have the same semantic meaning?, Does dog and cat have the same semantic meaning?]",
+            prompt,
+            generation_config=genai.GenerationConfig(
+                response_mime_type="application/json", response_schema=response_type
+            ),
+        )
+        #print(f"The result text is {result.text}")
+        json_data=json.loads(result.text)
+        return json_data
+    except ResourceExhausted as e:
+        print("Time exception has occured")
+        raise RessourceError("API rate limit exceeded!")
 #Define Filter class for ret
 class QUERY(typing.TypedDict):
     query: str

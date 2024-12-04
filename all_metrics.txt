@@ -20,10 +20,10 @@ Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(i
   Recall: 1.0000
   F1-score: 1.0000
 Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
-  Accuracy: 0.0000
-  Precision: 0.0000
-  Recall: 0.0000
-  F1-score: 0.0000
+  Accuracy: 0.3333
+  Precision: 0.3333
+  Recall: 1.0000
+  F1-score: 0.5000
 Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
   Accuracy: 0.2000
   Precision: 0.3333
@@ -49,9 +49,24 @@ Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
   Precision: 1.0000
   Recall: 1.0000
   F1-score: 1.0000
+Calculus ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+Calculus ∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+Calculus ∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
 
 --- Overall Metrics ---
-Mean Accuracy: 0.6850
-Mean Precision: 0.7233
-Mean Recall: 0.8083
-Mean F1-score: 0.7429
+Mean Accuracy: 0.6295
+Mean Precision: 0.6590
+Mean Recall: 0.7756
+Mean F1-score: 0.6868

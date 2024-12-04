@@ -204,3 +204,29 @@ FROM children_table INNER JOIN  fathers ON children_table.id = CASE fathers.id <
 Multiple Join example, Now works extra logic was added to accomodate it<br>
 **Calculus**: ∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) ) (Use of combined pipelines)<br>
 **Result**: {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')} <br>
+
+
+# Join Example On two string columns with different format
+
+
+## Table 11: weather
+
+| date       | city       | temperature | rainfall |
+|------------|-------------|-------------|----------|
+| 2023 10 26 | London      | 12          | 0        |
+| 2023 10 26 | New York    | 15          | 2        |
+| 2023 10 27 | London      | 10          | 5        |
+| 2023 10 27 | New York    | 13          | 1        |
+
+
+## Table 12: website_visits
+
+| date       | page       | visits |
+|------------|-------------|--------|
+| 2023 October 26 | homepage    | 1000   |
+| 2023 October 26 | about       | 500    |
+| 2023 October 27 | homepage    | 1200   |
+| 2023 October 27 | contact     | 200    |
+
+**Calculus**: '''∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)'''
+**Result** {('2023 10 26', 'London', 12, 0, '2023 October 26', 'about', 500), ('2023 10 26', 'London', 12, 0, '2023 October 26', 'homepage', 1000), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'about', 500), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'homepage', 1000), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'contact', 200), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'homepage', 1200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'contact', 200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'homepage', 1200)}

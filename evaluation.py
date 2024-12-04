@@ -3,6 +3,7 @@ from row_calculus_pipeline import row_calculus_pipeline
 from join_pipeline import join_pipeline
 from combined_pipeline import combined_pipeline
 from other_gemini import RessourceError
+from database import QueryExecutionError
 
 def evaluate_results(expected, actual):
     """Calculates accuracy, precision, recall, and F1-score, handling tuples."""
@@ -74,7 +75,19 @@ test_cases = [
         '''∃id (children_table(id, >1) ∧ fathers(id, _))''',
         {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')},
         "combined_pipeline"
+    ),
+    (
+        '''ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)''',
+        {(1, 1, 'Reputation', '2017', 1, 'Taylor Swift', 'English', 1, 1, 'Delicate', '3:52'), (2, 2, 'Reputation', '2017', 2, 'Reputation Artist', 'English', 2, 2, 'New Year’s Day', '3:55')},
+        "combined_pipeline"
+    ),
+    (
+    '''∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)''',
+    {('2023 10 26', 'London', 12, 0, '2023 October 26', 'about', 500), ('2023 10 26', 'London', 12, 0, '2023 October 26', 'homepage', 1000), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'about', 500), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'homepage', 1000), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'contact', 200), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'homepage', 1200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'contact', 200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'homepage', 1200)}
+    ,"join_pipeline"
     )
+
+    
 
 ]
 
@@ -108,9 +121,12 @@ for calculus, expected_result, pipeline in test_cases:
                 time.sleep(retry_delay)
             else:
                 print(f"Maximum retries reached for calculus '{calculus}'.")
-                metrics.append((0, 0, 0, 0)) # Append zeros for failed cases
-        except Exception as e:
-            metrics.append((0, 0, 0, 0))
+                metrics.append((0, 0, 0, 0,calculus)) # Append zeros for failed cases
+                continue
+        except QueryExecutionError as e:
+            print("Exception has occured, when executing on database")
+            metrics.append((0, 0, 0, 0,calculus))
+            continue
 
                 
 
@@ -129,6 +145,7 @@ if metrics:  # Check if there are any metrics (to avoid errors if all tests fail
     print(f"Mean F1-score: {f1_score_mean:.4f}")
 else:
     print("No successful test cases to calculate mean metrics.")
+
 
 def write_all_metrics_to_file(metrics, filename = "all_metrics.txt"):
     """Writes all individual metrics to a text file."""
