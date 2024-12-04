@@ -352,6 +352,33 @@ CREATE TABLE public.tournaments (
 ALTER TABLE public.tournaments OWNER TO postgres;
 
 --
+-- Name: weather; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.weather (
+    date character varying(255),
+    city character varying(255),
+    temperature integer,
+    rainfall integer
+);
+
+
+ALTER TABLE public.weather OWNER TO postgres;
+
+--
+-- Name: website_visits; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.website_visits (
+    date character varying(255),
+    page character varying(255),
+    visits integer
+);
+
+
+ALTER TABLE public.website_visits OWNER TO postgres;
+
+--
 -- Name: items id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -581,6 +608,30 @@ COPY public.tournaments (winner_id, name, price_money_in_million) FROM stdin;
 3	Warsaw Open	3
 2	Jakarta Open	1.5
 3	Osaka Open	0.5
+\.
+
+
+--
+-- Data for Name: weather; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.weather (date, city, temperature, rainfall) FROM stdin;
+2023 10 26	London	12	0
+2023 10 26	New York	15	2
+2023 10 27	London	10	5
+2023 10 27	New York	13	1
+\.
+
+
+--
+-- Data for Name: website_visits; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.website_visits (date, page, visits) FROM stdin;
+2023 October 26	homepage	1000
+2023 October 26	about	500
+2023 October 27	homepage	1200
+2023 October 27	contact	200
 \.
 
 
