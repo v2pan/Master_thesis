@@ -60,7 +60,7 @@ return result<br>
    </pre>
 
 The idea is that the LLM generates the phrase with which it queries the two values
-by itself. Also some prompts were adjusted using 1-shot or 2-shot learning. 
+by itself. Also some prompts were adjusted.
 
 Also the **join_pipeline** was implemented, which accounts for examples where during the join procedure the binding is modified using the CASE statement. The logic is pretty similar to that of the **row_calculus_pipeline** and a seperate pseudocode is not listed. The JOIN pipeline 
 can now also handle multiple JOINs and distingusih in which case to use a CASE statement at all.
