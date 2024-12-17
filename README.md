@@ -36,67 +36,75 @@ The pseudocode  for the **row_calculus_pipeline** is given here. It looks for re
 
 
 
-<pre>
-query ← INPUT  ' Get predicate calculus expression as input<br>
-tables ← get_relevant_tables(query) # Ask LLM, what are the relevant tables based on this predicate calculus query. Retrieve a list.<br>
-sql_query ← ask_LLM(f"Generate a SQL query based on {query} and {tables}")    
-#Generate initial SQL query using exclusively schema level information (e.g. column names, data types, primary/foreign key constraints)<br>
 
-#Extract all the necesary WHERE comparisons (e.g. WHERE animal.category='dog') using a SQL parser and slight modification  <br>
-conditions ← extract_where_conditions_sqlparse(sql_query):<br>
-   conditions={} # List of all WHERE statements <br>
-   for token in sqlparse(sql_query): # Iteration over all tokens in SQL querey<br>
-      if token is where.Clause and isinstance Comparison: # If is part of WHERE clause e.g. 'WHERE animal.category='dog''<br>
-         token.left OR token.right <- Convert_to_SQL(token.left or token.right)  
-         # Convert binding variable ('dog') to SQL query: 'animal.category' -> 'SELECT category FROM animal;' can positioned at right or left side of clause<br>
-         conditions.append(token.left, comparison_operator, clause, token.right) 
-         # Append to conditions, structure: {('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog'), (...)}<br>
-   return conditions<br>
+
+```
+query ← INPUT  #Get predicate calculus expression as input
+tables ← get_relevant_tables(query) # Ask LLM, what are the relevant tables based on this predicate calculus query. Retrieve a list.
+
+# Generate initial SQL query using exclusively schema level information (e.g. column names, data types, primary/foreign key constraints)
+sql_query ← ask_LLM(f"Generate a SQL query based on {query} and {tables}")    
+
+#Extract all the necesary WHERE comparisons (e.g. WHERE animal.category='dog') using a SQL parser and slight modification  '
+conditions ← extract_where_conditions_sqlparse(sql_query):
+   conditions={} # List of all WHERE statements 
+   for token in sqlparse(sql_query): # Iteration over all tokens in SQL querey
+      if token is where.Clause and isinstance Comparison: # If is part of WHERE clause e.g. 'WHERE animal.category='dog''
+        #Convert binding variable ('dog') to SQL query: 'animal.category' -> 'SELECT category FROM animal;' can be positioned at right or left side of clause
+        token.left OR token.right <- Convert_to_SQL(token.left or token.right)  
+
+        # Append to conditions, structure: {('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog'), (...)} 
+        conditions.append(token.left, comparison_operator, clause, token.right) 
+   return conditions
 
 #Execute SQL queries inside conditions against the database
-query_results ← execute_queries_on_conditions(conditions): <br>
-   for i in  conditions: # For the whole conditions list {(...),(...),(...)}<br>
-      for l in i: # Inside a comparison e.g. ('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog') <br>
-         if l is SQL_query: # Check if the element is a SQL query <br>
-            l ← query_database(l) # Substitute SQL query with result from database 
-                                  e.g 'SELECT category FROM  animal;' ---> ('chien','perro','chat','dog') <br>
+query_results ← execute_queries_on_conditions(conditions): '
+   for i in  conditions: # For the whole conditions list {(...),(...),(...)}
+      for l in i: # Inside a comparison e.g. ('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog') 
+         if l is SQL_query: # Check if the element is a SQL query
+            l ← query_database(l) # Substitute SQL query with result from database e.g 'SELECT category FROM  animal;' ---> ('chien','perro','chat','dog')
 
 # Main Soft Binding Procedure, Checking for Comparison  
-semantic_list ← compare_semantics_in_list(query_results): <br>
-   result_list ← [] #Initialize empty list for storing the binding<br>
-   for each sublist in query_results: 
-   # Iterate for each sublist e.g. (('chien','perro','chat','dog'), "=",'WHERE animal.category='dog'', 'dog')<br>
-      if sublist contains a string and a list OR: \\ Comparing a list e.g. ('chien','perro','chat','dog') with the fixed binding e.g. 'dog'<br>
-          temp_string, temp_list ← separate_string_and_list(sublist) #Generate the temp_string e.g 'dog' and the temp_list e.g ('chien','perro','chat','dog')   <br>
+semantic_list ← compare_semantics_in_list(query_results): 
+  result_list ← [] #Initialize empty list for storing the binding
 
-          phrase ← ask_gemini("Get semantic phrase for: " + sublist[1])
-            #Abstracts meaning of comparison operator in antural language 
-            e.g "=" ---> "Has the same sematnic meaning as"<br>
-          soft_binding_list ← [] #Construct a list of expression to be included<br>
-          prompt="" #Construct a prompt to feed LLM<br>
-          for i in  temp_list #Iterate over temp_list e.g.('chien','perro','chat','dog') <br>
-            prompt +=  build_comparison_prompt(temp_string, i, phrase)
+  #Iterate for each sublist e.g. (('chien','perro','chat','dog'), "=",'WHERE animal.category='dog'', 'dog')
+  for each sublist in query_results: 
+      if sublist contains a string and a list OR: ' Comparing a list e.g. ('chien','perro','chat','dog') with the fixed binding e.g. 'dog'
+        temp_string, temp_list ← separate_string_and_list(sublist) #Generate the temp_string e.g 'dog' and the temp_list e.g ('chien','perro','chat','dog')   
+
+        #Abstracts meaning of comparison operator in antural language 
+        phrase ← ask_LLM("Get semantic phrase for: " + sublist[1])
+        
+        e.g "=" ---> "Has the same sematnic meaning as"'
+        soft_binding_list ← [] #Construct a list of expression to be included
+        prompt="" #Construct a prompt to feed LLM
+        for i in  temp_list #Iterate over temp_list e.g.('chien','perro','chat','dog') 
+          prompt +=  build_comparison_prompt(temp_string, i, phrase)
             #Construct final prompt e.g ["Does 'dog' and 'chien' have the same meaning?",
             "Does 'dog' and 'perro' have the same meaning?",
             "Does 'dog' and 'chat' have the same meaning?",
-            "Does 'dog' and 'dog' have the same meaning?", ]<br>
-         boolean_results ← gemini_json(prompt, response_type = list[boolean])
-         #Return a boolean list e.g [True, True, False, True]<br>
-         soft_binding_list.append(temp_list if boolean_result is true)
-         #Appending ('chien','dog','perro') #Retrieve variables included in the soft binding<br>
-         result_list.append(soft_binding_list, where_Clause)
-         #Append ((('chien','dog','perro'), 'WHERE animal.category='dog''))for output <br>
-  return result_list<br>
+            "Does 'dog' and 'dog' have the same meaning?"]
+
+        #Return a boolean list e.g [True, True, False, True]
+        boolean_results ← gemini_json(prompt, response_type = list[boolean])
+        
+
+        #Appending ('chien','dog','perro') #Retrieve variables included in the soft binding
+        soft_binding_list.append(temp_list if boolean_result is true)
+
+        #Append ((('chien','dog','perro'), 'WHERE animal.category='dog''))for output '
+        result_list.append(soft_binding_list, where_Clause)
+        
+    return result_list'
 
 #Modified query construction
 query ← ask_LLM(f"Based on semantic list {semantic_list} and the intital query {sql_query} generate  a new query")
 #Construct the modified query based on the semantics list e.g "WHERE animal.category='dog'" --->
----> "WHERE animal.category='dog' OR animal.category='perro' OR animal.category='chien'"<br>
-result=query_database(query) #Query database to get result of the modified query<br>
-return result #Return the results of the query to the user<br>
-</pre>
-
-
+---> "WHERE animal.category='dog' OR animal.category='perro' OR animal.category='chien'"'
+result=query_database(query) #Query database to get result of the modified query'
+return result #Return the results of the query to the user'
+```
 
 Also the **join_pipeline** was implemented, which accounts for examples where during the join procedure the binding is modified using the CASE statement. The logic is pretty similar to that of the **row_calculus_pipeline** and a seperate pseudocode is not listed. The JOIN pipeline 
 can now also handle multiple JOINs and distingusih in which case to use a CASE statement at all.
