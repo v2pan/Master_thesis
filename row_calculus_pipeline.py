@@ -9,9 +9,6 @@ from other_gemini import gemini_json,ask_gemini
 from extractor import extract
 import copy
 
-#SOTA 27/11/2024
-
-
 #Metadata to keep track of use 
 usage_metadata_total = {
             "prompt_token_count": 0,
@@ -375,7 +372,7 @@ def compare_semantics_in_list(input_list):
             print(f"temp_list: {temp_list}")
 
             # Compare the string with the items in the list using gemini_json
-            same_meaning_list = []
+            soft_binding_list = []
             #
 
             #Final prompt with list
@@ -413,18 +410,18 @@ def compare_semantics_in_list(input_list):
             #Retrieve the relevant items
             relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
             for i in relevant_items:
-                same_meaning_list.append(i)
+                soft_binding_list.append(i)
 
             #Add the where clause
-            same_meaning_list.append(outer_list[-2]) 
+            soft_binding_list.append(outer_list[-2]) 
             # If there are any items that have the same meaning, add temp_string and the matching items to the result list
-            if same_meaning_list:
-                result_list.append(same_meaning_list)
+            if soft_binding_list:
+                result_list.append(soft_binding_list)
     
     return result_list
 
 
-#The pipeline itself
+#MAIN FUNCTION
 def row_calculus_pipeline(query):
     
     #Get context
