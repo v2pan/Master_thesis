@@ -38,8 +38,9 @@ The pseudocode  for the **row_calculus_pipeline** is given here. It looks for re
 
 <pre>
 query ← INPUT  ' Get predicate calculus expression as input<br>
-tables ← get_relevant_tables(query) ' Ask LLM, what are the relevant tables based on this predicate calculus query. Retrieve a list.<br>
-sql_query ← ask_LLM(f"Generate a SQL query based on {query} and {tables}") # Generate initial SQL query using exclusively schema level information (e.g. column names, data types, primary/foreign key constraints)<br>
+tables ← get_relevant_tables(query) # Ask LLM, what are the relevant tables based on this predicate calculus query. Retrieve a list.<br>
+sql_query ← ask_LLM(f"Generate a SQL query based on {query} and {tables}")    
+#Generate initial SQL query using exclusively schema level information (e.g. column names, data types, primary/foreign key constraints)<br>
 
 #Extract all the necesary WHERE comparisons (e.g. WHERE animal.category='dog') using a SQL parser and slight modification  <br>
 conditions ← extract_where_conditions_sqlparse(sql_query):<br>
@@ -47,17 +48,17 @@ conditions ← extract_where_conditions_sqlparse(sql_query):<br>
    for token in sqlparse(sql_query): # Iteration over all tokens in SQL querey<br>
       if token is where.Clause and isinstance Comparison: # If is part of WHERE clause e.g. 'WHERE animal.category='dog''<br>
          token.left OR token.right <- Convert_to_SQL(token.left or token.right)  
-         \\ Convert binding variable ('dog') to SQL query: 'animal.category' -> 'SELECT category FROM animal;' can positioned at right or left side of clause<br>
+         # Convert binding variable ('dog') to SQL query: 'animal.category' -> 'SELECT category FROM animal;' can positioned at right or left side of clause<br>
          conditions.append(token.left, comparison_operator, clause, token.right) 
-         \\ Append to conditions, structure: {('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog'), (...)}<br>
+         # Append to conditions, structure: {('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog'), (...)}<br>
    return conditions<br>
 
 #Execute SQL queries inside conditions against the database
 query_results ← execute_queries_on_conditions(conditions): <br>
-   for i in  conditions: \\ For the whole conditions list {(...),(...),(...)}<br>
-      for l in i: \\ Inside a comparison e.g. ('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog') <br>
-         if l is SQL_query: \\ Check if the element is a SQL query <br>
-            l ← query_database(l) \\Substitute SQL query with result from database 
+   for i in  conditions: # For the whole conditions list {(...),(...),(...)}<br>
+      for l in i: # Inside a comparison e.g. ('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog') <br>
+         if l is SQL_query: # Check if the element is a SQL query <br>
+            l ← query_database(l) # Substitute SQL query with result from database 
                                   e.g 'SELECT category FROM  animal;' ---> ('chien','perro','chat','dog') <br>
 
 # Main Soft Binding Procedure, Checking for Comparison  
