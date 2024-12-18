@@ -316,9 +316,9 @@ def compare_semantics_in_list(input_list):
     - input_list (list of lists): The input list of expressions and comparisons.
 
     Returns:
-    - result_list (list of lists): A list of lists where each sublist contains expressions with the same semantic meaning.
+    - semantic_list (list of lists): A list of lists where each sublist contains expressions with the same semantic meaning.
     """
-    result_list = []  # We will build this list to store the results
+    semantic_list = []  # We will build this list to store the results
     
     # Iterate over each sublist in the input list
     for outer_list in input_list:
@@ -416,9 +416,9 @@ def compare_semantics_in_list(input_list):
             soft_binding_list.append(outer_list[-2]) 
             # If there are any items that have the same meaning, add temp_string and the matching items to the result list
             if soft_binding_list:
-                result_list.append(soft_binding_list)
+                semantic_list.append(soft_binding_list)
     
-    return result_list
+    return semantic_list
 
 
 #MAIN FUNCTION

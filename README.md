@@ -45,64 +45,69 @@ tables ← get_relevant_tables(query) # Ask LLM, what are the relevant tables ba
 # Generate initial SQL query using exclusively schema level information (e.g. column names, data types, primary/foreign key constraints)
 sql_query ← ask_LLM(f"Generate a SQL query based on {query} and {tables}")    
 
-#Extract all the necesary WHERE comparisons (e.g. WHERE animal.category='dog') using a SQL parser and slight modification 
+#Extract all WHERE comparisons (e.g. WHERE animal.category='dog') using a SQL parser
 conditions ← extract_where_conditions_sqlparse(sql_query):
-   conditions= [] # List of all WHERE statements 
+   conditions= [] # List to fill with WHERE statments  
    for token in sqlparse(sql_query): # Iteration over all tokens in SQL querey
       if token is where.Clause and isinstance Comparison: # If is part of WHERE clause e.g. 'WHERE animal.category='dog''
 
-        #Convert binding variable ('dog') to SQL query: 'animal.category' -> 'SELECT category FROM animal;' can be positioned at right or left side of clause
+        #Convert colum to be binded to SQL query to query for all values e.g. 'animal.category' -> 'SELECT category FROM animal;' can be positioned at right or left side of clause
         token.left OR token.right <- Convert_to_SQL(token.left or token.right)  
 
         # Append to conditions, structure: {('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog'), (...)} 
         conditions.append(token.left, comparison_operator, clause, token.right) 
-   return conditions
+   return conditions #structure: {('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog'), (...)} 
 
 #Execute SQL queries inside conditions against the database
 query_results ← execute_queries_on_conditions(conditions): '
    for i in  conditions: # For the whole conditions list {(...),(...),(...)}
       for l in i: # Inside a comparison e.g. ('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog') 
          if l is SQL_query: # Check if the element is a SQL query
-            l ← query_database(l) # Substitute SQL query with result from database e.g 'SELECT category FROM  animal;' ---> ('chien','perro','chat','dog'); other elemetns remain unchanged
+            l ← query_database(l) # Substitute SQL query with result from database of that query e.g 'SELECT category FROM  animal;' ---> ('chien','perro','chat','dog')
+   return conditions #Structure is the following {(('chien','perro','chat','dog'), "=",'WHERE animal.category='dog'', 'dog'), (...)} 
+
 
 # Main Soft Binding Procedure using the LLM 
 semantic_list ← compare_semantics_in_list(query_results): 
-  result_list ← [] #Initialize empty list for storing the bindings
+  semantic_list ← [] #Initialize empty list for storing the bindings
 
   #Iterate for each sublist e.g. (('chien','perro','chat','dog'), "=",'WHERE animal.category='dog'', 'dog')
   for each sublist in query_results: 
-      if sublist contains a string and a list OR: ' Comparing a list e.g. ('chien','perro','chat','dog') with the fixed binding e.g. 'dog'
+      if sublist contains a string and a list: #Compare a list e.g. ('chien','perro','chat','dog') with the fixed binding e.g. 'dog'
         temp_string, temp_list ← separate_string_and_list(sublist) #Generate the temp_string e.g 'dog' and the temp_list e.g ('chien','perro','chat','dog')   
 
-        #Abstracts meaning of comparison operator in antural language 
-        phrase ← ask_LLM("Get semantic phrase for: " + sublist[1])
-        e.g "=" ---> "Has the same sematnic meaning as"
+        #Abstracts meaning of comparison operator in natural language 
+        e.g " A = B" ---> " A has the same semantic meaning as B"
+        phrase ← ask_LLM("Get semantic phrase for: " + sublist[1]) #sublist[1] contains comparison operator e.g. "=", "<", ">"  
+        
 
         soft_binding_list ← [] #Construct a list of expression to be included
-        prompt="" #Construct a prompt to feed LLM
+        prompt="" #Construct an initial prompt to feed LLM
         for i in  temp_list #Iterate over temp_list e.g.('chien','perro','chat','dog') 
           prompt +=  build_comparison_prompt(temp_string, i, phrase)
-            #Construct final prompt e.g ["Does 'dog' and 'chien' have the same meaning?",
-            "Does 'dog' and 'perro' have the same meaning?",
-            "Does 'dog' and 'chat' have the same meaning?",
-            "Does 'dog' and 'dog' have the same meaning?"]
+        #Construct final prompt for each individual comparison e.g ["Does 'dog' and 'chien' have the same meaning?",
+        "Does 'dog' and 'perro' have the same meaning?",
+        "Does 'dog' and 'chat' have the same meaning?",
+        "Does 'dog' and 'dog' have the same meaning?"]
 
         #Return a boolean list e.g [True, True, False, True]
         boolean_results ← gemini_json(prompt, response_type = list[boolean])
         
-
-        #Appending ('chien','dog','perro') All the values that have same sematnic meaning
+        #Append ('chien','dog','perro'). These are all the values where LLM said True.
         soft_binding_list.append(temp_list if boolean_result is true)
 
-        #Append ((('chien','dog','perro'), 'WHERE animal.category='dog''))for output 
-        result_list.append(soft_binding_list, where_Clause)
+        #Append (('chien','dog','perro'), 'WHERE animal.category='dog'') for final result_list
+        semantic_list.append(soft_binding_list, where_Clause)
         
-    return result_list'
+    return semantic_list
 
 #Modified query Construction
-query ← ask_LLM(f"Based on semantic list {semantic_list} and the intital query {sql_query} generate  a new query")
+
 #Construct the modified query based on the semantics list e.g "WHERE animal.category='dog'" --->
 ---> "WHERE animal.category='dog' OR animal.category='perro' OR animal.category='chien'"
+query ← ask_LLM(f"Based on semantic list {semantic_list} and the intital query {sql_query} generate  a new query")
+
+
 result=query_database(query) #Query database to get result of the modified query
 return result #Return the results of the query to the user
 ```
@@ -116,12 +121,12 @@ can now also handle multiple JOINs and distingusih in which case to use a CASE s
 Using the examples pointed out in **Testset.md** one can see the examples used is **evaluation.py**. The metrics are written to **all_metrics.txt** THe most current results are:
 
 <pre>
----- Individual Metrics ---
+--- Individual Metrics ---
 Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
-  Accuracy: 0.4000
-  Precision: 0.4000
+  Accuracy: 0.6667
+  Precision: 0.6667
   Recall: 1.0000
-  F1-score: 0.5714
+  F1-score: 0.8000
 Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
   Accuracy: 0.5000
   Precision: 0.5000
@@ -163,6 +168,11 @@ Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
   Recall: 0.7500
   F1-score: 0.8571
 Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
   Accuracy: 1.0000
   Precision: 1.0000
   Recall: 1.0000
@@ -173,20 +183,15 @@ Calculus ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS
   Recall: 1.0000
   F1-score: 1.0000
 Calculus ∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits):
-  Accuracy: 0.0000
-  Precision: 0.0000
-  Recall: 0.0000
-  F1-score: 0.0000
-Calculus ∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits):
-  Accuracy: 0.0000
-  Precision: 0.0000
-  Recall: 0.0000
-  F1-score: 0.0000
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
 
 --- Overall Metrics ---
-Mean Accuracy: 0.6295
-Mean Precision: 0.6590
-Mean Recall: 0.7756
-Mean F1-score: 0.6868
+Mean Accuracy: 0.7269
+Mean Precision: 0.7564
+Mean Recall: 0.8526
+Mean F1-score: 0.7813
 
 </pre>
