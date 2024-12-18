@@ -1,0 +1,10 @@
+{
+    "calculus": "\u2203id \u2203name \u2203patients_pd (doctors(id, name, patients_pd) \u2227 patients_pd < 12)",
+    "pipeline": "row_calculus_pipeline",
+    "tables_num": 2,
+    "tables": [
+        "documents",
+        "doctors"
+    ],
+    "initial_result": "QueryExecutionError"
+}

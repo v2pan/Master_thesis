@@ -62,7 +62,7 @@ def get_relevant_tables(calculus ):
             #Prompt construction for LLM to access relevance
             input_prompt = f"Return a list of length {len(table_names)} one answer for each question. \n"
             for table_name in table_names:
-                input_prompt += f"Does table '{table_name}' occur in the expression '{calculus}'?  \n"
+                input_prompt += f"I table '{table_name}' specifically mentioned in the expression '{calculus}'?  \n"
 
             #Three attempts to get correct amount of answer for the LLM
             attemps=4
@@ -420,6 +420,11 @@ def compare_semantics_in_list(input_list):
     
     return semantic_list
 
+#Designed for intial query
+def initial_query(query,context):
+        response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
+        return response, temp_meta
+
 
 #MAIN FUNCTION
 def row_calculus_pipeline(query):
@@ -453,7 +458,8 @@ def row_calculus_pipeline(query):
     #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
 
     #Used for predicate calculus, selecting all rows
-    response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
+    
+    response, temp_meta = initial_query(query,context)
     
     #Update the metadata
     update_metadata(temp_meta)
@@ -542,4 +548,7 @@ def row_calculus_pipeline(query):
 # row_calculus_pipeline(calculus)
 
 # calculus='''∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))'''
+# row_calculus_pipeline(calculus)
+
+# calculus='''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)'''
 # row_calculus_pipeline(calculus)
