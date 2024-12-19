@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
 
 
-
+#Old manual input
 #Calculus and the expected result
 # test_cases = [
 #     {
