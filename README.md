@@ -198,13 +198,3 @@ Mean F1-score: 0.7813
 
 
 </pre>
-
-<<<<<<< HEAD
-=======
-$$
-\begin{itemize}
-    \item Hello
-    \item Hello
-\end{itemize}
-$$
->>>>>>> Unfinished

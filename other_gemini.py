@@ -93,7 +93,3 @@ class Table(typing.TypedDict):
 
 # response = gemini_json(prompt, response_type=list[bool])  # Expect a list of booleans back
 # print(response)
-
-
-# print(gemini_json(" 'chien'  has a different meaning than 'dog'",response_type=bool))
-#print(gemini_json("2+2 equals 5",response_type=bool))

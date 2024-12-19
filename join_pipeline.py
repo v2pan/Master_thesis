@@ -280,5 +280,5 @@ def join_pipeline(query, return_query=False):
 
 #calculus='''∃id (children_table(id, _) ∧ fathers(id, _))'''
 #calculus='''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )'''
-calculus='''∃d (weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)'''
-print(join_pipeline(calculus))
+# calculus='''∃d (weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)'''
+# print(join_pipeline(calculus))
