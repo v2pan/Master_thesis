@@ -90,8 +90,8 @@ semantic_list ← compare_semantics_in_list(query_results):
         "Does 'dog' and 'chat' have the same meaning?",
         "Does 'dog' and 'dog' have the same meaning?"]
 
-        #Return a boolean list e.g [True, True, False, True]
-        boolean_results ← gemini_json(prompt, response_type = list[boolean])
+        #Gemini_json return a list of boolean values e.g [True, True, False, True]
+        boolean_results ← gemini_json(prompt, response_type = list[boolean]) #
         
         #Append ('chien','dog','perro'). These are all the values where LLM said True.
         soft_binding_list.append(temp_list if boolean_result is true)
