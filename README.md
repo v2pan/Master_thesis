@@ -38,28 +38,28 @@ The pseudocode  for the **row_calculus_pipeline** is given here. It looks for re
 
 
 
-```
+```python
 query ← INPUT  #Get predicate calculus expression as input
 tables ← get_relevant_tables(query) # Ask LLM, what are the relevant tables based on this predicate calculus query. Retrieve a list.
 
 # Generate initial SQL query using exclusively schema level information (e.g. column names, data types, primary/foreign key constraints)
 sql_query ← ask_LLM(f"Generate a SQL query based on {query} and {tables}")    
 
-#Extract all WHERE comparisons (e.g. WHERE animal.category='dog') using a SQL parser
+#Extract all WHERE comparisons (e.g. WHERE animal.category='dog') using a SQL parser and divide inot the different parts
 conditions ← extract_where_conditions_sqlparse(sql_query):
-   conditions= [] # List to fill with WHERE statments  
-   for token in sqlparse(sql_query): # Iteration over all tokens in SQL querey
+   conditions= [] # List to fill with divided WHERE statments, divided into left part, right part and compariosn operator  
+   for token in sqlparse(sql_query): # Iteration over all tokens in SQL query
       if token is where.Clause and isinstance Comparison: # If is part of WHERE clause e.g. 'WHERE animal.category='dog''
 
-        #Convert colum to be binded to SQL query to query for all values e.g. 'animal.category' -> 'SELECT category FROM animal;' can be positioned at right or left side of clause
-        token.left OR token.right <- Convert_to_SQL(token.left or token.right)  
+        # Use column to generate a SQL query e.g. 'animal.category' -> 'SELECT category FROM animal;'
+        token.left <- Convert_to_SQL(token.left)  
 
         # Append to conditions, structure: {('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog'), (...)} 
-        conditions.append(token.left, comparison_operator, clause, token.right) 
+        conditions.append(token.left, token.comparison_operator, token, token.right) 
    return conditions #structure: {('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog'), (...)} 
 
 #Execute SQL queries inside conditions against the database
-query_results ← execute_queries_on_conditions(conditions): '
+query_results ← execute_queries_on_conditions(conditions): 
    for i in  conditions: # For the whole conditions list {(...),(...),(...)}
       for l in i: # Inside a comparison e.g. ('SELECT category FROM  animal', "=",'WHERE animal.category='dog'', 'dog') 
          if l is SQL_query: # Check if the element is a SQL query
@@ -73,15 +73,16 @@ semantic_list ← compare_semantics_in_list(query_results):
 
   #Iterate for each sublist e.g. (('chien','perro','chat','dog'), "=",'WHERE animal.category='dog'', 'dog')
   for each sublist in query_results: 
-      if sublist contains a string and a list: #Compare a list e.g. ('chien','perro','chat','dog') with the fixed binding e.g. 'dog'
-        temp_string, temp_list ← separate_string_and_list(sublist) #Generate the temp_string e.g 'dog' and the temp_list e.g ('chien','perro','chat','dog')   
+
+        #Compare a list e.g. ('chien','perro','chat','dog') with the fixed binding e.g. 'dog'
+        temp_string, temp_list ← separate_binding_and_list(sublist) #Generate the temp_string e.g 'dog' and the temp_list e.g ('chien','perro','chat','dog')   
 
         #Abstracts meaning of comparison operator in natural language 
-        e.g " A = B" ---> " A has the same semantic meaning as B"
+        # e.g " A = B" ---> " A has the same semantic meaning as B"'
         phrase ← ask_LLM("Get semantic phrase for: " + sublist[1]) #sublist[1] contains comparison operator e.g. "=", "<", ">"  
         
 
-        soft_binding_list ← [] #Construct a list of expression to be included
+        soft_binding_list ← [] #Construct a list of expressions to be included
         prompt="" #Construct an initial prompt to feed LLM
         for i in  temp_list #Iterate over temp_list e.g.('chien','perro','chat','dog') 
           prompt +=  build_comparison_prompt(temp_string, i, phrase)
@@ -90,14 +91,14 @@ semantic_list ← compare_semantics_in_list(query_results):
         "Does 'dog' and 'chat' have the same meaning?",
         "Does 'dog' and 'dog' have the same meaning?"]
 
-        #Gemini_json return a list of boolean values e.g [True, True, False, True]
-        boolean_results ← gemini_json(prompt, response_type = list[boolean]) #
+        #Return a boolean list e.g [True, True, False, True]
+        boolean_results ← gemini_json(prompt, response_type = list[boolean])
         
         #Append ('chien','dog','perro'). These are all the values where LLM said True.
         soft_binding_list.append(temp_list if boolean_result is true)
 
         #Append (('chien','dog','perro'), 'WHERE animal.category='dog'') for final result_list
-        semantic_list.append(soft_binding_list, where_Clause)
+        semantic_list.append(soft_binding_list, sublist.where_Clause)
         
     return semantic_list
 
@@ -194,4 +195,7 @@ Mean Precision: 0.7564
 Mean Recall: 0.8526
 Mean F1-score: 0.7813
 
+
+
 </pre>
+
