@@ -1,0 +1,69 @@
+[
+    {
+        "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+        "pipeline": "row_calculus_pipeline",
+        "tables_num": 2,
+        "tables": [
+            "doctors"
+        ],
+        "initial_result": "QueryExecutionError",
+        "sql_query": "SELECT *FROM doctors WHERE doctors.patients_pd < 12;"
+    },
+    {
+        "calculus": "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))",
+        "pipeline": "row_calculus_pipeline",
+        "tables_num": 3,
+        "tables": [
+            "shareowner1row",
+            "animalowner"
+        ],
+        "initial_result": [
+            [
+                1,
+                "Pierre",
+                20,
+                1,
+                "bill",
+                "chien"
+            ]
+        ],
+        "sql_query": "SELECT *FROM shareowner1row INNER JOIN animalowner ON shareowner1row.id = animalowner.owner_id WHERE animalowner.category != 'dog';"
+    },
+    {
+        "calculus": "∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )",
+        "pipeline": "row_calculus_pipeline",
+        "tables_num": 4,
+        "tables": [
+            "documents",
+            "fathers",
+            "children_table",
+            "mothers"
+        ],
+        "initial_result": "QueryExecutionError",
+        "sql_query": "SELECT *FROM children_tableINNER JOIN fathers ON children_table.id = fathers.idINNER JOIN mothers ON children_table.id = mothers.id;"
+    },
+    {
+        "calculus": "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))",
+        "pipeline": "row_calculus_pipeline",
+        "tables_num": 3,
+        "tables": [
+            "documents",
+            "tournaments",
+            "weather"
+        ],
+        "initial_result": "QueryExecutionError",
+        "sql_query": "SELECT *FROM tennis_playersINNER JOIN tournaments ON tennis_players.id = tournaments.winner_idWHERE tennis_players.birth_month = 'January';"
+    },
+    {
+        "calculus": "∃id (children_table(id, >1) ∧ fathers(id, _))",
+        "pipeline": "row_calculus_pipeline",
+        "tables_num": 3,
+        "tables": [
+            "documents",
+            "fathers",
+            "children_table"
+        ],
+        "initial_result": "QueryExecutionError",
+        "sql_query": "SELECT *FROM children_tableINNER JOIN fathers ON children_table.id = fathers.idWHERE children_table.children > 1;"
+    }
+]

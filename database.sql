@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 17.0 (Ubuntu 17.0-1.pgdg22.04+1)
--- Dumped by pg_dump version 17.0 (Ubuntu 17.0-1.pgdg22.04+1)
+-- Dumped from database version 17.2 (Ubuntu 17.2-1.pgdg22.04+1)
+-- Dumped by pg_dump version 17.2 (Ubuntu 17.2-1.pgdg22.04+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -203,40 +203,6 @@ CREATE TABLE public.influencers (
 ALTER TABLE public.influencers OWNER TO postgres;
 
 --
--- Name: items; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.items (
-    id integer NOT NULL,
-    embedding public.vector(3)
-);
-
-
-ALTER TABLE public.items OWNER TO postgres;
-
---
--- Name: items_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.items_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.items_id_seq OWNER TO postgres;
-
---
--- Name: items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.items_id_seq OWNED BY public.items.id;
-
-
---
 -- Name: mothers; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -379,13 +345,6 @@ CREATE TABLE public.website_visits (
 ALTER TABLE public.website_visits OWNER TO postgres;
 
 --
--- Name: items id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.items ALTER COLUMN id SET DEFAULT nextval('public.items_id_seq'::regclass);
-
-
---
 -- Data for Name: albums; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -496,17 +455,6 @@ makeuptutorial	1000 thousand
 outsideguy	50
 surviver1000	1 million
 princess	one thousand
-\.
-
-
---
--- Data for Name: items; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.items (id, embedding) FROM stdin;
-1	[1,2,3]
-2	[4,5,6]
-3	[1,1,1]
 \.
 
 
@@ -636,13 +584,6 @@ COPY public.website_visits (date, page, visits) FROM stdin;
 
 
 --
--- Name: items_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.items_id_seq', 3, true);
-
-
---
 -- Name: albums album_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -688,14 +629,6 @@ ALTER TABLE ONLY public.doctors
 
 ALTER TABLE ONLY public.influencers
     ADD CONSTRAINT influencers_pkey PRIMARY KEY (media_name);
-
-
---
--- Name: items items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.items
-    ADD CONSTRAINT items_pkey PRIMARY KEY (id);
 
 
 --
