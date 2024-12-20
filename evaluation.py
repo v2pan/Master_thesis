@@ -127,6 +127,8 @@ for calculus, expected_result, pipeline in test_cases:
             print("Exception has occured, when executing on database")
             metrics.append((0, 0, 0, 0,calculus))
             continue
+        except TypeError as e:
+            print("Type Error has occured")
 
                 
 

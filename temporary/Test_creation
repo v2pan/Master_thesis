@@ -1,0 +1,220 @@
+[
+    {
+        "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+        "pipeline": "row_calculus_pipeline",
+        "tables_num": 1,
+        "tables": [
+            "doctors"
+        ],
+        "initial_result": "QueryExecutionError",
+        "initial_sql_query": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
+        "condition": [
+            [
+                "SELECT patients_pd FROM doctors;",
+                "(2, <Comparison '<' at 0x74D65B3F6920>)",
+                "WHERE doctors.patients_pd < 12;",
+                "12"
+            ]
+        ],
+        "semantic_list": [
+            [
+                [
+                    "ten"
+                ],
+                [
+                    "11"
+                ],
+                "WHERE doctors.patients_pd < 12;"
+            ]
+        ],
+        "query_results": [
+            [
+                [
+                    [
+                        "fourty"
+                    ],
+                    [
+                        "44"
+                    ],
+                    [
+                        "ten"
+                    ],
+                    [
+                        "150"
+                    ],
+                    [
+                        "11"
+                    ]
+                ],
+                "(2, <Comparison '<' at 0x74D65B3F6920>)",
+                "WHERE doctors.patients_pd < 12;",
+                "12"
+            ]
+        ],
+        "sql_query": "SELECT * FROM doctors WHERE  doctors.patients_pd = 'ten' OR doctors.patients_pd = '11';",
+        "result": [
+            [
+                1,
+                "Peter",
+                "ten"
+            ],
+            [
+                2,
+                "Giovanni",
+                "11"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))",
+        "pipeline": "row_calculus_pipeline",
+        "tables_num": 2,
+        "tables": [
+            "shareowner",
+            "animalowner"
+        ],
+        "initial_result": [
+            [
+                1,
+                "Pierre",
+                20,
+                1,
+                "bill",
+                "chien"
+            ]
+        ],
+        "initial_sql_query": "SELECT * FROM shareowner LEFT JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category != 'dog';",
+        "condition": [
+            [
+                "SELECT category FROM animalowner;",
+                "(2, <Comparison '!=' at 0x74D65B3F7D00>)",
+                "WHERE animalowner.category != 'dog'",
+                "dog"
+            ]
+        ],
+        "semantic_list": [
+            [
+                [
+                    "chien"
+                ],
+                [
+                    "dog"
+                ],
+                [
+                    "perro"
+                ],
+                "WHERE animalowner.category != 'dog'"
+            ]
+        ],
+        "query_results": [
+            [
+                [
+                    [
+                        "chien"
+                    ],
+                    [
+                        "chat"
+                    ],
+                    [
+                        "dog"
+                    ],
+                    [
+                        "perro"
+                    ]
+                ],
+                "(2, <Comparison '!=' at 0x74D65B3F7D00>)",
+                "WHERE animalowner.category != 'dog'",
+                "dog"
+            ]
+        ],
+        "sql_query": "SELECT * FROM shareowner LEFT JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category != 'chien' AND animalowner.category != 'dog' AND animalowner.category = 'perro';",
+        "result": [
+            [
+                4,
+                "Marcel",
+                11,
+                4,
+                "juan",
+                "chien"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))",
+        "pipeline": "row_calculus_pipeline",
+        "tables_num": 3,
+        "tables": [
+            "tennis_players",
+            "tournaments"
+        ],
+        "initial_result": [],
+        "initial_sql_query": "SELECT *  FROM tennis_players INNER JOIN tournaments ON tennis_players.id = tournaments.winner_id WHERE tennis_players.born = 'January';",
+        "condition": [
+            [
+                "SELECT born FROM tennis_players;",
+                "(2, <Comparison '=' at 0x74D65B200A60>)",
+                "WHERE tennis_players.born = 'January';",
+                "January"
+            ]
+        ],
+        "semantic_list": [
+            [
+                [
+                    "January 1986"
+                ],
+                [
+                    "18.01.1997"
+                ],
+                "WHERE tennis_players.born = 'January';"
+            ]
+        ],
+        "query_results": [
+            [
+                [
+                    [
+                        "20.02.2003"
+                    ],
+                    [
+                        "18.04.1968"
+                    ],
+                    [
+                        "January 1986"
+                    ],
+                    [
+                        "18.01.1997"
+                    ]
+                ],
+                "(2, <Comparison '=' at 0x74D65B200A60>)",
+                "WHERE tennis_players.born = 'January';",
+                "January"
+            ]
+        ],
+        "sql_query": "SELECT * FROM tennis_players INNER JOIN tournaments ON tennis_players.id = tournaments.winner_id WHERE tennis_players.born = 'January 1986' OR tennis_players.born = '18.01.1997';",
+        "result": [
+            [
+                4,
+                "Michael",
+                "18.01.1997",
+                4,
+                "Berlin Open",
+                4.0
+            ],
+            [
+                3,
+                "Xi",
+                "January 1986",
+                3,
+                "Warsaw Open",
+                3.0
+            ],
+            [
+                3,
+                "Xi",
+                "January 1986",
+                3,
+                "Osaka Open",
+                0.5
+            ]
+        ]
+    }
+]

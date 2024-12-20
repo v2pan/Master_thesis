@@ -5,20 +5,20 @@ Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patien
   Recall: 1.0000
   F1-score: 0.8000
 Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
-  Accuracy: 0.5000
-  Precision: 0.5000
+  Accuracy: 1.0000
+  Precision: 1.0000
   Recall: 1.0000
-  F1-score: 0.6667
+  F1-score: 1.0000
 Calculus ∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog')):
   Accuracy: 1.0000
   Precision: 1.0000
   Recall: 1.0000
   F1-score: 1.0000
 Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog')):
-  Accuracy: 1.0000
+  Accuracy: 0.3333
   Precision: 1.0000
-  Recall: 1.0000
-  F1-score: 1.0000
+  Recall: 0.3333
+  F1-score: 0.5000
 Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
   Accuracy: 0.3333
   Precision: 0.3333
@@ -40,15 +40,20 @@ Calculus ∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price
   Recall: 1.0000
   F1-score: 1.0000
 Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
-  Accuracy: 0.7500
-  Precision: 1.0000
-  Recall: 0.7500
-  F1-score: 0.8571
-Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
   Accuracy: 0.0000
   Precision: 0.0000
   Recall: 0.0000
   F1-score: 0.0000
+Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
+  Accuracy: 0.7500
+  Precision: 1.0000
+  Recall: 0.7500
+  F1-score: 0.8571
 Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
   Accuracy: 1.0000
   Precision: 1.0000
@@ -60,13 +65,13 @@ Calculus ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS
   Recall: 1.0000
   F1-score: 1.0000
 Calculus ∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits):
-  Accuracy: 1.0000
-  Precision: 1.0000
-  Recall: 1.0000
-  F1-score: 1.0000
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
 
 --- Overall Metrics ---
-Mean Accuracy: 0.7269
-Mean Precision: 0.7564
-Mean Recall: 0.8526
-Mean F1-score: 0.7813
+Mean Accuracy: 0.5917
+Mean Precision: 0.6667
+Mean Recall: 0.6726
+Mean F1-score: 0.6422
