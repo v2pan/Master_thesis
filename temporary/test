@@ -1,0 +1,101 @@
+[
+    {
+        "initial_result": "operator does not exist: text < integer\nLINE 3: WHERE doctors.patients_pd < 12;\n                                  ^\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts.\n",
+        "initial_sql_query": "SELECT *  FROM doctors WHERE doctors.patients_pd < 12;",
+        "semantic_list": [
+            [
+                [
+                    "ten"
+                ],
+                [
+                    "11"
+                ],
+                "WHERE doctors.patients_pd < 12;"
+            ]
+        ],
+        "result": [
+            [
+                1,
+                "Peter",
+                "ten"
+            ],
+            [
+                2,
+                "Giovanni",
+                "11"
+            ]
+        ]
+    },
+    {
+        "initial_result": [
+            [
+            ]
+        ],
+        "initial_sql_query": "SELECT * FROM shareowner1row LEFT JOIN animalowner ON shareowner1row.id = animalowner.owner_id WHERE animalowner.category <> 'dog' OR animalowner.category IS NULL;",
+        "semantic_list": [
+            [
+                [
+                    "chien"
+                ],
+                [
+                    "dog"
+                ],
+                [
+                    "perro"
+                ],
+                "WHERE animalowner.category <> 'dog' OR animalowner.category IS NULL;"
+            ]
+        ],
+        "result": [
+            [
+                1,
+                "Pierre",
+                20,
+                1,
+                "bill",
+                "chien"
+            ]
+        ]
+    },
+    {
+        "initial_result": [],
+        "initial_sql_query": "SELECT * FROM tennis_players INNER JOIN tournaments ON tennis_players.id = tournaments.winner_id WHERE tennis_players.born = 'January';",
+        "semantic_list": [
+            [
+                [
+                    "January 1986"
+                ],
+                [
+                    "18.01.1997"
+                ],
+                "WHERE tennis_players.born = 'January';"
+            ]
+        ],
+        "result": [
+            [
+                4,
+                "Michael",
+                "18.01.1997",
+                4,
+                "Berlin Open",
+                4.0
+            ],
+            [
+                3,
+                "Xi",
+                "January 1986",
+                3,
+                "Warsaw Open",
+                3.0
+            ],
+            [
+                3,
+                "Xi",
+                "January 1986",
+                3,
+                "Osaka Open",
+                0.5
+            ]
+        ]
+    }
+]

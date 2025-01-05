@@ -18,6 +18,8 @@ import json
 max_retries = 10
 retry_delay = 60
 
+#TO BE MODIFIED, design a file to get the output of the test, print via the playground file
+# to understand where the problem has occured
 #Metadata to keep track of use 
 usage_metadata_total = {
             "prompt_token_count": 0,

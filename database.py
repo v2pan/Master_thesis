@@ -51,7 +51,8 @@ def query_database(query, printing=True):
                     print(f"The final answer to the query is {rows}")
         except Exception as e:
             #Delete if necessary
-            raise QueryExecutionError("Custom query execution error message")
+            #print(f"An error occurred: {e}")
+            raise QueryExecutionError(f"{e}")
             print(f"An error occurred when executing the query: {e}")
             rows = None
         # Close the cursor and connection
@@ -59,7 +60,7 @@ def query_database(query, printing=True):
         connection.close()
         return rows
     except QueryExecutionError as e:
-        raise QueryExecutionError
+        raise QueryExecutionError(f"{e}")
     except Exception as e:
         print(f"An error occurred when accessing the database: {e}")
         return None  # Return None to indicate a broader error
