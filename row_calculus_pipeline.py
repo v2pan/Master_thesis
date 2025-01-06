@@ -427,7 +427,7 @@ def initial_query(query,context):
 
 
 #MAIN FUNCTION
-def row_calculus_pipeline(query):
+def row_calculus_pipeline(query, evaluation=False):
     
     #Get context
     retries=4
@@ -465,11 +465,11 @@ def row_calculus_pipeline(query):
     update_metadata(temp_meta)
 
     #Extract the SQL query from the response
-    sql_query = extract(response, start_marker="```sql",end_marker="```" )
-    print(f"The SQL query is: {sql_query}")
+    initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
+    print(f"The SQL query is: {initial_sql_query}")
 
     #INNER LOGIC: Analyze SQL query, retrieve necessary items to retrieve, compare them using the LLM
-    conditions = extract_where_conditions_sqlparse(sql_query)
+    conditions = extract_where_conditions_sqlparse(initial_sql_query)
     query_results = execute_queries_on_conditions(conditions)
     semantic_list=compare_semantics_in_list(query_results)
     print(f"The semantics list is {semantic_list}")
@@ -485,7 +485,7 @@ def row_calculus_pipeline(query):
         Output: SELECT e.name, d.name AS department_name, CASE WHEN e.salary > 50000 THEN 'High' WHEN e.salary > 30000 THEN 'Medium' ELSE 'Low' END AS salary_status FROM employees e JOIN departments d ON e.department_id = d.id WHERE d.id = 1 OR d.id = 2;
         Input: SELECT * FROM animals WHERE animal.legs<5 and animal.category='insect'; binding: [['three' , 'four', '2', "WHERE animal.legs<5 and animal.category='insect';"], ['INSECTS', "WHERE animal.legs<5 and animal.category='insect';"]]
         Output: SELECT * FROM animals WHERE animal.some_column IN ('three', 'four', '2') AND animal.category = 'INSECTS';
-        Input: sql:{sql_query}; binding: {semantic_rows}
+        Input: sql:{initial_sql_query}; binding: {semantic_rows}
         Output:'''
     print(f"The final prompt is {final_prompt}")
 
@@ -511,7 +511,10 @@ def row_calculus_pipeline(query):
     print(usage_metadata_total)
     #Return result
     if result:
-        return result
+        if evaluation:
+            return initial_sql_query, semantic_list, result
+        else:
+            return result
 
 #Shareowner and Animalowner examples with equality
 # calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''

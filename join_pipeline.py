@@ -141,7 +141,7 @@ def compare_semantics_in_list(input_list,order):
 
     return dict_list, order
 
-def join_pipeline(query, return_query=False):
+def join_pipeline(query, return_query=False, evaluation=False):
 
 
     #Get the relevant tables
@@ -171,11 +171,11 @@ def join_pipeline(query, return_query=False):
     #Update the metadata
     update_metadata(temp_meta)
 
-    sql_query = extract(response, start_marker="```sql",end_marker="```" )
-    print(f"The SQL query is: {sql_query}")
+    initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
+    print(f"The SQL query is: {initial_sql_query}")
 
     # Example usage
-    join_conditions, order = extract_join_conditions_sqlparse(sql_query)
+    join_conditions, order = extract_join_conditions_sqlparse(initial_sql_query)
     print(join_conditions)
     new_list = execute_queries_on_conditions(join_conditions)
     print(new_list)
@@ -203,7 +203,7 @@ def join_pipeline(query, return_query=False):
             WHEN 'Sales Dep' THemployees.department_idEN 'Sales Department'
             WHEN 'Engeneering' THEN 'Engineering'
             END;
-            Input: sql:{sql_query}; binding: {semantic_dic[0]}; order: The key belongs to {order[0][0]}, The values belong to {order[0][1]};
+            Input: sql:{initial_sql_query}; binding: {semantic_dic[0]}; order: The key belongs to {order[0][0]}, The values belong to {order[0][1]};
             Output:'''
     
     #If multiple JOINs are present, the prompt is different, different problem as important what is substituted by what
@@ -267,7 +267,10 @@ def join_pipeline(query, return_query=False):
                 retries_left-=1
                 print("Query not executable")
                 result=None
-            return result
+            if evaluation:
+                return sql_query, semantic_dic, result
+            else:
+                return result
 
 # sql_query = '''SELECT 
 #     children_table.id, 
@@ -280,5 +283,5 @@ def join_pipeline(query, return_query=False):
 
 #calculus='''∃id (children_table(id, _) ∧ fathers(id, _))'''
 #calculus='''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )'''
-# calculus='''∃d (weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)'''
-# print(join_pipeline(calculus))
+calculus='''∃d (weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)'''
+print(join_pipeline(calculus))
