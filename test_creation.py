@@ -126,7 +126,7 @@ def test_creation_pipeline(queries):
             
             
             data = {
-                # "calculus": query,
+                "calculus": query,
                 # "pipeline": "row_calculus_pipeline",
                 # "tables_num": len(tables),
                 # "tables": tables,
@@ -165,7 +165,7 @@ def test_creation_pipeline(queries):
 
 queries=[
         "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
-        "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))",
+        "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
         # "∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )", #Tmp not used
         "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))",
         # "∃id (children_table(id, >1) ∧ fathers(id, _))" #Tmp not used

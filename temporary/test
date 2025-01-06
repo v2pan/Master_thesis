@@ -1,7 +1,8 @@
 [
     {
+        "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
         "initial_result": "operator does not exist: text < integer\nLINE 3: WHERE doctors.patients_pd < 12;\n                                  ^\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts.\n",
-        "initial_sql_query": "SELECT *  FROM doctors WHERE doctors.patients_pd < 12;",
+        "initial_sql_query": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
         "semantic_list": [
             [
                 [
@@ -27,11 +28,18 @@
         ]
     },
     {
+        "calculus": "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
         "initial_result": [
             [
+                3,
+                "Diego",
+                15,
+                3,
+                "chris",
+                "dog"
             ]
         ],
-        "initial_sql_query": "SELECT * FROM shareowner1row LEFT JOIN animalowner ON shareowner1row.id = animalowner.owner_id WHERE animalowner.category <> 'dog' OR animalowner.category IS NULL;",
+        "initial_sql_query": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category = 'dog';",
         "semantic_list": [
             [
                 [
@@ -43,10 +51,26 @@
                 [
                     "perro"
                 ],
-                "WHERE animalowner.category <> 'dog' OR animalowner.category IS NULL;"
+                "WHERE animalowner.category = 'dog';"
             ]
         ],
         "result": [
+            [
+                3,
+                "Diego",
+                15,
+                3,
+                "chris",
+                "dog"
+            ],
+            [
+                4,
+                "Marcel",
+                11,
+                4,
+                "juan",
+                "perro"
+            ],
             [
                 1,
                 "Pierre",
@@ -58,6 +82,7 @@
         ]
     },
     {
+        "calculus": "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))",
         "initial_result": [],
         "initial_sql_query": "SELECT * FROM tennis_players INNER JOIN tournaments ON tennis_players.id = tournaments.winner_id WHERE tennis_players.born = 'January';",
         "semantic_list": [
