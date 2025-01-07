@@ -1,0 +1,182 @@
+[
+    {
+        "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+        "initial_sql_query_join": null,
+        "semantic_list_join": null,
+        "result_join": null,
+        "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
+        "semantic_list_where": [
+            [
+                [
+                    "fourty"
+                ],
+                [
+                    "ten"
+                ],
+                [
+                    "11"
+                ],
+                "WHERE doctors.patients_pd < 12;"
+            ]
+        ],
+        "result_where": [
+            [
+                3,
+                "Hans",
+                "fourty"
+            ],
+            [
+                1,
+                "Peter",
+                "ten"
+            ],
+            [
+                2,
+                "Giovanni",
+                "11"
+            ]
+        ]
+    },
+    [
+        {
+            "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+            "initial_sql_query_join": null,
+            "semantic_list_join": null,
+            "result_join": null,
+            "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
+            "semantic_list_where": [
+                [
+                    [
+                        "fourty"
+                    ],
+                    [
+                        "ten"
+                    ],
+                    [
+                        "11"
+                    ],
+                    "WHERE doctors.patients_pd < 12;"
+                ]
+            ],
+            "result_where": [
+                [
+                    3,
+                    "Hans",
+                    "fourty"
+                ],
+                [
+                    1,
+                    "Peter",
+                    "ten"
+                ],
+                [
+                    2,
+                    "Giovanni",
+                    "11"
+                ]
+            ],
+            "output": "SELECT *\nFROM doctors\nWHERE doctors.patients_pd < 12;"
+        }
+    ],
+    [
+        {
+            "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+            "initial_sql_query_join": null,
+            "semantic_list_join": null,
+            "result_join": null,
+            "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
+            "semantic_list_where": [
+                [
+                    [
+                        "fourty"
+                    ],
+                    [
+                        "44"
+                    ],
+                    [
+                        "ten"
+                    ],
+                    [
+                        "150"
+                    ],
+                    [
+                        "11"
+                    ],
+                    "WHERE doctors.patients_pd < 12;"
+                ]
+            ],
+            "result_where": [
+                [
+                    3,
+                    "Hans",
+                    "fourty"
+                ],
+                [
+                    4,
+                    "Lukas",
+                    "44"
+                ],
+                [
+                    1,
+                    "Peter",
+                    "ten"
+                ],
+                [
+                    5,
+                    "Dr. Smith",
+                    "150"
+                ],
+                [
+                    2,
+                    "Giovanni",
+                    "11"
+                ]
+            ],
+            "output": "SELECT *\nFROM doctors\nWHERE doctors.patients_pd < 12;"
+        }
+    ],
+    [
+        {
+            "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+            "initial_sql_query_join": null,
+            "semantic_list_join": null,
+            "result_join": null,
+            "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
+            "semantic_list_where": [
+                [
+                    [
+                        "ten"
+                    ],
+                    [
+                        "11"
+                    ],
+                    "WHERE doctors.patients_pd < 12;"
+                ]
+            ],
+            "result_where": [
+                [
+                    1,
+                    "Peter",
+                    "ten"
+                ],
+                [
+                    2,
+                    "Giovanni",
+                    "11"
+                ]
+            ],
+            "output": [
+                [
+                    1,
+                    "Peter",
+                    "ten"
+                ],
+                [
+                    2,
+                    "Giovanni",
+                    "11"
+                ]
+            ]
+        }
+    ]
+]

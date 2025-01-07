@@ -41,7 +41,7 @@ def analyze_sql_query(sql_query):
 
 
 #Combination of both pipeline, adjustment was necessary
-def combined_pipeline(query):
+def combined_pipeline(query, evaluation=False):
 
     #Metadata to keep track of use 
     usage_metadata_total = {
@@ -106,28 +106,61 @@ def combined_pipeline(query):
     where_conditions, join_conditions = analyze_sql_query(initial_sql_query)
 
     print("--------------------------------------")
-    output_query=initial_sql_query
-
-    #First Problematic Join
-    if join_conditions and where_conditions:
-        print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-        output_query=join_pipeline(initial_sql_query, forward=True)
-        output_query=row_calculus_pipeline(output_query)
-
-    #Then WHERE clause
-    elif where_conditions:
-        print(f"The \n”{initial_sql_query}\n has a WHERE clause.")
-        output_query=row_calculus_pipeline(output_query)
     
-    elif join_conditions:
-        print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-        output_query=join_pipeline(initial_sql_query)
-    else:
-        print(f"The \n{initial_sql_query}\n has no WHERE or JOIN clause.")
+    output_query=None
+
+    if not evaluation:
         
+        #First Problematic Join
+        if join_conditions and where_conditions:
+            print(f"The \n{initial_sql_query}\n has a JOIN clause.")
+            output_query=join_pipeline(initial_sql_query, forward=True)
+            output=row_calculus_pipeline(output_query)
+
+        #Then WHERE clause
+        elif where_conditions:
+            print(f"The \n”{initial_sql_query}\n has a WHERE clause.")
+            output=row_calculus_pipeline(initial_sql_query)
+        
+        elif join_conditions:
+            print(f"The \n{initial_sql_query}\n has a JOIN clause.")
+            output=join_pipeline(initial_sql_query)
+        else:
+            print(f"The \n{initial_sql_query}\n has no WHERE or JOIN clause.")
+            
+        
+        print(f"The output is {output}")
+        return output
     
-    print(f"The modified query is {output_query}")
-    return output_query
+    else:
+
+        initial_sql_query_where, semantic_list_where, result_where = None, None, None
+        initial_sql_query_join, semantic_list_join, result_join = None, None, None
+        
+        if join_conditions and where_conditions:
+            print(f"The \n{initial_sql_query}\n has a JOIN clause.")
+            initial_sql_query_join, semantic_list_join, result_join=join_pipeline(initial_sql_query, forward=True, evaluation=True)
+            initial_sql_query_where, semantic_list_where, result_where=row_calculus_pipeline(initial_sql_query_join, evaluation=True)
+            output_query=result_where
+
+        #Then WHERE clause
+        elif where_conditions:
+            print(f"The \n”{initial_sql_query}\n has a WHERE clause.")
+            initial_sql_query_where, semantic_list_where, result_where=row_calculus_pipeline(initial_sql_query, evaluation=True)
+            output=result_where
+        
+        elif join_conditions:
+            print(f"The \n{initial_sql_query}\n has a JOIN clause.")
+            initial_sql_query_join, semantic_list_join, result_join=join_pipeline(initial_sql_query, evaluation=True)
+            output=result_join
+        
+        else:
+            print(f"The \n{initial_sql_query}\n has no WHERE or JOIN clause.")
+            
+        
+        print(f"The modified query is {output_query}")
+        return initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output
+
 
 
 # queries=[
