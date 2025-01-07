@@ -5,10 +5,13 @@ from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
 import sqlparse
 import re
 from database import query_database
-from other_gemini import gemini_json,ask_gemini
+from other_gemini import gemini_json,ask_gemini, RessourceError
 from extractor import extract
 import copy
+import time
 
+
+retry_delay=60
 #Metadata to keep track of use 
 usage_metadata_total = {
             "prompt_token_count": 0,
@@ -34,7 +37,7 @@ def update_metadata(metadata):
 
 #Automatic retrieval of relevant tables from the database
 retries = 4
-def get_relevant_tables(calculus ):
+def get_relevant_tables(calculus):
     """
     Retrieves relevant tables from a database, handling retries and potential errors.
 
@@ -62,14 +65,17 @@ def get_relevant_tables(calculus ):
             #Prompt construction for LLM to access relevance
             input_prompt = f"Return a list of length {len(table_names)} one answer for each question. \n"
             for table_name in table_names:
-                input_prompt += f"I table '{table_name}' specifically mentioned in the expression '{calculus}'?  \n"
+                input_prompt += f"Is  the table '{table_name}' specifically mentioned in the expression '{calculus}'?  \n"
 
             #Three attempts to get correct amount of answer for the LLM
             attemps=4
             while attemps>0:
                 #Extracting relevant tables by asking LLM boolean calls
-                categories = gemini_json(prompt=input_prompt, response_type=list[bool])
-
+                try:
+                    categories = gemini_json(prompt=input_prompt, response_type=list[bool])
+                except RessourceError as e:
+                        print(f"Exhaustion Error. Sleeping for {retry_delay} seconds")
+                        time.sleep(retry_delay)
                 if len(table_names)!=len(categories):
                     print("Error: Tables do not have the same length.")
                     attemps-=1
@@ -427,46 +433,46 @@ def initial_query(query,context):
 
 
 #MAIN FUNCTION
-def row_calculus_pipeline(query, evaluation=False):
+def row_calculus_pipeline(initial_sql_query, evaluation=False):
     
-    #Get context
-    retries=4
-    count=0
-    while count<retries:
-        tables = get_relevant_tables(query)
+    # #Get context
+    # retries=4
+    # count=0
+    # while count<retries:
+    #     tables = get_relevant_tables(query)
         
-        if tables is not None:
-            break
-        else:
-            count+=1
+    #     if tables is not None:
+    #         break
+    #     else:
+    #         count+=1
 
-    if tables is None:
-        return None
+    # if tables is None:
+    #     return None
     
 
-    print(f"The relevant tables are {tables}")
-    context = get_context(tables)
+    # print(f"The relevant tables are {tables}")
+    # context = get_context(tables)
 
-    #Optional, if were to use JSON files
-    #Gets context by reading JSON files
-    #context= get_context_json(tables)
+    # #Optional, if were to use JSON files
+    # #Gets context by reading JSON files
+    # #context= get_context_json(tables)
 
-    print(f"The context is {context}")
-    print(f"The query is {query}")
+    # print(f"The context is {context}")
+    # print(f"The query is {query}")
 
-    #Used for relational calculus
-    #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
+    # #Used for relational calculus
+    # #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
 
-    #Used for predicate calculus, selecting all rows
+    # #Used for predicate calculus, selecting all rows
     
-    response, temp_meta = initial_query(query,context)
+    # response, temp_meta = initial_query(query,context)
     
-    #Update the metadata
-    update_metadata(temp_meta)
+    # #Update the metadata
+    # update_metadata(temp_meta)
 
-    #Extract the SQL query from the response
-    initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
-    print(f"The SQL query is: {initial_sql_query}")
+    # #Extract the SQL query from the response
+    # initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
+    # print(f"The SQL query is: {initial_sql_query}")
 
     #INNER LOGIC: Analyze SQL query, retrieve necessary items to retrieve, compare them using the LLM
     conditions = extract_where_conditions_sqlparse(initial_sql_query)

@@ -141,38 +141,38 @@ def compare_semantics_in_list(input_list,order):
 
     return dict_list, order
 
-def join_pipeline(query, return_query=False, evaluation=False):
+def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False):
 
 
-    #Get the relevant tables
-    retries=4
-    count=0
-    while count<retries:
-        tables = get_relevant_tables(query)
+    # #Get the relevant tables
+    # retries=4
+    # count=0
+    # while count<retries:
+    #     tables = get_relevant_tables(query)
         
-        if tables is not None:
-            break
-        else:
-            count+=1
-    if tables is None:
-        re
-    print(f"The relevant tables are {tables}")
-    context = get_context(tables)
+    #     if tables is not None:
+    #         break
+    #     else:
+    #         count+=1
+    # if tables is None:
+    #     re
+    # print(f"The relevant tables are {tables}")
+    # context = get_context(tables)
 
-    #Gets context by reading JSON files
-    #context= get_context_json(tables)
+    # #Gets context by reading JSON files
+    # #context= get_context_json(tables)
 
 
-    #Used for relational calculus
-    #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
+    # #Used for relational calculus
+    # #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
 
-    #Used for predicate calculus, selecting all rows
-    response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
-    #Update the metadata
-    update_metadata(temp_meta)
+    # #Used for predicate calculus, selecting all rows
+    # response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
+    # #Update the metadata
+    # update_metadata(temp_meta)
 
-    initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
-    print(f"The SQL query is: {initial_sql_query}")
+    # initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
+    # print(f"The SQL query is: {initial_sql_query}")
 
     # Example usage
     join_conditions, order = extract_join_conditions_sqlparse(initial_sql_query)
@@ -231,7 +231,7 @@ def join_pipeline(query, return_query=False, evaluation=False):
                                                         ELSE NULL  -- Add NULL in else clause
                                                     END
                 INNER JOIN sprockets ON widgets.sprocket_id = sprockets.id;
-                Input: sql:{sql_query}; 
+                Input: sql:{initial_sql_query}; 
                 binding: {binding_str};
                 Output:'''
     
@@ -270,7 +270,10 @@ def join_pipeline(query, return_query=False, evaluation=False):
             if evaluation:
                 return sql_query, semantic_dic, result
             else:
-                return result
+                if forward:
+                    return sql_query
+                else:
+                    return result
 
 # sql_query = '''SELECT 
 #     children_table.id, 
@@ -283,5 +286,5 @@ def join_pipeline(query, return_query=False, evaluation=False):
 
 #calculus='''∃id (children_table(id, _) ∧ fathers(id, _))'''
 #calculus='''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )'''
-calculus='''∃d (weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)'''
-print(join_pipeline(calculus))
+# calculus='''∃d (weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)'''
+# print(join_pipeline(calculus))
