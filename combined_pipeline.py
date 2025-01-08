@@ -141,7 +141,7 @@ def combined_pipeline(query, evaluation=False):
         if join_conditions and where_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
             initial_sql_query_join, semantic_list_join, result_join=join_pipeline(initial_sql_query, return_query=False, forward=True, evaluation=True)
-            initial_sql_query_where, semantic_list_where, result_where=row_calculus_pipeline(initial_sql_query_join, evaluation=True)
+            initial_sql_query_where, semantic_list_where, result_where=row_calculus_pipeline(result_join, evaluation=True)
             output=result_where
 
         #Then WHERE clause

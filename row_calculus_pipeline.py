@@ -484,7 +484,7 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False):
     semantic_rows = ''.join(f"{i}\n" for i in semantic_list)
 
     #Prompt asking LLM to integrate binding
-    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query. USE only the binding variables like written in bidning. If there is a CASE statement leave it intact, only change the WHERE clause, nothing else. Always end with a ';'.
+    final_prompt=f'''Write an updated SQL query like this, only using equalities. Only return the updated query. USE only the binding variables like written in bidning. If there is a CASE statement leave it intact don't change it, only change the WHERE clause, nothing else. If a bidning is given as input. Always return the '=', not a different comparison operator. Always end with a ';'.
         Input: sql:SELECT name, hair FROM person WHERE person.bodypart='eyes'; binding :[('ojos',), ('augen',), 'WHERE person.bodypart ='eyes';']
         Output: SELECT name, hair FROM person WHERE person.bodypart = 'ojos' OR person.bodypart = 'augen';
         Input: sql:SELECT e.name, d.name AS department_name, CASE WHEN e.salary > 50000 THEN 'High' WHEN e.salary > 30000 THEN 'Medium' ELSE 'Low' END AS salary_status FROM employees e JOIN departments d ON e.department_id = d.id WHERE d.id = 1; binding: [(1,), (2,), 'WHERE d.id =']
@@ -512,7 +512,10 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False):
     if sql_query is None:
         print("No SQL query found in response.")
     else:
-        result=query_database(sql_query)
+        try:
+            result=query_database(sql_query)
+        except:
+            result=None
     #Print total usage
     print(usage_metadata_total)
     #Return result

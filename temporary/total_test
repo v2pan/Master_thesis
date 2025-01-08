@@ -272,5 +272,162 @@
                 0.5
             ]
         ]
+    },
+    {
+        "calculus": "∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))",
+        "initial_sql_query_join": "SELECT * FROM influencers INNER JOIN followers ON influencers.media_name = followers.following WHERE influencers.clicks > 500;",
+        "semantic_list_join": [
+            {
+                "makeuptutorial": [
+                    "makeuptutorial"
+                ],
+                "outsideguy": [],
+                "surviver1000": [
+                    "surviver1000",
+                    "surviver1000"
+                ],
+                "princess": [
+                    "princess"
+                ]
+            }
+        ],
+        "result_join": "SELECT *\nFROM influencers\nINNER JOIN followers ON influencers.media_name = CASE followers.following\n    WHEN 'makeuptutorial' THEN 'makeuptutorial'\n    WHEN 'surviver1000' THEN 'surviver1000'\n    WHEN 'princess' THEN 'princess'\n    END\nWHERE influencers.clicks > 500;",
+        "initial_sql_query_where": "SELECT * FROM influencers INNER JOIN followers ON influencers.media_name = followers.following WHERE influencers.clicks > 500;",
+        "semantic_list_where": [
+            [
+                [
+                    "1000 thousand"
+                ],
+                [
+                    "1 million"
+                ],
+                [
+                    "one thousand"
+                ],
+                "WHERE influencers.clicks > 500;"
+            ]
+        ],
+        "result_where": [
+            [
+                "surviver1000",
+                "1 million",
+                1,
+                "surviver1000",
+                true
+            ],
+            [
+                "makeuptutorial",
+                "1000 thousand",
+                3,
+                "makeuptutorial",
+                false
+            ],
+            [
+                "surviver1000",
+                "1 million",
+                2,
+                "surviver1000",
+                true
+            ],
+            [
+                "princess",
+                "one thousand",
+                3,
+                "princess",
+                true
+            ]
+        ],
+        "output": [
+            [
+                "surviver1000",
+                "1 million",
+                1,
+                "surviver1000",
+                true
+            ],
+            [
+                "makeuptutorial",
+                "1000 thousand",
+                3,
+                "makeuptutorial",
+                false
+            ],
+            [
+                "surviver1000",
+                "1 million",
+                2,
+                "surviver1000",
+                true
+            ],
+            [
+                "princess",
+                "one thousand",
+                3,
+                "princess",
+                true
+            ]
+        ]
+    },
+    {
+        "calculus": "∃id (children_table(id, >1) ∧ fathers(id, _))",
+        "initial_sql_query_join": "SELECT * FROM children_table INNER JOIN fathers ON children_table.id = fathers.id WHERE children_table.children > 1;",
+        "semantic_list_join": [
+            {
+                "0": [
+                    "zero"
+                ],
+                "1": [
+                    "one"
+                ],
+                "2": [
+                    "two"
+                ],
+                "3": []
+            }
+        ],
+        "result_join": "SELECT *\nFROM children_table\nINNER JOIN fathers ON fathers.id = CASE children_table.id\n    WHEN 0 THEN 'zero'\n    WHEN 1 THEN 'one'\n    WHEN 2 THEN 'two'\n    END\nWHERE children_table.children > 1;",
+        "initial_sql_query_where": "SELECT * FROM children_table INNER JOIN fathers ON fathers.id = CASE children_table.id     WHEN 0 THEN 'zero'     WHEN 1 THEN 'one'     WHEN 2 THEN 'two'     END WHERE children_table.children > 1;",
+        "semantic_list_where": [
+            [
+                [
+                    "4"
+                ],
+                [
+                    "many"
+                ],
+                [
+                    "2"
+                ],
+                "WHERE children_table.children > 1;"
+            ]
+        ],
+        "result_where": [
+            [
+                0,
+                "4",
+                "zero",
+                "Gerhard"
+            ],
+            [
+                2,
+                "many",
+                "two",
+                "Dieter"
+            ]
+        ],
+        "output": [
+            [
+                0,
+                "4",
+                "zero",
+                "Gerhard"
+            ],
+            [
+                2,
+                "many",
+                "two",
+                "Dieter"
+            ]
+        ]
     }
 ]
