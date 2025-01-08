@@ -4,12 +4,9 @@
         "initial_sql_query_join": null,
         "semantic_list_join": null,
         "result_join": null,
-        "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
+        "initial_sql_query_where": "SELECT *  FROM doctors WHERE doctors.patients_pd < 12;",
         "semantic_list_where": [
             [
-                [
-                    "fourty"
-                ],
                 [
                     "ten"
                 ],
@@ -21,10 +18,17 @@
         ],
         "result_where": [
             [
-                3,
-                "Hans",
-                "fourty"
+                1,
+                "Peter",
+                "ten"
             ],
+            [
+                2,
+                "Giovanni",
+                "11"
+            ]
+        ],
+        "output": [
             [
                 1,
                 "Peter",
@@ -37,146 +41,236 @@
             ]
         ]
     },
-    [
-        {
-            "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
-            "initial_sql_query_join": null,
-            "semantic_list_join": null,
-            "result_join": null,
-            "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
-            "semantic_list_where": [
+    {
+        "calculus": "∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)",
+        "initial_sql_query_join": null,
+        "semantic_list_join": null,
+        "result_join": null,
+        "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;",
+        "semantic_list_where": [
+            [
                 [
-                    [
-                        "fourty"
-                    ],
-                    [
-                        "ten"
-                    ],
-                    [
-                        "11"
-                    ],
-                    "WHERE doctors.patients_pd < 12;"
-                ]
+                    "Peter"
+                ],
+                "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"
             ],
-            "result_where": [
+            [
                 [
-                    3,
-                    "Hans",
                     "fourty"
                 ],
                 [
-                    1,
-                    "Peter",
                     "ten"
                 ],
                 [
-                    2,
-                    "Giovanni",
                     "11"
-                ]
-            ],
-            "output": "SELECT *\nFROM doctors\nWHERE doctors.patients_pd < 12;"
-        }
-    ],
-    [
-        {
-            "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
-            "initial_sql_query_join": null,
-            "semantic_list_join": null,
-            "result_join": null,
-            "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
-            "semantic_list_where": [
-                [
-                    [
-                        "fourty"
-                    ],
-                    [
-                        "44"
-                    ],
-                    [
-                        "ten"
-                    ],
-                    [
-                        "150"
-                    ],
-                    [
-                        "11"
-                    ],
-                    "WHERE doctors.patients_pd < 12;"
-                ]
-            ],
-            "result_where": [
-                [
-                    3,
-                    "Hans",
-                    "fourty"
                 ],
-                [
-                    4,
-                    "Lukas",
-                    "44"
-                ],
-                [
-                    1,
-                    "Peter",
-                    "ten"
-                ],
-                [
-                    5,
-                    "Dr. Smith",
-                    "150"
-                ],
-                [
-                    2,
-                    "Giovanni",
-                    "11"
-                ]
-            ],
-            "output": "SELECT *\nFROM doctors\nWHERE doctors.patients_pd < 12;"
-        }
-    ],
-    [
-        {
-            "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
-            "initial_sql_query_join": null,
-            "semantic_list_join": null,
-            "result_join": null,
-            "initial_sql_query_where": "SELECT * FROM doctors WHERE doctors.patients_pd < 12;",
-            "semantic_list_where": [
-                [
-                    [
-                        "ten"
-                    ],
-                    [
-                        "11"
-                    ],
-                    "WHERE doctors.patients_pd < 12;"
-                ]
-            ],
-            "result_where": [
-                [
-                    1,
-                    "Peter",
-                    "ten"
-                ],
-                [
-                    2,
-                    "Giovanni",
-                    "11"
-                ]
-            ],
-            "output": [
-                [
-                    1,
-                    "Peter",
-                    "ten"
-                ],
-                [
-                    2,
-                    "Giovanni",
-                    "11"
-                ]
+                "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"
             ]
-        }
-    ]
+        ],
+        "result_where": [
+            [
+                1,
+                "Peter",
+                "ten"
+            ]
+        ],
+        "output": [
+            [
+                1,
+                "Peter",
+                "ten"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))",
+        "initial_sql_query_join": "SELECT *  FROM children_table INNER JOIN fathers ON fathers.id = CASE children_table.id             WHEN 0 THEN 'zero'             WHEN 1 THEN 'one'             WHEN 2 THEN 'two'             END;",
+        "semantic_list_join": [
+            {
+                "0": [
+                    "zero"
+                ],
+                "1": [
+                    "one"
+                ],
+                "2": [
+                    "two"
+                ],
+                "3": []
+            }
+        ],
+        "result_join": [
+            [
+                0,
+                "4",
+                "zero",
+                "Gerhard"
+            ],
+            [
+                1,
+                "1",
+                "one",
+                "Joachim"
+            ],
+            [
+                2,
+                "many",
+                "two",
+                "Dieter"
+            ]
+        ],
+        "initial_sql_query_where": null,
+        "semantic_list_where": null,
+        "result_where": null,
+        "output": [
+            [
+                0,
+                "4",
+                "zero",
+                "Gerhard"
+            ],
+            [
+                1,
+                "1",
+                "one",
+                "Joachim"
+            ],
+            [
+                2,
+                "many",
+                "two",
+                "Dieter"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )",
+        "initial_sql_query_join": "SELECT *  FROM children_table INNER JOIN fathers ON children_table.id = CASE fathers.id                                              WHEN 'zero' THEN 0                                              WHEN 'one' THEN 1                                              WHEN 'two' THEN 2                                              ELSE NULL  -- Add NULL in else clause                                         END INNER JOIN mothers ON children_table.id = mothers.id;",
+        "semantic_list_join": [
+            {
+                "0": [
+                    "zero"
+                ],
+                "1": [
+                    "one"
+                ],
+                "2": [
+                    "two"
+                ],
+                "3": []
+            },
+            {}
+        ],
+        "result_join": [
+            [
+                1,
+                "1",
+                "one",
+                "Joachim",
+                1,
+                "Julia"
+            ],
+            [
+                2,
+                "many",
+                "two",
+                "Dieter",
+                2,
+                "Petra"
+            ]
+        ],
+        "initial_sql_query_where": null,
+        "semantic_list_where": null,
+        "result_where": null,
+        "output": [
+            [
+                1,
+                "1",
+                "one",
+                "Joachim",
+                1,
+                "Julia"
+            ],
+            [
+                2,
+                "many",
+                "two",
+                "Dieter",
+                2,
+                "Petra"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))",
+        "initial_sql_query_join": "SELECT * FROM tennis_players INNER JOIN tournaments ON tennis_players.id = tournaments.winner_id WHERE tennis_players.born = 'January';",
+        "semantic_list_join": [
+            {}
+        ],
+        "result_join": [],
+        "initial_sql_query_where": "SELECT * FROM tennis_players INNER JOIN tournaments ON tennis_players.id = tournaments.winner_id WHERE tennis_players.born = 'January';",
+        "semantic_list_where": [
+            [
+                [
+                    "January 1986"
+                ],
+                [
+                    "18.01.1997"
+                ],
+                "WHERE tennis_players.born = 'January';"
+            ]
+        ],
+        "result_where": [
+            [
+                4,
+                "Michael",
+                "18.01.1997",
+                4,
+                "Berlin Open",
+                4.0
+            ],
+            [
+                3,
+                "Xi",
+                "January 1986",
+                3,
+                "Warsaw Open",
+                3.0
+            ],
+            [
+                3,
+                "Xi",
+                "January 1986",
+                3,
+                "Osaka Open",
+                0.5
+            ]
+        ],
+        "output": [
+            [
+                4,
+                "Michael",
+                "18.01.1997",
+                4,
+                "Berlin Open",
+                4.0
+            ],
+            [
+                3,
+                "Xi",
+                "January 1986",
+                3,
+                "Warsaw Open",
+                3.0
+            ],
+            [
+                3,
+                "Xi",
+                "January 1986",
+                3,
+                "Osaka Open",
+                0.5
+            ]
+        ]
+    }
 ]

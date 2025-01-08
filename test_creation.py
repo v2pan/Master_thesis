@@ -14,16 +14,21 @@ import json
 from combined_pipeline import combined_pipeline
 from evaluation import evaluate_results
 
-max_retries = 10
+max_retries = 30
 retry_delay = 60
+
+path= os.path.join(os.getcwd(),"temporary", "total_test")
 
 #Appending to JSON file 
 def append_to_json(output, filepath):
     """Appends a dictionary to an existing JSON file or creates a new one if it doesn't exist."""
     if not os.path.exists(filepath):
         try:
+            #Append a list of dictionaries
+            write=[]
+            write.append(output)
             with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(output, f, indent=4, ensure_ascii=False)
+                json.dump(write, f, indent=4, ensure_ascii=False)
             print(f"Created new file {filepath} with data.")
             return True
         except Exception as e:
@@ -51,12 +56,12 @@ def append_to_json(output, filepath):
 #MAIN FUNCTION
 def test_creation_pipeline(queries):
     api_retries = 0
-    write=[]
     #Iterate over the whole list of input queries
     for query, result in queries:
         match=False
         while not match:
             try:
+
                 #Initialize it empty
                 initial_sql_query_where, semantic_list_where, result_where = None, None, None
                 initial_sql_query_join, semantic_list_join, result_join = None, None, None
@@ -90,12 +95,15 @@ def test_creation_pipeline(queries):
                 #     "result": result,
 
                 # }
-                accuracy, precision, recall, f1_score = evaluate_results(result, output)
+                try:
+                    accuracy, precision, recall, f1_score = evaluate_results(result, output)
+                except TypeError as e:
+                    print(f"Error evaluating results: {e}")
+                    accuracy, precision, recall, f1_score = 0, 0, 0, 0
                 if accuracy == 1 and precision == 1 and recall == 1 and f1_score == 1:
-                    write.append(data)
                     #Definition of the output path
-                    filepath = os.path.join(os.getcwd(),"temporary", "total_test") #Construct the full path
-                    append_to_json(write, filepath)
+                    filepath = path #Construct the full path
+                    append_to_json(data, filepath)
                     match=True
                 else:
                     print(f"Result does not match!")
@@ -121,14 +129,14 @@ def test_creation_pipeline(queries):
 
 
 queries = [
-    (
-        '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
-        {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')}
-    )
+    # (
+    #     '''∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)''',
+    #     {(2, 'Giovanni', '11'), (1, 'Peter', 'ten')} #Done
+    # )
     # ,
     # (
     #     '''∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)''',
-    #     {(1, 'Peter', 'ten')}
+    #     {(1, 'Peter', 'ten')} #Done
     # ),
     # (
     #     '''∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))''',
@@ -143,31 +151,31 @@ queries = [
     # ),
     # (
     #     '''∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))''',
-    #     {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2,'many', 'two', 'Dieter')}
-    # ),
+    #     {(0, '4', 'zero', 'Gerhard'), (1, '1', 'one', 'Joachim'), (2,'many', 'two', 'Dieter')}
+    # ), #Done
     # (
     #     '''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )''',
     #     {(1, '1', 'one', 'Joachim', 1, 'Julia'), (2, 'many', 'two', 'Dieter', 2, 'Petra')}
-    # ),
+    # ), #Done
     # (
     #     '''∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))''',
     #     {(4, 'Michael', '18.01.1997', 4, 'Berlin Open', 4.0), (3, 'Xi', 'January 1986', 3, 'Warsaw Open', 3.0), (3, 'Xi', 'January 1986', 3, 'Osaka Open', 0.5)}
-    # ),
-    # (
-    #     '''∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))''',
-    #     {('surviver1000', '1 million', 1, 'surviver1000', True), ('makeuptutorial', '1000 thousand', 3, 'makeuptutorial', False), ('surviver1000', '1 million', 2, 'surviver1000', True), ('princess', 'one thousand', 3, 'princess', True)}
-    # ),
-    # (
-    #     '''∃id (children_table(id, >1) ∧ fathers(id, _))''',
-    #     {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')}
-    # ),
-    # (
-    #     '''ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)''',
-    #     {(1, 1, 'Reputation', '2017', 1, 'Taylor Swift', 'English', 1, 1, 'Delicate', '3:52'), (2, 2, 'Reputation', '2017', 2, 'Reputation Artist', 'English', 2, 2, 'New Year’s Day', '3:55')}
-    # ),
-    # (
-    # '''∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)''',
-    # {('2023 10 26', 'London', 12, 0, '2023 October 26', 'about', 500), ('2023 10 26', 'London', 12, 0, '2023 October 26', 'homepage', 1000), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'about', 500), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'homepage', 1000), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'contact', 200), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'homepage', 1200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'contact', 200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'homepage', 1200)}
-    # )
+    # ), #Done
+    (
+        '''∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))''',
+        {('surviver1000', '1 million', 1, 'surviver1000', True), ('makeuptutorial', '1000 thousand', 3, 'makeuptutorial', False), ('surviver1000', '1 million', 2, 'surviver1000', True), ('princess', 'one thousand', 3, 'princess', True)}
+    ),
+#     (
+#         '''∃id (children_table(id, >1) ∧ fathers(id, _))''',
+#         {(0, '4', 'zero', 'Gerhard'), (2, 'many', 'two', 'Dieter')}
+#     ),
+#     (
+#         '''ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)''',
+#         {(1, 1, 'Reputation', '2017', 1, 'Taylor Swift', 'English', 1, 1, 'Delicate', '3:52'), (2, 2, 'Reputation', '2017', 2, 'Reputation Artist', 'English', 2, 2, 'New Year’s Day', '3:55')}
+#     ),
+#     (
+#     '''∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)''',
+#     {('2023 10 26', 'London', 12, 0, '2023 October 26', 'about', 500), ('2023 10 26', 'London', 12, 0, '2023 October 26', 'homepage', 1000), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'about', 500), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'homepage', 1000), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'contact', 200), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'homepage', 1200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'contact', 200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'homepage', 1200)}
+#     )
 ]
 test_creation_pipeline(queries)

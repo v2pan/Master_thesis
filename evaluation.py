@@ -49,7 +49,7 @@ def evaluate_results(expected, actual):
 #     ),
 #     (
 #         '''∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))''',
-#         {(0, 4, 'zero', 'Gerhard'), (1, 1, 'one', 'Joachim'), (2,'many', 'two', 'Dieter')}
+#         {(0, '4', 'zero', 'Gerhard'), (1, '1', 'one', 'Joachim'), (2,'many', 'two', 'Dieter')}
 #     ),
 #     (
 #         '''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )''',

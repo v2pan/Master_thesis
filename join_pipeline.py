@@ -69,15 +69,23 @@ def compare_semantics_in_list(input_list,order):
             temp_list1 = outer_list[0]
             temp_list2 = outer_list[-1]
 
-            #Inspect whether some some JOINs can be exectued without change (only if there are >1 JOIN inputs.)
-            if len(input_list)<2: #Change down to 2
+            necessary=True
+            
+            #Distinguish between cases where only one element is present and cases where both are numerical and therefore rewriting not necessary
+            if len(input_list)<2 and not ( isinstance(temp_list1[0][0], (int, float)) and isinstance(temp_list2[0][0], (int, float))) : #Change down to 2
                 necessary=True
+            elif len(input_list)<2 and isinstance(temp_list1[0][0], (int, float)) and isinstance(temp_list2[0][0], (int, float)) :
+                necessary=False
             else:
-                prompt=f'''Do you think based on the following list {temp_list1} with type {type(temp_list1[0][0])} and {temp_list2} with type {type(temp_list2[0][0])} that some elements have the same semantic meaning but are expressed in a different format?
-                An example would be if the types were different or the formats (e.g., '18 January 2012' and '18.01.2012'), if elements had the same meaning in different languages (e.g., 'bridge' and 'brücke') or if numbers would be written as text.
-                Considering the provided lists represent what they represent, one in {type(temp_list1[0][0])} format and the other in {type(temp_list2[0][0])} format, does a case where different types represent the same semantic meaning occur in the list? If the types are different, always answer 'true'.True or False.'''
-                #Check if it is necessary to rewrite the JOIN condition
-                necessary=gemini_json(prompt, response_type=bool)
+                #If both are numerical no need to rewrite the JOIN condition
+                if isinstance(temp_list1[0][0], (int, float)) and isinstance(temp_list2[0][0], (int, float)):
+                    necessary = False
+                else:
+                    prompt=f'''Do you think based on the following list {temp_list1} with type {type(temp_list1[0][0])} and {temp_list2} with type {type(temp_list2[0][0])} that some elements have the same semantic meaning but are expressed in a different format?
+                    An example would be if the types were different or the formats (e.g., '18 January 2012' and '18.01.2012'), if elements had the same meaning in different languages (e.g., 'bridge' and 'brücke') or if numbers would be written as text.
+                    Considering the provided lists represent what they represent, one in {type(temp_list1[0][0])} format and the other in {type(temp_list2[0][0])} format, does a case where different types represent the same semantic meaning occur in the list? If the types are different, always answer 'true'.True or False.'''
+                    #Check if it is necessary to rewrite the JOIN condition
+                    necessary=gemini_json(prompt, response_type=bool)
             if necessary:
                 condition = outer_list[1]
                 original_expression = outer_list[2]  # Access the original expression
@@ -267,8 +275,10 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
                 retries_left-=1
                 print("Query not executable")
                 result=None
-            if evaluation:
+            if evaluation and not forward:
                 return sql_query, semantic_dic, result
+            elif evaluation and forward:
+                return initial_sql_query, semantic_dic, sql_query
             else:
                 if forward:
                     return sql_query
