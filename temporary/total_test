@@ -429,5 +429,388 @@
                 "Dieter"
             ]
         ]
+    },
+    {
+        "calculus": "∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)",
+        "initial_sql_query_join": "SELECT *  FROM weather INNER JOIN website_visits ON website_visits.date = CASE weather.date WHEN '2023 10 26' THEN '2023 October 26' WHEN '2023 10 27' THEN '2023 October 27' END;",
+        "semantic_list_join": [
+            {
+                "2023 10 26": [
+                    "2023 October 26",
+                    "2023 October 26"
+                ],
+                "2023 10 27": [
+                    "2023 October 27",
+                    "2023 October 27"
+                ]
+            }
+        ],
+        "result_join": [
+            [
+                "2023 10 26",
+                "London",
+                12,
+                0,
+                "2023 October 26",
+                "about",
+                500
+            ],
+            [
+                "2023 10 26",
+                "London",
+                12,
+                0,
+                "2023 October 26",
+                "homepage",
+                1000
+            ],
+            [
+                "2023 10 26",
+                "New York",
+                15,
+                2,
+                "2023 October 26",
+                "about",
+                500
+            ],
+            [
+                "2023 10 26",
+                "New York",
+                15,
+                2,
+                "2023 October 26",
+                "homepage",
+                1000
+            ],
+            [
+                "2023 10 27",
+                "London",
+                10,
+                5,
+                "2023 October 27",
+                "contact",
+                200
+            ],
+            [
+                "2023 10 27",
+                "London",
+                10,
+                5,
+                "2023 October 27",
+                "homepage",
+                1200
+            ],
+            [
+                "2023 10 27",
+                "New York",
+                13,
+                1,
+                "2023 October 27",
+                "contact",
+                200
+            ],
+            [
+                "2023 10 27",
+                "New York",
+                13,
+                1,
+                "2023 October 27",
+                "homepage",
+                1200
+            ]
+        ],
+        "initial_sql_query_where": null,
+        "semantic_list_where": null,
+        "result_where": null,
+        "output": [
+            [
+                "2023 10 26",
+                "London",
+                12,
+                0,
+                "2023 October 26",
+                "about",
+                500
+            ],
+            [
+                "2023 10 26",
+                "London",
+                12,
+                0,
+                "2023 October 26",
+                "homepage",
+                1000
+            ],
+            [
+                "2023 10 26",
+                "New York",
+                15,
+                2,
+                "2023 October 26",
+                "about",
+                500
+            ],
+            [
+                "2023 10 26",
+                "New York",
+                15,
+                2,
+                "2023 October 26",
+                "homepage",
+                1000
+            ],
+            [
+                "2023 10 27",
+                "London",
+                10,
+                5,
+                "2023 October 27",
+                "contact",
+                200
+            ],
+            [
+                "2023 10 27",
+                "London",
+                10,
+                5,
+                "2023 October 27",
+                "homepage",
+                1200
+            ],
+            [
+                "2023 10 27",
+                "New York",
+                13,
+                1,
+                "2023 October 27",
+                "contact",
+                200
+            ],
+            [
+                "2023 10 27",
+                "New York",
+                13,
+                1,
+                "2023 October 27",
+                "homepage",
+                1200
+            ]
+        ]
+    },
+    {
+        "calculus": "ARTISTS(a,,), ALBUMS(,a,\"Reputation\",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)",
+        "initial_sql_query_join": "SELECT * FROM ALBUMS INNER JOIN ARTISTS ON ALBUMS.artist_id = ARTISTS.id INNER JOIN SONGS ON ALBUMS.id = SONGS.album_id;",
+        "semantic_list_join": [
+            {},
+            {}
+        ],
+        "result_join": [
+            [
+                1,
+                1,
+                "Reputation",
+                "2017",
+                1,
+                "Taylor Swift",
+                "English",
+                1,
+                1,
+                "Delicate",
+                "3:52"
+            ],
+            [
+                2,
+                2,
+                "Reputation",
+                "2017",
+                2,
+                "Reputation Artist",
+                "English",
+                2,
+                2,
+                "New Year’s Day",
+                "3:55"
+            ]
+        ],
+        "initial_sql_query_where": null,
+        "semantic_list_where": null,
+        "result_where": null,
+        "output": [
+            [
+                1,
+                1,
+                "Reputation",
+                "2017",
+                1,
+                "Taylor Swift",
+                "English",
+                1,
+                1,
+                "Delicate",
+                "3:52"
+            ],
+            [
+                2,
+                2,
+                "Reputation",
+                "2017",
+                2,
+                "Reputation Artist",
+                "English",
+                2,
+                2,
+                "New Year’s Day",
+                "3:55"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))",
+        "initial_sql_query_join": "SELECT * FROM shareowner1row INNER JOIN animalowner1row ON shareowner1row.id = animalowner1row.owner_id WHERE animalowner1row.category = 'dog';",
+        "semantic_list_join": [
+            {}
+        ],
+        "result_join": "SELECT *\nFROM shareowner1row\nINNER JOIN animalowner1row ON shareowner1row.id = animalowner1row.owner_id\nWHERE animalowner1row.category = 'dog';",
+        "initial_sql_query_where": "SELECT * FROM shareowner1row INNER JOIN animalowner1row ON shareowner1row.id = animalowner1row.owner_id WHERE animalowner1row.category = 'dog';",
+        "semantic_list_where": [
+            [
+                [
+                    "chien"
+                ],
+                "WHERE animalowner1row.category = 'dog';"
+            ]
+        ],
+        "result_where": [
+            [
+                1,
+                "Pierre",
+                20,
+                1,
+                "bill",
+                "chien"
+            ]
+        ],
+        "output": [
+            [
+                1,
+                "Pierre",
+                20,
+                1,
+                "bill",
+                "chien"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
+        "initial_sql_query_join": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category = 'dog';",
+        "semantic_list_join": [
+            {}
+        ],
+        "result_join": "SELECT *\nFROM shareowner\nINNER JOIN animalowner ON shareowner.id = animalowner.owner_id\nWHERE animalowner.category = 'dog';",
+        "initial_sql_query_where": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category = 'dog';",
+        "semantic_list_where": [
+            [
+                [
+                    "chien"
+                ],
+                [
+                    "dog"
+                ],
+                [
+                    "perro"
+                ],
+                "WHERE animalowner.category = 'dog';"
+            ]
+        ],
+        "result_where": [
+            [
+                3,
+                "Diego",
+                15,
+                3,
+                "chris",
+                "dog"
+            ],
+            [
+                4,
+                "Marcel",
+                11,
+                4,
+                "juan",
+                "perro"
+            ],
+            [
+                1,
+                "Pierre",
+                20,
+                1,
+                "bill",
+                "chien"
+            ]
+        ],
+        "output": [
+            [
+                3,
+                "Diego",
+                15,
+                3,
+                "chris",
+                "dog"
+            ],
+            [
+                4,
+                "Marcel",
+                11,
+                4,
+                "juan",
+                "perro"
+            ],
+            [
+                1,
+                "Pierre",
+                20,
+                1,
+                "bill",
+                "chien"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))",
+        "initial_sql_query_join": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category <> 'dog';",
+        "semantic_list_join": [
+            {}
+        ],
+        "result_join": "SELECT *\nFROM shareowner\nINNER JOIN animalowner ON shareowner.id = animalowner.owner_id\nWHERE animalowner.category <> 'dog';",
+        "initial_sql_query_where": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category <> 'dog';",
+        "semantic_list_where": [
+            [
+                [
+                    "chat"
+                ],
+                "WHERE animalowner.category <> 'dog';"
+            ]
+        ],
+        "result_where": [
+            [
+                2,
+                "Vladi",
+                10,
+                2,
+                "diego",
+                "chat"
+            ]
+        ],
+        "output": [
+            [
+                2,
+                "Vladi",
+                10,
+                2,
+                "diego",
+                "chat"
+            ]
+        ]
     }
 ]

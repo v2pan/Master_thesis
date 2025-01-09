@@ -362,9 +362,9 @@ def compare_semantics_in_list(input_list):
                               Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
                               Output: is smaller than
                               Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
-                              Output: has a different meaning than
+                              Output: has NOT the same meaning (also in another language) as
                               Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
-                              Output: has a different meaning than
+                              Output: has NOT the same meaning (also in another language) as
                               Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
                               Output: has the same meaning as (also in antoher language) or is the same as
                               Input:{condition}.
@@ -428,7 +428,7 @@ def compare_semantics_in_list(input_list):
 
 #Designed for intial query
 def initial_query(query,context):
-        response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
+        response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, meaning try to use only one 'SELECT' command, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
         return response, temp_meta
 
 
