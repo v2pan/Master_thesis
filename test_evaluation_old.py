@@ -1,10 +1,14 @@
+from row_calculus_pipeline import row_calculus_pipeline
 import os
 from database import query_database
 from extractor import extract
 from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
+import sqlparse
+import re
 from database import query_database, QueryExecutionError
 from other_gemini import gemini_json,ask_gemini
 from extractor import extract
+import copy
 import json
 from other_gemini import RessourceError
 import time
@@ -13,9 +17,10 @@ import json
 from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
+from join_pipeline import join_pipeline
 from combined_pipeline import combined_pipeline
 
-RUNS=1
+RUNS=3
 max_retries = 10
 retry_delay = 60
 
@@ -29,42 +34,6 @@ usage_metadata_total = {
             "total_calls": 0
         }
 
-def initial_query_transform(initial_query):
-
-    if not initial_query:
-        return initial_query
-    else:
-        try:
-            initial_query_result=query_database(initial_query)
-            return initial_query_result
-        except QueryExecutionError as e:
-            initial_query_result=f"{e}"
-            return initial_query_result.split('\n')[0]
-        
-#Define function to process a list of lists, for evaluation
-def process_list(input_list):
-    if not input_list:
-        return input_list
-    processed_list = []
-    for item in input_list:
-        if isinstance(item, (list, tuple)):
-            processed_list.append(item[0])  # Extract the first element if it's a list or tuple
-        else:
-            processed_list.append(item)
-    return processed_list
-
-#Define function to compare two lists ignoring the order of them
-def compare_lists_of_lists(list1, list2):
-    """Compares two lists of lists, ignoring order within inner lists. Return True if the same, otherwise return false."""
-    if not list1 and not list2:
-        return True
-    elif not list1 or not list2:
-        return False
-    try:
-        return Counter(map(frozenset, list1)) == Counter(map(frozenset, list2))
-    except TypeError:
-        return False  # Handles cases where inner lists contain unhashable elements
-    
 #MAIN FUNCTION
 def evaluation_pipeline(queries):
 
@@ -86,7 +55,7 @@ def evaluation_pipeline(queries):
     error_total=[]
     queries_list=[]
     #Iterate over the whole list of input queries
-    for query in queries:
+    for query, join in queries:
 
         api_retries = 0
         #error_cnt={"initial_result": 0, "semantic_list": 0, "wrong_result": 0, "correct_results": 0}
@@ -98,7 +67,7 @@ def evaluation_pipeline(queries):
                 
                 #GET results from the pipeline
                 initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output =combined_pipeline(query=query, evaluation=True)
-                initial_sql_query_join_copy= initial_sql_query_join
+                    
                 data = {
                     "calculus": query,
                     "initial_sql_query_join": initial_sql_query_join.replace('\n', ' ') if initial_sql_query_join is not None else None,
@@ -109,7 +78,28 @@ def evaluation_pipeline(queries):
                     "result_where": result_where,
                     "output": output   
                 }
-                
+                # try:
+                #     initial_query_result=query_database(initial_query)
+                # except QueryExecutionError as e:
+                #     initial_query_result=f"{e}"
+                #     initial_query_result=initial_query_result.split('\n')[0]
+
+
+                # data = {
+                #     "calculus": query,
+                #     # "pipeline": "row_calculus_pipeline",
+                #     # "tables_num": len(tables),
+                #     # "tables": tables,
+                #     "initial_result": initial_query_result,
+                #     "initial_sql_query": initial_query_result,
+                #     # "condition": conditions,
+                #     "semantic_list": semantic_list,
+                #     # "query_results": query_results,
+                #     # "sql_query": new_sql_query.replace('\n', ' '),
+                #     "result": result,
+
+                # }
+
 
                 #Retrieve target instances from the loaded dictionary
                 target_value= query
@@ -117,30 +107,8 @@ def evaluation_pipeline(queries):
                 for i in loaded_dictionary:
                     if i["calculus"]==target_value:
                         target_instance = i
-                                
-
-                initial_query_result_join = None
-                initial_query_result_where = None
-                target_initial_query_result_join = None
-                target_initial_query_result_where = None
-
-                results_list = [
-                    initial_query_result_join,
-                    initial_query_result_where,
-                    target_initial_query_result_join,
-                    target_initial_query_result_where
-                ]
-
-                initial_list= [initial_sql_query_join, initial_sql_query_where, target_instance["initial_sql_query_join"], target_instance["initial_sql_query_where"] ]
-
-                for i in range(len(results_list)):
-                    results_list[i]= initial_query_transform(initial_list[i])
-
-                initial_query_result_join = results_list[0]
-                initial_query_result_where = results_list[1]
-                target_initial_query_result_join = results_list[2]
-                target_initial_query_result_where = results_list[3]
                 
+
                 
 
             except QueryExecutionError as e:
@@ -157,25 +125,42 @@ def evaluation_pipeline(queries):
                     print(f"Maximum retries reached.")
                     # Append zeros for failed cases
                     raise Exception(f"Maximum retries reached.")
+            
+            #Modify intitial result, only take the first line e.g. (operator does not exist: text < integer)
+            target_initial_result=target_instance["initial_result"]
 
-            #FIX the issue of farwarding the initial_query
-            if initial_sql_query_join_copy == data["result_join"] or initial_sql_query_join_copy.replace('\n', ' ') == data["result_where"]:
-                data["result_join"]=[]
+            try:
+                query_database(target_instance["initial_sql_query"])
+            except QueryExecutionError as e:
+                target_initial_result=target_initial_result.split('\n')[0]
+
+            #Define function to process a list of lists, for evaluation
+            def process_list(input_list):
+                processed_list = []
+                for item in input_list:
+                    if isinstance(item, (list, tuple)):
+                        processed_list.append(item[0])  # Extract the first element if it's a list or tuple
+                    else:
+                        processed_list.append(item)
+                return processed_list
+
+            #Define function to compare two lists ignoring the order of them
+            def compare_lists_of_lists(list1, list2):
+                """Compares two lists of lists, ignoring order within inner lists."""
+                try:
+                    return Counter(map(frozenset, list1)) == Counter(map(frozenset, list2))
+                except TypeError:
+                    return False  # Handles cases where inner lists contain unhashable elements
+
 
             #No add the data to the error counter, identify location of the error
-            if target_initial_query_result_join!=initial_query_result_join:
-                error_cnt["initial_sql_query_join"]+=1
-            elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
-                error_cnt["semantic_list_join"]+=1
-            elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
-                error_cnt["result_join"]+=1
-            elif target_initial_query_result_where!=initial_query_result_where:
-                error_cnt["initial_sql_query_join"]+=1
-            elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
-                error_cnt["semantic_list_where"]+=1
-            elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
-                error_cnt["result_where"]+=1
-            if compare_lists_of_lists(target_instance["output"], data["output"]):
+            if data["initial_result"]!=target_initial_result:
+                error_cnt["initial_result"]+=1
+            elif not compare_lists_of_lists(process_list(target_instance["semantic_list"]), process_list(data["semantic_list"])):
+                error_cnt["semantic_list"]+=1
+            elif not compare_lists_of_lists(target_instance["result"], data["result"]):
+                error_cnt["wrong_result"]+=1
+            if compare_lists_of_lists(target_instance["result"], data["result"]):
                 error_cnt["correct_results"]+=1
         
             print(f"The error count is {error_cnt}")
@@ -204,7 +189,6 @@ def evaluation_pipeline(queries):
         axes[i].set_xlabel("Result Type")
         axes[i].set_ylabel("Probability")
         axes[i].set_title(f"{queries_list[i]}")
-        axes[i].tick_params(axis='x', rotation=45, labelrotation=90)
 
 
     # Remove extra subplots if necessary
@@ -212,12 +196,9 @@ def evaluation_pipeline(queries):
         fig.delaxes(axes[j])
 
     plt.tight_layout()
-    filepath_individual=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
-    fig.savefig(filepath_individual, dpi=300)  # Save the figure with higher resolution
-
     plt.show()
 
-    # TOTAL PLOT overl all distinct values
+    # TOTAL PLOT
     fig_total, ax_total = plt.subplots(figsize=(10, 6))
     categories = error_total[0].keys()  # Assuming all dictionaries have the same keys
     width = 0.35
@@ -239,15 +220,10 @@ def evaluation_pipeline(queries):
     ax_total.set_ylabel('Probability of Occurrence')
     ax_total.set_xlabel('Result Type')
     ax_total.set_title('Total Probabilities of Result Types')
-    ax_total.tick_params(axis='x', rotation=45, labelrotation=90)
     plt.tight_layout()
-    filepath=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
-    fig.savefig(filepath, dpi=300)  # Save the figure with higher resolution
     plt.show()
-
-    
 
 #Sometimes, multiple entries, solve that problem
 queries=[
-        "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))"]
+        ["∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)"]]
 evaluation_pipeline(queries)

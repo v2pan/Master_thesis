@@ -195,16 +195,16 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
     #If no element are present, no need to rewrite the JOIN condition, return as it was
     if not any(semantic_dic):
         if return_query:
-                return sql_query
+                return initial_sql_query
         if evaluation and not forward:
-                return sql_query, semantic_dic, result
+                return initial_sql_query, semantic_dic, initial_sql_query
         elif evaluation and forward:
                 return initial_sql_query, semantic_dic, initial_sql_query
         else:
             if forward:
-                return sql_query
+                return initial_sql_query
             else:
-                return result
+                return initial_sql_query
 
     #Create the binding string for, necessary for multiple JOINs
     binding_str = ""
