@@ -14,9 +14,11 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 from combined_pipeline import combined_pipeline
-from evaluation import test_cases
+from evaluation import test_cases, evaluate_results
 import seaborn as sns
 import pandas as pd
+import re
+from matplotlib import ticker
 
 
 RUNS=1
@@ -39,6 +41,34 @@ usage_metadata_total = {
             "total_calls": 0
         }
 
+import re
+
+def split_title_at_space(title):
+    """Splits a title at the closest space to the midpoint."""
+    if not title or len(title) <= 1:
+        return title, ""  # Handles empty or single-word titles
+
+    midpoint = len(title) // 2
+    
+    # Find the closest space to the midpoint (using regex for robustness)
+    
+    closest_space_index = None
+    min_distance = float('inf')
+    list=re.finditer(r"\s", title)
+    for match in list:
+        index = match.start()
+        distance = abs(index - midpoint)
+        if distance < min_distance:
+            min_distance = distance
+            closest_space_index = index
+            
+    if closest_space_index is not None:
+      title_part1 = title[:closest_space_index].strip()
+      title_part2 = title[closest_space_index:].strip()
+      return title_part1, title_part2
+    else:
+      return title, ""
+    
 def initial_query_transform(initial_query):
 
     if not initial_query:
@@ -206,6 +236,7 @@ def evaluation_pipeline(queries):
 
     #Create a list of dictionaries to also save the data, in order to replot it etc.
     dic_list=[]
+    colors = ['red', 'red', 'red', 'red', 'red', 'red', 'blue'] # Define colors for the bars
 
     for i, error_cnt in enumerate(error_total):
         error_spots = list(error_cnt.keys())
@@ -216,11 +247,7 @@ def evaluation_pipeline(queries):
         else:
             probs = [0] * len(queries) #All probabilities are 0 if total_counts is 0
 
-        # Split the title into two lines at the midpoint
-        title_parts = queries_list[i]
-        midpoint = len(title_parts) // 2  # Integer division for midpoint
-        title_part1 = " ".join(title_parts[:midpoint])
-        title_part2 = " ".join(title_parts[midpoint:])
+        title_part1, title_part2 = split_title_at_space(queries_list[i])
 
         #Create dictionary and append data
         tmp_dic={
@@ -235,10 +262,9 @@ def evaluation_pipeline(queries):
         # axes[i].set_ylabel("Probability")
         # axes[i].set_title(f"{title_part1}\n{title_part2}")
         # axes[i].tick_params(axis='x', rotation=45, labelrotation=90)
-        sns.barplot(x='errors', y='probabilities', data=tmp_dic, ax=axes[i],).set_title(f"{title_part1}\n{title_part2}")
-
-        
-
+        sns.barplot(x='errors', y='error_counts', data=tmp_dic, ax=axes[i], palette=colors).set_title(f"{title_part1}\n{title_part2}")
+        axes[i].tick_params(axis='x', rotation=90)
+        #Append to dictionary list
         dic_list.append(tmp_dic)
 
 
@@ -246,8 +272,10 @@ def evaluation_pipeline(queries):
     for j in range(i + 1, len(axes)):
         fig.delaxes(axes[j])
 
-    plt.xticks(rotation=30)
+    #Individual plot
     plt.tight_layout()
+    plt.suptitle(f"Counts of Result Types for {RUNS} Runs")
+    plt.subplots_adjust(top=0.75)
     fig.savefig(filepath_individual_plot, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
 
     plt.show()
@@ -273,7 +301,8 @@ def evaluation_pipeline(queries):
     #Create total dictionary
     total_dic={
             "categories" : list(categories),
-            "probabilities" : list(probs)
+            "probabilities" : list(probs),
+            "total_counts" : list(total_counts_per_category)
         }
     
     #Save the two dictionaires
@@ -282,7 +311,7 @@ def evaluation_pipeline(queries):
     with open(path_total_dic, 'w', encoding='utf-8') as f:
         json.dump(total_dic, f, indent=4, ensure_ascii=False)
 
-    sns.barplot(x='categories', y='probabilities', data=total_dic, ax=ax_total,).set_title(f"Total Probabilities of Result Types'")
+    sns.barplot(x='categories', y='total_counts', data=total_dic, ax=ax_total, palette=colors).set_title(f"Total Probabilities of Result Types")
     plt.xticks(rotation=30)
     plt.tight_layout()
     fig_total.savefig(filepath_total_fig, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
@@ -291,7 +320,6 @@ def evaluation_pipeline(queries):
 
 #Only get predicate calculus expressions
 queries=[i for i, _ in test_cases]
-#queries=[queries[0], queries[1], queries[2], queries[3]]
 queries=[queries[0]]
 
 evaluation_pipeline(queries)
