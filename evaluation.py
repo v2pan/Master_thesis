@@ -78,88 +78,88 @@ test_cases = [
     
 ]
 
-max_retries = 10
-retry_delay = 60
+# max_retries = 10
+# retry_delay = 60
 
-metrics = []  # List to store metrics for each test case
-retries = 0
-for calculus, expected_result in test_cases:
+# metrics = []  # List to store metrics for each test case
+# retries = 0
+# for calculus, expected_result in test_cases:
     
-    while retries < max_retries:
-        try:
-            #Run the actual pipeline
-            actual_result = set(combined_pipeline(calculus))
+#     while retries < max_retries:
+#         try:
+#             #Run the actual pipeline
+#             actual_result = set(combined_pipeline(calculus))
 
-            #Calculate the necessary metrics
-            accuracy, precision, recall, f1_score = evaluate_results(expected_result, actual_result)
-            metrics.append((accuracy, precision, recall, f1_score, calculus))
-            break  # Exit the inner loop if successful
-        except RessourceError as e: #Quota exception occurs quite frequently, due to free version of the API 
-            print("Ressource Error!")
-            retries += 1
-            print(f"Error running calculus '{calculus}' (attempt {retries}/{max_retries}): {e}")
-            if retries < max_retries:
-                print(f"Waiting {retry_delay} seconds before retrying...")
-                time.sleep(retry_delay)
-            else:
-                print(f"Maximum retries reached for calculus '{calculus}'.")
-                metrics.append((0, 0, 0, 0,calculus)) # Append zeros for failed cases
-                continue
-        except QueryExecutionError as e:
-            print("Exception has occured, when executing on database")
-            metrics.append((0, 0, 0, 0,calculus))
-            continue
-        except TypeError as e:
-            print("Type Error has occured")
+#             #Calculate the necessary metrics
+#             accuracy, precision, recall, f1_score = evaluate_results(expected_result, actual_result)
+#             metrics.append((accuracy, precision, recall, f1_score, calculus))
+#             break  # Exit the inner loop if successful
+#         except RessourceError as e: #Quota exception occurs quite frequently, due to free version of the API 
+#             print("Ressource Error!")
+#             retries += 1
+#             print(f"Error running calculus '{calculus}' (attempt {retries}/{max_retries}): {e}")
+#             if retries < max_retries:
+#                 print(f"Waiting {retry_delay} seconds before retrying...")
+#                 time.sleep(retry_delay)
+#             else:
+#                 print(f"Maximum retries reached for calculus '{calculus}'.")
+#                 metrics.append((0, 0, 0, 0,calculus)) # Append zeros for failed cases
+#                 continue
+#         except QueryExecutionError as e:
+#             print("Exception has occured, when executing on database")
+#             metrics.append((0, 0, 0, 0,calculus))
+#             continue
+#         except TypeError as e:
+#             print("Type Error has occured")
 
                 
 
 
-if metrics:  # Check if there are any metrics (to avoid errors if all tests failed)
-    accuracy_mean = sum(m[0] for m in metrics) / len(metrics)
-    precision_mean = sum(m[1] for m in metrics) / len(metrics)
-    recall_mean = sum(m[2] for m in metrics) / len(metrics)
-    f1_score_mean = sum(m[3] for m in metrics) / len(metrics)
+# if metrics:  # Check if there are any metrics (to avoid errors if all tests failed)
+#     accuracy_mean = sum(m[0] for m in metrics) / len(metrics)
+#     precision_mean = sum(m[1] for m in metrics) / len(metrics)
+#     recall_mean = sum(m[2] for m in metrics) / len(metrics)
+#     f1_score_mean = sum(m[3] for m in metrics) / len(metrics)
 
 
-    print("\n--- Overall Metrics ---")
-    print(f"Mean Accuracy: {accuracy_mean:.4f}")
-    print(f"Mean Precision: {precision_mean:.4f}")
-    print(f"Mean Recall: {recall_mean:.4f}")
-    print(f"Mean F1-score: {f1_score_mean:.4f}")
-else:
-    print("No successful test cases to calculate mean metrics.")
+#     print("\n--- Overall Metrics ---")
+#     print(f"Mean Accuracy: {accuracy_mean:.4f}")
+#     print(f"Mean Precision: {precision_mean:.4f}")
+#     print(f"Mean Recall: {recall_mean:.4f}")
+#     print(f"Mean F1-score: {f1_score_mean:.4f}")
+# else:
+#     print("No successful test cases to calculate mean metrics.")
 
 
-def write_all_metrics_to_file(metrics, filename = "all_metrics.txt"):
-    """Writes all individual metrics to a text file."""
-    if metrics:
-        try:
-            with open(filename, "w") as f:
-                f.write("--- Individual Metrics ---\n")
-                for i, m in enumerate(metrics):
-                    accuracy, precision, recall, f1, calculus = m
-                    f.write(f"Calculus {calculus}:\n")
-                    f.write(f"  Accuracy: {accuracy:.4f}\n")
-                    f.write(f"  Precision: {precision:.4f}\n")
-                    f.write(f"  Recall: {recall:.4f}\n")
-                    f.write(f"  F1-score: {f1:.4f}\n")
-                f.write("\n--- Overall Metrics ---\n")
-                accuracy_mean = sum(m[0] for m in metrics) / len(metrics)
-                precision_mean = sum(m[1] for m in metrics) / len(metrics)
-                recall_mean = sum(m[2] for m in metrics) / len(metrics)
-                f1_score_mean = sum(m[3] for m in metrics) / len(metrics)
-                f.write(f"Mean Accuracy: {accuracy_mean:.4f}\n")
-                f.write(f"Mean Precision: {precision_mean:.4f}\n")
-                f.write(f"Mean Recall: {recall_mean:.4f}\n")
-                f.write(f"Mean F1-score: {f1_score_mean:.4f}\n")
-            print(f"Metrics written to '{filename}'")
-        except OSError as e:
-            print(f"Error writing metrics to file: {e}")
-    else:
-        print("No metrics to write to file.")
+# def write_all_metrics_to_file(metrics, filename = "all_metrics.txt"):
+#     """Writes all individual metrics to a text file."""
+#     if metrics:
+#         try:
+#             with open(filename, "w") as f:
+#                 f.write("--- Individual Metrics ---\n")
+#                 for i, m in enumerate(metrics):
+#                     accuracy, precision, recall, f1, calculus = m
+#                     f.write(f"Calculus {calculus}:\n")
+#                     f.write(f"  Accuracy: {accuracy:.4f}\n")
+#                     f.write(f"  Precision: {precision:.4f}\n")
+#                     f.write(f"  Recall: {recall:.4f}\n")
+#                     f.write(f"  F1-score: {f1:.4f}\n")
+#                 f.write("\n--- Overall Metrics ---\n")
+#                 accuracy_mean = sum(m[0] for m in metrics) / len(metrics)
+#                 precision_mean = sum(m[1] for m in metrics) / len(metrics)
+#                 recall_mean = sum(m[2] for m in metrics) / len(metrics)
+#                 f1_score_mean = sum(m[3] for m in metrics) / len(metrics)
+#                 f.write(f"Mean Accuracy: {accuracy_mean:.4f}\n")
+#                 f.write(f"Mean Precision: {precision_mean:.4f}\n")
+#                 f.write(f"Mean Recall: {recall_mean:.4f}\n")
+#                 f.write(f"Mean F1-score: {f1_score_mean:.4f}\n")
+#             print(f"Metrics written to '{filename}'")
+#         except OSError as e:
+#             print(f"Error writing metrics to file: {e}")
+#     else:
+#         print("No metrics to write to file.")
 
-write_all_metrics_to_file(metrics)
+# write_all_metrics_to_file(metrics)
 
 
 

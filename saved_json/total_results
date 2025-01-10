@@ -1,0 +1,20 @@
+{
+    "categories": [
+        "initial_sql_query_join",
+        "semantic_list_join",
+        "result_join",
+        "initial_sql_query_where",
+        "semantic_list_where",
+        "result_where",
+        "correct_results"
+    ],
+    "probabilities": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+    ]
+}

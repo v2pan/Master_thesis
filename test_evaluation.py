@@ -14,10 +14,20 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 from combined_pipeline import combined_pipeline
+from evaluation import test_cases
+import seaborn as sns
+import pandas as pd
+
 
 RUNS=1
 max_retries = 10
 retry_delay = 60
+
+#PATHs for saving plots and dictionaries
+path_ind_dic= os.path.join(os.getcwd(), "saved_json", "individual_results")
+path_total_dic= os.path.join(os.getcwd(), "saved_json", "total_results")
+filepath_total_fig=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
+filepath_individual_plot=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
 
 #TO BE MODIFIED, design a file to get the output of the test, print via the playground file
 # to understand where the problem has occured
@@ -159,8 +169,9 @@ def evaluation_pipeline(queries):
                     raise Exception(f"Maximum retries reached.")
 
             #FIX the issue of farwarding the initial_query
-            if initial_sql_query_join_copy == data["result_join"] or initial_sql_query_join_copy.replace('\n', ' ') == data["result_where"]:
-                data["result_join"]=[]
+            if initial_sql_query_join_copy is not None:
+                if initial_sql_query_join_copy == data["result_join"] or initial_sql_query_join_copy.replace('\n', ' ') == data["result_where"]:
+                    data["result_join"]=[]
 
             #No add the data to the error counter, identify location of the error
             if target_initial_query_result_join!=initial_query_result_join:
@@ -182,6 +193,8 @@ def evaluation_pipeline(queries):
 
         error_total.append(error_cnt)   
         queries_list.append(query)
+    
+   
 
     #FINAL EVALUATION PLOT
     num_plots = len(error_total)
@@ -191,8 +204,11 @@ def evaluation_pipeline(queries):
     fig, axes = plt.subplots(num_rows, num_cols, figsize=(10, 4 * num_rows))
     axes = axes.flatten()
 
+    #Create a list of dictionaries to also save the data, in order to replot it etc.
+    dic_list=[]
+
     for i, error_cnt in enumerate(error_total):
-        queries = list(error_cnt.keys())
+        error_spots = list(error_cnt.keys())
         counts = list(error_cnt.values())
         total_counts = sum(counts)
         if total_counts > 0: #Avoid division by zero
@@ -200,20 +216,39 @@ def evaluation_pipeline(queries):
         else:
             probs = [0] * len(queries) #All probabilities are 0 if total_counts is 0
 
-        axes[i].bar(queries, probs)
-        axes[i].set_xlabel("Result Type")
-        axes[i].set_ylabel("Probability")
-        axes[i].set_title(f"{queries_list[i]}")
-        axes[i].tick_params(axis='x', rotation=45, labelrotation=90)
+        # Split the title into two lines at the midpoint
+        title_parts = queries_list[i]
+        midpoint = len(title_parts) // 2  # Integer division for midpoint
+        title_part1 = " ".join(title_parts[:midpoint])
+        title_part2 = " ".join(title_parts[midpoint:])
+
+        #Create dictionary and append data
+        tmp_dic={
+            "calculus" : queries_list[i],
+            "errors" : error_spots,
+            "error_counts" : counts,
+            "probabilities" : probs
+        }
+
+        # axes[i].bar(error_spots, probs)
+        # axes[i].set_xlabel("Result Type")
+        # axes[i].set_ylabel("Probability")
+        # axes[i].set_title(f"{title_part1}\n{title_part2}")
+        # axes[i].tick_params(axis='x', rotation=45, labelrotation=90)
+        sns.barplot(x='errors', y='probabilities', data=tmp_dic, ax=axes[i],).set_title(f"{title_part1}\n{title_part2}")
+
+        
+
+        dic_list.append(tmp_dic)
 
 
     # Remove extra subplots if necessary
     for j in range(i + 1, len(axes)):
         fig.delaxes(axes[j])
 
+    plt.xticks(rotation=30)
     plt.tight_layout()
-    filepath_individual=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
-    fig.savefig(filepath_individual, dpi=300)  # Save the figure with higher resolution
+    fig.savefig(filepath_individual_plot, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
 
     plt.show()
 
@@ -235,19 +270,28 @@ def evaluation_pipeline(queries):
     else:
         probs = np.zeros(len(categories))
 
-    ax_total.bar(categories, probs, width)
-    ax_total.set_ylabel('Probability of Occurrence')
-    ax_total.set_xlabel('Result Type')
-    ax_total.set_title('Total Probabilities of Result Types')
-    ax_total.tick_params(axis='x', rotation=45, labelrotation=90)
-    plt.tight_layout()
-    filepath=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
-    fig.savefig(filepath, dpi=300)  # Save the figure with higher resolution
-    plt.show()
+    #Create total dictionary
+    total_dic={
+            "categories" : list(categories),
+            "probabilities" : list(probs)
+        }
+    
+    #Save the two dictionaires
+    with open(path_ind_dic, 'w', encoding="utf-8") as f:
+        json.dump(dic_list, f, indent=4, ensure_ascii=False )
+    with open(path_total_dic, 'w', encoding='utf-8') as f:
+        json.dump(total_dic, f, indent=4, ensure_ascii=False)
 
+    sns.barplot(x='categories', y='probabilities', data=total_dic, ax=ax_total,).set_title(f"Total Probabilities of Result Types'")
+    plt.xticks(rotation=30)
+    plt.tight_layout()
+    fig_total.savefig(filepath_total_fig, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
+    plt.show()
     
 
-#Sometimes, multiple entries, solve that problem
-queries=[
-        "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))"]
+#Only get predicate calculus expressions
+queries=[i for i, _ in test_cases]
+#queries=[queries[0], queries[1], queries[2], queries[3]]
+queries=[queries[0]]
+
 evaluation_pipeline(queries)
