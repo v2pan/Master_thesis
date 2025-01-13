@@ -56,9 +56,6 @@
             ],
             [
                 [
-                    "fourty"
-                ],
-                [
                     "ten"
                 ],
                 [
@@ -207,7 +204,7 @@
         "semantic_list_join": [
             {}
         ],
-        "result_join": [],
+        "result_join": "SELECT * FROM tennis_players INNER JOIN tournaments ON tennis_players.id = tournaments.winner_id WHERE tennis_players.born = 'January';",
         "initial_sql_query_where": "SELECT * FROM tennis_players INNER JOIN tournaments ON tennis_players.id = tournaments.winner_id WHERE tennis_players.born = 'January';",
         "semantic_list_where": [
             [
@@ -670,7 +667,7 @@
         "semantic_list_join": [
             {}
         ],
-        "result_join": "SELECT *\nFROM shareowner1row\nINNER JOIN animalowner1row ON shareowner1row.id = animalowner1row.owner_id\nWHERE animalowner1row.category = 'dog';",
+        "result_join": "SELECT * FROM shareowner1row INNER JOIN animalowner1row ON shareowner1row.id = animalowner1row.owner_id WHERE animalowner1row.category = 'dog';",
         "initial_sql_query_where": "SELECT * FROM shareowner1row INNER JOIN animalowner1row ON shareowner1row.id = animalowner1row.owner_id WHERE animalowner1row.category = 'dog';",
         "semantic_list_where": [
             [
@@ -707,7 +704,7 @@
         "semantic_list_join": [
             {}
         ],
-        "result_join": "SELECT *\nFROM shareowner\nINNER JOIN animalowner ON shareowner.id = animalowner.owner_id\nWHERE animalowner.category = 'dog';",
+        "result_join": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category = 'dog';",
         "initial_sql_query_where": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category = 'dog';",
         "semantic_list_where": [
             [
@@ -782,7 +779,7 @@
         "semantic_list_join": [
             {}
         ],
-        "result_join": "SELECT *\nFROM shareowner\nINNER JOIN animalowner ON shareowner.id = animalowner.owner_id\nWHERE animalowner.category <> 'dog';",
+        "result_join": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category <> 'dog';",
         "initial_sql_query_where": "SELECT * FROM shareowner INNER JOIN animalowner ON shareowner.id = animalowner.owner_id WHERE animalowner.category <> 'dog';",
         "semantic_list_where": [
             [

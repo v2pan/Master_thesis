@@ -21,8 +21,8 @@ import re
 from matplotlib import ticker
 
 
-RUNS=1
-max_retries = 10
+RUNS=2
+max_retries = 30
 retry_delay = 60
 
 #PATHs for saving plots and dictionaries
@@ -125,10 +125,11 @@ def evaluation_pipeline(queries):
 
     error_total=[]
     queries_list=[]
+    api_retries = 0
     #Iterate over the whole list of input queries
     for query in queries:
 
-        api_retries = 0
+        
         #error_cnt={"initial_result": 0, "semantic_list": 0, "wrong_result": 0, "correct_results": 0}
         error_cnt={"initial_sql_query_join": 0, "semantic_list_join": 0, "result_join": 0, "initial_sql_query_where": 0, "semantic_list_where": 0, "result_where": 0,  "correct_results": 0}
         #Iterate over all the runs to get the results
@@ -138,12 +139,18 @@ def evaluation_pipeline(queries):
                 
                 #GET results from the pipeline
                 initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output =combined_pipeline(query=query, evaluation=True)
-                initial_sql_query_join_copy= initial_sql_query_join
+                
+                
+                #Covering case, semantic list is None
+                if not semantic_list_join:
+                    result_join=initial_sql_query_join
+                elif not semantic_list_join[0]:
+                    result_join=initial_sql_query_join
                 data = {
                     "calculus": query,
                     "initial_sql_query_join": initial_sql_query_join.replace('\n', ' ') if initial_sql_query_join is not None else None,
                     "semantic_list_join": semantic_list_join,
-                    "result_join": result_join,
+                    "result_join": result_join.replace('\n', ' ') if result_join and type(result_join)==str else None,
                     "initial_sql_query_where": initial_sql_query_where.replace('\n', ' ') if initial_sql_query_where is not None else None,
                     "semantic_list_where": semantic_list_where,
                     "result_where": result_where,
@@ -199,25 +206,41 @@ def evaluation_pipeline(queries):
                     raise Exception(f"Maximum retries reached.")
 
             #FIX the issue of farwarding the initial_query
-            if initial_sql_query_join_copy is not None:
-                if initial_sql_query_join_copy == data["result_join"] or initial_sql_query_join_copy.replace('\n', ' ') == data["result_where"]:
-                    data["result_join"]=[]
+            # if initial_sql_query_join_copy is not None:
+            #     if initial_sql_query_join_copy == data["result_join"] or initial_sql_query_join_copy.replace('\n', ' ') == data["result_where"]:
+            #         data["result_join"]=[]
+
+            #TESTING PURPOSE
+            if target_initial_query_result_join!=initial_query_result_join:
+                pass
+            elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
+                pass
+            elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
+                pass
+            elif target_initial_query_result_where!=initial_query_result_where:
+                pass
+            elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
+                pass
+            elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
+                pass
 
             #No add the data to the error counter, identify location of the error
-            if target_initial_query_result_join!=initial_query_result_join:
-                error_cnt["initial_sql_query_join"]+=1
-            elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
-                error_cnt["semantic_list_join"]+=1
-            elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
-                error_cnt["result_join"]+=1
-            elif target_initial_query_result_where!=initial_query_result_where:
-                error_cnt["initial_sql_query_join"]+=1
-            elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
-                error_cnt["semantic_list_where"]+=1
-            elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
-                error_cnt["result_where"]+=1
+            #If result is the same, then the result is correct and nothing more is investigated
             if compare_lists_of_lists(target_instance["output"], data["output"]):
                 error_cnt["correct_results"]+=1
+            else:
+                if target_initial_query_result_join!=initial_query_result_join:
+                    error_cnt["initial_sql_query_join"]+=1
+                elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
+                    error_cnt["semantic_list_join"]+=1
+                elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
+                    error_cnt["result_join"]+=1
+                elif target_initial_query_result_where!=initial_query_result_where:
+                    error_cnt["initial_sql_query_join"]+=1
+                elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
+                    error_cnt["semantic_list_where"]+=1
+                elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
+                    error_cnt["result_where"]+=1
         
             print(f"The error count is {error_cnt}")
 
@@ -263,7 +286,7 @@ def evaluation_pipeline(queries):
         # axes[i].set_title(f"{title_part1}\n{title_part2}")
         # axes[i].tick_params(axis='x', rotation=45, labelrotation=90)
         sns.barplot(x='errors', y='error_counts', data=tmp_dic, ax=axes[i], palette=colors).set_title(f"{title_part1}\n{title_part2}")
-        axes[i].tick_params(axis='x', rotation=90)
+        axes[i].tick_params(axis='x', rotation=30)
         #Append to dictionary list
         dic_list.append(tmp_dic)
 
@@ -275,7 +298,7 @@ def evaluation_pipeline(queries):
     #Individual plot
     plt.tight_layout()
     plt.suptitle(f"Counts of Result Types for {RUNS} Runs")
-    plt.subplots_adjust(top=0.75)
+    plt.subplots_adjust(top=0.85)
     fig.savefig(filepath_individual_plot, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
 
     plt.show()
@@ -320,6 +343,5 @@ def evaluation_pipeline(queries):
 
 #Only get predicate calculus expressions
 queries=[i for i, _ in test_cases]
-queries=[queries[0]]
 
 evaluation_pipeline(queries)

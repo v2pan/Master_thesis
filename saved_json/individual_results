@@ -1,6 +1,6 @@
 [
     {
-        "calculus": "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+        "calculus": "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
         "errors": [
             "initial_sql_query_join",
             "semantic_list_join",
@@ -15,18 +15,18 @@
             0,
             0,
             0,
-            1,
             0,
-            0
+            0,
+            1
         ],
         "probabilities": [
             0.0,
             0.0,
             0.0,
             0.0,
-            1.0,
             0.0,
-            0.0
+            0.0,
+            1.0
         ]
     }
 ]
