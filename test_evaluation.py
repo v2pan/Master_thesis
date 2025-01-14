@@ -21,15 +21,7 @@ import re
 from matplotlib import ticker
 
 
-RUNS=2
-max_retries = 30
-retry_delay = 60
 
-#PATHs for saving plots and dictionaries
-path_ind_dic= os.path.join(os.getcwd(), "saved_json", "individual_results")
-path_total_dic= os.path.join(os.getcwd(), "saved_json", "total_results")
-filepath_total_fig=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
-filepath_individual_plot=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
 
 #TO BE MODIFIED, design a file to get the output of the test, print via the playground file
 # to understand where the problem has occured
@@ -68,7 +60,7 @@ def split_title_at_space(title):
       return title_part1, title_part2
     else:
       return title, ""
-    
+
 def initial_query_transform(initial_query):
 
     if not initial_query:
@@ -104,24 +96,132 @@ def compare_lists_of_lists(list1, list2):
         return Counter(map(frozenset, list1)) == Counter(map(frozenset, list2))
     except TypeError:
         return False  # Handles cases where inner lists contain unhashable elements
-    
-#MAIN FUNCTION
-def evaluation_pipeline(queries):
 
-    #Load the relevant dictionary
-    filepath = os.path.join(os.getcwd(), "temporary", "total_test")
-    
+#Load the dictionary with the intermediary results
+def load_data(filepath):
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             loaded_dictionary = json.load(f)
         print(f"Dictionary loaded successfully from {filepath}")
         print(loaded_dictionary) # Print the loaded dictionary to verify
+        return loaded_dictionary
     except FileNotFoundError:
         print(f"Error: File not found at {filepath}")
+        raise FileNotFoundError
     except json.JSONDecodeError:
         print(f"Error: Invalid JSON data in {filepath}")
+        raise json.JSONDecodeError
     except Exception as e:
         print(f"An error occurred: {e}")
+        raise Exception
+    
+def comparison_logic(result_dic, target_instance):
+    #Strucutre of result dictionary
+    # result_dic={
+    #                 "initial_sql_query_join" : initial_sql_query_join,
+    #                 "semantic_list_join" : semantic_list_join,
+    #                 "result_join" : result_join,
+    #                 "initial_sql_query_where" : initial_sql_query_where,
+    #                 "semantic_list_where" : semantic_list_where,
+    #                 "result_where" : result_where,
+    #                 "output" : output
+    #             }
+
+    # Initialize error counter
+    error_cnt={"initial_sql_query_join": 0, "semantic_list_join": 0, "result_join": 0, "initial_sql_query_where": 0, "semantic_list_where": 0, "result_where": 0,  "correct_results": 0}
+    # Create variables using dictionary unpacking
+    initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output = \
+    result_dic.get("initial_sql_query_join"), result_dic.get("semantic_list_join"), result_dic.get("result_join"), \
+    result_dic.get("initial_sql_query_where"), result_dic.get("semantic_list_where"), result_dic.get("result_where"), \
+    result_dic.get("output")
+
+    #Covering case, semantic list is None
+    if not semantic_list_join:
+        result_join=initial_sql_query_join
+    elif not semantic_list_join[0]:
+        result_join=initial_sql_query_join
+    data = {
+        #"calculus": query,
+        "initial_sql_query_join": initial_sql_query_join.replace('\n', ' ') if initial_sql_query_join is not None else None,
+        "semantic_list_join": semantic_list_join,
+        "result_join": result_join.replace('\n', ' ') if result_join and type(result_join)==str else None,
+        "initial_sql_query_where": initial_sql_query_where.replace('\n', ' ') if initial_sql_query_where is not None else None,
+        "semantic_list_where": semantic_list_where,
+        "result_where": result_where,
+        "output": output   
+    }
+                    
+
+    initial_query_result_join = None
+    initial_query_result_where = None
+    target_initial_query_result_join = None
+    target_initial_query_result_where = None
+
+    results_list = [
+        initial_query_result_join,
+        initial_query_result_where,
+        target_initial_query_result_join,
+        target_initial_query_result_where
+    ]
+
+    initial_list= [initial_sql_query_join, initial_sql_query_where, target_instance["initial_sql_query_join"], target_instance["initial_sql_query_where"] ]
+
+    for i in range(len(results_list)):
+        results_list[i]= initial_query_transform(initial_list[i])
+
+    initial_query_result_join = results_list[0]
+    initial_query_result_where = results_list[1]
+    target_initial_query_result_join = results_list[2]
+    target_initial_query_result_where = results_list[3]
+ 
+
+    #FIX the issue of farwarding the initial_query
+    # if initial_sql_query_join_copy is not None:
+    #     if initial_sql_query_join_copy == data["result_join"] or initial_sql_query_join_copy.replace('\n', ' ') == data["result_where"]:
+    #         data["result_join"]=[]
+
+    #TESTING PURPOSE
+    if target_initial_query_result_join!=initial_query_result_join:
+        pass
+    elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
+        pass
+    elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
+        pass
+    elif target_initial_query_result_where!=initial_query_result_where:
+        pass
+    elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
+        pass
+    elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
+        pass
+
+    #No add the data to the error counter, identify location of the error
+    #If result is the same, then the result is correct and nothing more is investigated
+    if compare_lists_of_lists(target_instance["output"], data["output"]):
+        error_cnt["correct_results"]+=1
+    else:
+        if target_initial_query_result_join!=initial_query_result_join:
+            error_cnt["initial_sql_query_join"]+=1
+        elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
+            error_cnt["semantic_list_join"]+=1
+        elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
+            error_cnt["result_join"]+=1
+        elif target_initial_query_result_where!=initial_query_result_where:
+            error_cnt["initial_sql_query_join"]+=1
+        elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
+            error_cnt["semantic_list_where"]+=1
+        elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
+            error_cnt["result_where"]+=1
+    
+        print(f"The error count is {error_cnt}")
+
+    return error_cnt
+
+def error_logic(loaded_dictionary, queries):
+    max_retries = 30
+    #MODIFY
+    retry_delay = 30
+
+    
 
     error_total=[]
     queries_list=[]
@@ -133,63 +233,15 @@ def evaluation_pipeline(queries):
         #error_cnt={"initial_result": 0, "semantic_list": 0, "wrong_result": 0, "correct_results": 0}
         error_cnt={"initial_sql_query_join": 0, "semantic_list_join": 0, "result_join": 0, "initial_sql_query_where": 0, "semantic_list_where": 0, "result_where": 0,  "correct_results": 0}
         #Iterate over all the runs to get the results
-        for i in range(RUNS):
+        
+        #Counter variable
+        l=0
                 
+        while l < RUNS:
+                        
+            #GET results from the 
             try:
-                
-                #GET results from the pipeline
                 initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output =combined_pipeline(query=query, evaluation=True)
-                
-                
-                #Covering case, semantic list is None
-                if not semantic_list_join:
-                    result_join=initial_sql_query_join
-                elif not semantic_list_join[0]:
-                    result_join=initial_sql_query_join
-                data = {
-                    "calculus": query,
-                    "initial_sql_query_join": initial_sql_query_join.replace('\n', ' ') if initial_sql_query_join is not None else None,
-                    "semantic_list_join": semantic_list_join,
-                    "result_join": result_join.replace('\n', ' ') if result_join and type(result_join)==str else None,
-                    "initial_sql_query_where": initial_sql_query_where.replace('\n', ' ') if initial_sql_query_where is not None else None,
-                    "semantic_list_where": semantic_list_where,
-                    "result_where": result_where,
-                    "output": output   
-                }
-                
-
-                #Retrieve target instances from the loaded dictionary
-                target_value= query
-                target_instance = None
-                for i in loaded_dictionary:
-                    if i["calculus"]==target_value:
-                        target_instance = i
-                                
-
-                initial_query_result_join = None
-                initial_query_result_where = None
-                target_initial_query_result_join = None
-                target_initial_query_result_where = None
-
-                results_list = [
-                    initial_query_result_join,
-                    initial_query_result_where,
-                    target_initial_query_result_join,
-                    target_initial_query_result_where
-                ]
-
-                initial_list= [initial_sql_query_join, initial_sql_query_where, target_instance["initial_sql_query_join"], target_instance["initial_sql_query_where"] ]
-
-                for i in range(len(results_list)):
-                    results_list[i]= initial_query_transform(initial_list[i])
-
-                initial_query_result_join = results_list[0]
-                initial_query_result_where = results_list[1]
-                target_initial_query_result_join = results_list[2]
-                target_initial_query_result_where = results_list[3]
-                
-                
-
             except QueryExecutionError as e:
                 print("Exception has occured, when executing on database")
                 continue
@@ -200,56 +252,44 @@ def evaluation_pipeline(queries):
                 if api_retries < max_retries:
                     print(f"Waiting {retry_delay} seconds before retrying...")
                     time.sleep(retry_delay)
+                    continue
                 else:
                     print(f"Maximum retries reached.")
                     # Append zeros for failed cases
                     raise Exception(f"Maximum retries reached.")
-
-            #FIX the issue of farwarding the initial_query
-            # if initial_sql_query_join_copy is not None:
-            #     if initial_sql_query_join_copy == data["result_join"] or initial_sql_query_join_copy.replace('\n', ' ') == data["result_where"]:
-            #         data["result_join"]=[]
-
-            #TESTING PURPOSE
-            if target_initial_query_result_join!=initial_query_result_join:
-                pass
-            elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
-                pass
-            elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
-                pass
-            elif target_initial_query_result_where!=initial_query_result_where:
-                pass
-            elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
-                pass
-            elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
-                pass
-
-            #No add the data to the error counter, identify location of the error
-            #If result is the same, then the result is correct and nothing more is investigated
-            if compare_lists_of_lists(target_instance["output"], data["output"]):
-                error_cnt["correct_results"]+=1
-            else:
-                if target_initial_query_result_join!=initial_query_result_join:
-                    error_cnt["initial_sql_query_join"]+=1
-                elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
-                    error_cnt["semantic_list_join"]+=1
-                elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
-                    error_cnt["result_join"]+=1
-                elif target_initial_query_result_where!=initial_query_result_where:
-                    error_cnt["initial_sql_query_join"]+=1
-                elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
-                    error_cnt["semantic_list_where"]+=1
-                elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
-                    error_cnt["result_where"]+=1
-        
-            print(f"The error count is {error_cnt}")
+            result_dic={
+                "initial_sql_query_join" : initial_sql_query_join,
+                "semantic_list_join" : semantic_list_join,
+                "result_join" : result_join,
+                "initial_sql_query_where" : initial_sql_query_where,
+                "semantic_list_where" : semantic_list_where,
+                "result_where" : result_where,
+                "output" : output
+            }
+            #Retrieve target instances from the loaded dictionary
+            target_value= query
+            target_instance = None
+            for i in loaded_dictionary:
+                if i["calculus"]==target_value:
+                    target_instance = i
+            error_cnt_tmp = comparison_logic(result_dic, target_instance)
+            for key in error_cnt.keys():
+                error_cnt[key] += error_cnt_tmp[key]
+            l+=1
 
         error_total.append(error_cnt)   
         queries_list.append(query)
-    
-   
+    return error_total, queries_list
 
+def visualize_errors(error_total, queries_list):
     #FINAL EVALUATION PLOT
+
+    #PATHs for saving plots and dictionaries
+    path_ind_dic= os.path.join(os.getcwd(), "saved_json", "individual_results")
+    path_total_dic= os.path.join(os.getcwd(), "saved_json", "total_results")
+    filepath_total_fig=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
+    filepath_individual_plot=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
+
     num_plots = len(error_total)
     num_cols = 2  # Adjust number of columns as needed
     num_rows = (num_plots + num_cols - 1) // num_cols
@@ -339,9 +379,25 @@ def evaluation_pipeline(queries):
     plt.tight_layout()
     fig_total.savefig(filepath_total_fig, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
     plt.show()
+
+
+#MAIN FUNCTION
+def evaluation_pipeline(queries):
+
+    #Load the relevant dictionary
+    filepath = os.path.join(os.getcwd(), "temporary", "total_test")
+    loaded_dictionary = load_data(filepath)
+
+    #Evaluate the results
+    error_total, queries_list =error_logic(loaded_dictionary,queries)
+
+    visualize_errors(error_total, queries_list)
+    
+    
     
 
-#Only get predicate calculus expressions
-queries=[i for i, _ in test_cases]
-
+#How many runs per expression
+RUNS=2
+queries= [i for i, _ in test_cases]
+queries=[queries[-1], queries[-2]]
 evaluation_pipeline(queries)

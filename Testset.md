@@ -66,7 +66,7 @@ Doctors example with inequality and two WHERE clauses<br>
 
 
 
-# Taylor Swift Example (not used, provided by supervision)
+# Taylor Swift Example (Provided by supervision)
 
 ### Table 4: artists 
 

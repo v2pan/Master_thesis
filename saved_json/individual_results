@@ -1,6 +1,6 @@
 [
     {
-        "calculus": "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
+        "calculus": "∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)",
         "errors": [
             "initial_sql_query_join",
             "semantic_list_join",
@@ -11,7 +11,7 @@
             "correct_results"
         ],
         "error_counts": [
-            0,
+            1,
             0,
             0,
             0,
@@ -20,13 +20,43 @@
             1
         ],
         "probabilities": [
+            0.5,
             0.0,
             0.0,
             0.0,
             0.0,
             0.0,
+            0.5
+        ]
+    },
+    {
+        "calculus": "ARTISTS(a,,), ALBUMS(,a,\"Reputation\",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)",
+        "errors": [
+            "initial_sql_query_join",
+            "semantic_list_join",
+            "result_join",
+            "initial_sql_query_where",
+            "semantic_list_where",
+            "result_where",
+            "correct_results"
+        ],
+        "error_counts": [
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+        ],
+        "probabilities": [
+            0.5,
             0.0,
-            1.0
+            0.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0
         ]
     }
 ]

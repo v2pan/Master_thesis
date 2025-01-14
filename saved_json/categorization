@@ -1,0 +1,24 @@
+{
+  "Different languages": [
+    "∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))",
+    "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
+    "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))"
+  ],
+  "Different scales": [
+    "∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))",
+    "∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)"
+  ],
+  "Inconsistencies": [
+    "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+    "∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)",
+    "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))"
+  ],
+  "Inconsistencies JOIN (numbers as text)": [
+    "∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))",
+    "∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )",
+    "∃id (children_table(id, >1) ∧ fathers(id, _))"
+  ],
+  "Uncategorizable": [
+    "ARTISTS(a,,), ALBUMS(,a,\"Reputation\",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)"
+  ]
+}
