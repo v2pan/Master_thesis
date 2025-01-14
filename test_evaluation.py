@@ -74,16 +74,48 @@ def initial_query_transform(initial_query):
             return initial_query_result.split('\n')[0]
         
 #Define function to process a list of lists, for evaluation
-def process_list(input_list):
+def process_list_where(input_list):
     if not input_list:
         return input_list
     processed_list = []
-    for item in input_list:
-        if isinstance(item, (list, tuple)):
-            processed_list.append(item[0])  # Extract the first element if it's a list or tuple
+    if type(input_list)==list:
+        if len(input_list)==1:
+            for item in input_list[0]:
+                if isinstance(item, (list, tuple)):
+                    processed_list.append(item[0])  # Extract the first element if it's a list or tuple
+                else:
+                    processed_list.append(item)
         else:
-            processed_list.append(item)
+            raise ValueError("List must have length 1")
+    else:
+        raise ValueError("Input must be a list of lists or tuples")
     return processed_list
+
+def compare_semantic_join(dict1, dict2):
+    """Compares dictionaries, ignoring the order of elements in lists. True if the same"""
+
+    #Convert to dictionaries
+    if type(dict1)==list:
+        dict1=dict1[0]
+    if type(dict2)==list:
+        dict2=dict2[0]
+
+    if dict1 is None and dict2 is None:
+        return True
+    if dict1 is None or dict2 is None:
+        return False
+    
+    if dict1.keys() != dict2.keys():
+        return False  # Different keys
+
+    for key in dict1:
+        if not isinstance(dict1[key], list) or not isinstance(dict2[key], list):
+            if dict1[key] != dict2[key]: #check non-list items
+              return False
+        elif set(dict1[key]) != set(dict2[key]):  # Compare sets to ignore list order
+            return False
+
+    return True  # Dictionaries are equivalent (ignoring list order)
 
 #Define function to compare two lists ignoring the order of them
 def compare_lists_of_lists(list1, list2):
@@ -181,18 +213,18 @@ def comparison_logic(result_dic, target_instance):
     #         data["result_join"]=[]
 
     #TESTING PURPOSE
-    if target_initial_query_result_join!=initial_query_result_join:
-        pass
-    elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
-        pass
-    elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
-        pass
-    elif target_initial_query_result_where!=initial_query_result_where:
-        pass
-    elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
-        pass
-    elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
-        pass
+    # if target_initial_query_result_join!=initial_query_result_join:
+    #     pass
+    # elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
+    #     pass
+    # elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
+    #     pass
+    # elif target_initial_query_result_where!=initial_query_result_where:
+    #     pass
+    # elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
+    #     pass
+    # elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
+    #     pass
 
     #No add the data to the error counter, identify location of the error
     #If result is the same, then the result is correct and nothing more is investigated
@@ -201,13 +233,13 @@ def comparison_logic(result_dic, target_instance):
     else:
         if target_initial_query_result_join!=initial_query_result_join:
             error_cnt["initial_sql_query_join"]+=1
-        elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
+        elif not compare_semantic_join(target_instance["semantic_list_join"], data["semantic_list_join"]):
             error_cnt["semantic_list_join"]+=1
-        elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
+        elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]) and semantic_list_join[0] is not None:
             error_cnt["result_join"]+=1
         elif target_initial_query_result_where!=initial_query_result_where:
-            error_cnt["initial_sql_query_join"]+=1
-        elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
+            error_cnt["initial_sql_query_where"]+=1
+        elif not compare_lists_of_lists(process_list_where(target_instance["semantic_list_where"]), process_list_where(data["semantic_list_where"])):
             error_cnt["semantic_list_where"]+=1
         elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
             error_cnt["result_where"]+=1
@@ -400,4 +432,4 @@ def evaluation_pipeline(queries):
 RUNS=2
 queries= [i for i, _ in test_cases]
 queries=[queries[-1], queries[-2]]
-evaluation_pipeline(queries)
+#evaluation_pipeline(queries)
