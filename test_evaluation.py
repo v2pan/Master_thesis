@@ -19,6 +19,8 @@ import seaborn as sns
 import pandas as pd
 import re
 from matplotlib import ticker
+from test_creation import append_to_json
+
 
 
 
@@ -33,7 +35,7 @@ usage_metadata_total = {
             "total_calls": 0
         }
 
-import re
+
 
 def split_title_at_space(title):
     """Splits a title at the closest space to the midpoint."""
@@ -86,7 +88,13 @@ def process_list_where(input_list):
                 else:
                     processed_list.append(item)
         else:
-            raise ValueError("List must have length 1")
+            for lists in input_list:
+                sublist = []
+                for item in lists:
+                    sublist.append(item)
+                processed_list.append(sublist)
+            return 
+        
     else:
         raise ValueError("Input must be a list of lists or tuples")
     return processed_list
@@ -125,7 +133,15 @@ def compare_lists_of_lists(list1, list2):
     elif not list1 or not list2:
         return False
     try:
-        return Counter(map(frozenset, list1)) == Counter(map(frozenset, list2))
+        if len(list1) != len(list2):
+            return False
+        else:
+            for i in range(len(list1)):
+                result=set(list1[i])==set(list2[i])
+                if not result:
+                    return False
+            return True
+            #return Counter(map(frozenset, list1)) == Counter(map(frozenset, list2))
     except TypeError:
         return False  # Handles cases where inner lists contain unhashable elements
 
@@ -251,7 +267,7 @@ def comparison_logic(result_dic, target_instance):
 def error_logic(loaded_dictionary, queries):
     max_retries = 30
     #MODIFY
-    retry_delay = 30
+    retry_delay = 45
 
     
 
@@ -311,6 +327,13 @@ def error_logic(loaded_dictionary, queries):
 
         error_total.append(error_cnt)   
         queries_list.append(query)
+
+        #Additionally write to path
+        path_error_total= os.path.join(os.getcwd(), "saved_json", "error_total")
+        path_queries_list= os.path.join(os.getcwd(), "saved_json", "queries_list")
+
+        append_to_json(error_cnt, path_error_total)
+        append_to_json(query, path_queries_list)
     return error_total, queries_list
 
 def visualize_errors(error_total, queries_list):
@@ -413,6 +436,7 @@ def visualize_errors(error_total, queries_list):
     plt.show()
 
 
+
 #MAIN FUNCTION
 def evaluation_pipeline(queries):
 
@@ -429,7 +453,7 @@ def evaluation_pipeline(queries):
     
 
 #How many runs per expression
-RUNS=2
+RUNS=3
 queries= [i for i, _ in test_cases]
-queries=[queries[-1], queries[-2]]
+queries=[queries[11]]
 #evaluation_pipeline(queries)
