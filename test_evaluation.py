@@ -375,11 +375,6 @@ def visualize_errors(error_total, queries_list):
             "probabilities" : probs
         }
 
-        # axes[i].bar(error_spots, probs)
-        # axes[i].set_xlabel("Result Type")
-        # axes[i].set_ylabel("Probability")
-        # axes[i].set_title(f"{title_part1}\n{title_part2}")
-        # axes[i].tick_params(axis='x', rotation=45, labelrotation=90)
         sns.barplot(x='errors', y='error_counts', data=tmp_dic, ax=axes[i], palette=colors).set_title(f"{title_part1}\n{title_part2}")
         axes[i].tick_params(axis='x', rotation=30)
         #Append to dictionary list
