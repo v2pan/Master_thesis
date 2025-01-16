@@ -278,7 +278,7 @@ This example uses different units (Fahrenheit and dozens) and joins data based o
 
 |  Movie | cateogry  | rating  |
 |------------|--------------------|--------------------|
-| Raiders of the Lost Arc     | action/           | 4/5       |
+| Raiders of the Lost Arc     | action           | 4/5       |
 |  The Shawshank Redemption     | thriller          | 3/5      |
 | Wings of Desire      |    fantasy    | 4/5          |
 | Amélie| comedy           | 5/5          |
