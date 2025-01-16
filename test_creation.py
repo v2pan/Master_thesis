@@ -12,7 +12,7 @@ import time
 import os
 import json
 from combined_pipeline import combined_pipeline
-from evaluation import evaluate_results
+from evaluation import evaluate_results, test_cases
 
 max_retries = 30
 retry_delay = 60
@@ -124,8 +124,11 @@ def test_creation_pipeline(queries):
                 
 
 
-         
-        
+queries= test_cases[12:13]
+print(queries)
+test_creation_pipeline(queries)
+
+
 
 
 # queries = [
@@ -178,4 +181,3 @@ def test_creation_pipeline(queries):
 #     {('2023 10 26', 'London', 12, 0, '2023 October 26', 'about', 500), ('2023 10 26', 'London', 12, 0, '2023 October 26', 'homepage', 1000), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'about', 500), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'homepage', 1000), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'contact', 200), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'homepage', 1200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'contact', 200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'homepage', 1200)}
 #     ) #Done
 # ]
-#test_creation_pipeline(queries)

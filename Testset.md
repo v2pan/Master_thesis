@@ -245,7 +245,7 @@ The example realtes to bakery sales
 |------------|--------------------|--------------------|
 | Croissants     | 5  dozen           | 12.00 per dozen          |
 | Baguettes      | 8  dozen          | 10.00 per dozen          |
-| Croissants     | 7  dozen               | 12.00 per dozen          |
+| Macarons     | 7  dozen               | 12.00 per dozen          |
 | Pain au Chocolat| 3 dozen                | 15.00 per dozen          |
 
 
@@ -256,18 +256,18 @@ The example realtes to bakery sales
 |-----|--------------------|
 |Croissants | 375 °F             |
 |Baguettes | 400 °F          |
-|Croissants | 350 °F             |
+|Macarons | 350 °F             |
 |Pain au Chocolat| 375 °F       | 
 
 
-**Calculus**:  ∃d bakery_sales(d, quantity_dozen, price_dozen) ∧ oven_temperature(d, >200 °C)
+**Calculus**:  ∃d bakery_sales(d, _, _) ∧ oven_temperature(d, >200 °C)
 **Result:**  {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
 
 **Calculus**:  ∃d bakery_sales(d, < 55, price_dozen) ∧ oven_temperature(d, temperature )
 **Result:**  {('Croissants', '5  dozen','12.00 per dozen', '375 °F'), ('Pain au Chocolat', '3 dozen', '15.00 per dozen', '375 °F') }
 
 **Calculus**:  ∃d bakery_sales(d, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)
-**Result:**  {('Croissants', '5  dozen','12.00 per dozen', '375 °F'), ('Pain au Chocolat', '3 dozen', '15.00 per dozen', '375 °F') }
+**Result:**  {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
 
 
 This example uses different units (Fahrenheit and dozens) and joins data based on the date.  The "Calculus" line is a simplified representation of the join operation; a real database query would use SQL or a similar language.  The Result shows all possible combinations of matching dates.
