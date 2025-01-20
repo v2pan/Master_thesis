@@ -80,23 +80,23 @@ test_cases = [
         {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
     ),
     (
-        '''∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(d, temperature )''',
-        {('Croissants', '5 dozen','12.00 per dozen', '375 °F'), ('Pain au Chocolat', '3 dozen', '15.00 per dozen', '375 °F') }
+        '''∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )''',
+        {('Pain au Chocolat', '3 dozen', '15.00 per dozen', '200 °F') }
     ),
     (
         '''∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)''',
         {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
     ),
     (
-        '''∃m movies(m,_, _) ∧ movies_personal(m, _)''',
+        '''∃movie movies(movie,_, _) ∧ movies_personal(movie, _)''',
         {('The Shawshank Redemption', 'thriller','3/5', 'Die Flucht aus Shawshank', '3/5'), ('Wings of Desire', 'fantasy ','4/5' , 'Der Himmel über Berlin', '5/5'), ('Amélie', 'comedy ','5/5 ' , 'Die fabelhafte Welt der Amélie', '4/5')}
     ),
     (
-        '''∃m movies(m,_, _) ∧ movies_personal(m, >70%)''',
+        '''∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)''',
         {('Wings of Desire', 'fantasy ','4/5' , 'Der Himmel über Berlin', '5/5'), ('Amélie', 'comedy ','5/5 ' , 'Die fabelhafte Welt der Amélie', '4/5')}
     ),
     (
-        '''∃m movies("The sky over Berlin",_, _)''',
+        '''∃ movies("The sky over Berlin",_, _)''',
         {('Wings of Desire', 'fantasy ','4/5' )}
     ),
     (

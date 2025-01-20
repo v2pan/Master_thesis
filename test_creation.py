@@ -124,7 +124,7 @@ def test_creation_pipeline(queries):
                 
 
 
-queries= test_cases[12:13]
+queries= test_cases[15:16]
 print(queries)
 test_creation_pipeline(queries)
 

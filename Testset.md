@@ -260,13 +260,13 @@ The example realtes to bakery sales
 |Pain au Chocolat| 200 °F       | 
 
 
-**Calculus**:  ∃d bakery_sales(d, _, _) ∧ oven_temperature(d, >200 °C)
+**Calculus**:  ∃item bakery_sales(item, _, _) ∧ oven_temperature(item, >200 °C)
 **Result:**  {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
 
-**Calculus**:  ∃d bakery_sales(d, < 55, price_dozen) ∧ oven_temperature(d, temperature )
-**Result:**  {('Croissants', '5  dozen','12.00 per dozen', '375 °F'), ('Pain au Chocolat', '3 dozen', '15.00 per dozen', '375 °F') }
+**Calculus**:  ∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )
+**Result:**  {('Croissants', '5  dozen','12.00 per dozen', '200 °F'), ('Pain au Chocolat', '3 dozen', '15.00 per dozen', '200 °F') }
 
-**Calculus**:  ∃d bakery_sales(d, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)
+**Calculus**:  ∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(item, >180 °C)
 **Result:**  {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
 
 
@@ -294,12 +294,12 @@ This example uses different units (Fahrenheit and dozens) and joins data based o
 |Die fabelhafte Welt der Amélie  | 4/5  |
 |Lola rennt| 2/5 | 
 
-**Calculus**:  ∃m movies(m,_, _) ∧ movies_personal(m, _)
+**Calculus**:  ∃movie movies(movie,_, _) ∧ movies_personal(movie, _)
 **Result:**  {('The Shawshank Redemption', 'thriller','3/5', 'Die Flucht aus Shawshank', '3/5'),
 ('Wings of Desire', 'fantasy ','4/5' , 'Der Himmel über Berlin', '5/5'),
 ('Amélie', 'comedy  ','5/5 ' , 'Die fabelhafte Welt der Amélie', '4/5')}
 
-**Calculus**:  ∃m movies(m,_, _) ∧ movies_personal(m, >70%)
+**Calculus**:  ∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)
 **Result:**  {('Wings of Desire', 'fantasy ','4/5' , 'Der Himmel über Berlin', '5/5'),
 ('Amélie', 'comedy  ','5/5 ' , 'Die fabelhafte Welt der Amélie', '4/5')}
 

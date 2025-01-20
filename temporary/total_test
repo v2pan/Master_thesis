@@ -857,5 +857,107 @@
                 "400 °F"
             ]
         ]
+    },
+    {
+        "calculus": "∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )",
+        "initial_sql_query_join": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = oven_temperature.item WHERE bakery_sales.quantity < 55;",
+        "semantic_list_join": [
+            {
+                "Croissants": [
+                    "Croissants"
+                ],
+                "Baguettes": [
+                    "Baguettes"
+                ],
+                "Macarons": [
+                    "Macarons"
+                ],
+                "Pain au Chocolat": [
+                    "Pain au Chocolat"
+                ]
+            }
+        ],
+        "result_join": "SELECT *\nFROM bakery_sales\nINNER JOIN oven_temperature\nON bakery_sales.item = CASE oven_temperature.item\n    WHEN 'Croissants' THEN 'Croissants'\n    WHEN 'Baguettes' THEN 'Baguettes'\n    WHEN 'Macarons' THEN 'Macarons'\n    WHEN 'Pain au Chocolat' THEN 'Pain au Chocolat'\n    END\nWHERE bakery_sales.quantity < 55;",
+        "initial_sql_query_where": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = CASE oven_temperature.item     WHEN 'Croissants' THEN 'Croissants'     WHEN 'Baguettes' THEN 'Baguettes'     WHEN 'Macarons' THEN 'Macarons'     WHEN 'Pain au Chocolat' THEN 'Pain au Chocolat'     END WHERE bakery_sales.quantity < 55;",
+        "semantic_list_where": [
+            [
+                [
+                    "3 dozen"
+                ],
+                "WHERE bakery_sales.quantity < 55;"
+            ]
+        ],
+        "result_where": [
+            [
+                "Pain au Chocolat",
+                "3 dozen",
+                "15.00 per dozen",
+                "Pain au Chocolat",
+                "200 °F"
+            ]
+        ],
+        "output": [
+            [
+                "Pain au Chocolat",
+                "3 dozen",
+                "15.00 per dozen",
+                "Pain au Chocolat",
+                "200 °F"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)",
+        "initial_sql_query_join": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = oven_temperature.item WHERE bakery_sales.quantity > 90 AND oven_temperature.temperature > 180;",
+        "semantic_list_join": [
+            {
+                "Croissants": [
+                    "Croissants"
+                ],
+                "Baguettes": [
+                    "Baguettes"
+                ],
+                "Macarons": [
+                    "Macarons"
+                ],
+                "Pain au Chocolat": [
+                    "Pain au Chocolat"
+                ]
+            }
+        ],
+        "result_join": "SELECT *\nFROM bakery_sales\nINNER JOIN oven_temperature ON bakery_sales.item = CASE oven_temperature.item\n            WHEN 'Croissants' THEN 'Croissants'\n            WHEN 'Baguettes' THEN 'Baguettes'\n            WHEN 'Macarons' THEN 'Macarons'\n            WHEN 'Pain au Chocolat' THEN 'Pain au Chocolat'\n            END\nWHERE bakery_sales.quantity > 90 AND oven_temperature.temperature > 180;",
+        "initial_sql_query_where": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = CASE oven_temperature.item             WHEN 'Croissants' THEN 'Croissants'             WHEN 'Baguettes' THEN 'Baguettes'             WHEN 'Macarons' THEN 'Macarons'             WHEN 'Pain au Chocolat' THEN 'Pain au Chocolat'             END WHERE bakery_sales.quantity > 90 AND oven_temperature.temperature > 180;",
+        "semantic_list_where": [
+            [
+                [
+                    "8 dozen"
+                ],
+                "WHERE bakery_sales.quantity > 90 AND oven_temperature.temperature > 180;"
+            ],
+            [
+                [
+                    "400 °F"
+                ],
+                "WHERE bakery_sales.quantity > 90 AND oven_temperature.temperature > 180;"
+            ]
+        ],
+        "result_where": [
+            [
+                "Baguettes",
+                "8 dozen",
+                "10.00 per dozen",
+                "Baguettes",
+                "400 °F"
+            ]
+        ],
+        "output": [
+            [
+                "Baguettes",
+                "8 dozen",
+                "10.00 per dozen",
+                "Baguettes",
+                "400 °F"
+            ]
+        ]
     }
 ]
