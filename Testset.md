@@ -254,10 +254,10 @@ The example realtes to bakery sales
 
 |Item| Temperature |
 |-----|--------------------|
-|Croissants | 375 °F             |
+|Croissants | 200 °F             |
 |Baguettes | 400 °F          |
 |Macarons | 350 °F             |
-|Pain au Chocolat| 375 °F       | 
+|Pain au Chocolat| 200 °F       | 
 
 
 **Calculus**:  ∃d bakery_sales(d, _, _) ∧ oven_temperature(d, >200 °C)

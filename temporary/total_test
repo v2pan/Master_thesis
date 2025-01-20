@@ -281,7 +281,7 @@
                 "outsideguy": [],
                 "surviver1000": [
                     "surviver1000",
-                    "surviver1000" 
+                    "surviver1000"
                 ],
                 "princess": [
                     "princess"
@@ -807,6 +807,54 @@
                 2,
                 "diego",
                 "chat"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C)",
+        "initial_sql_query_join": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = oven_temperature.item WHERE oven_temperature.temperature > '200 °C';",
+        "semantic_list_join": [
+            {
+                "Croissants": [
+                    "Croissants"
+                ],
+                "Baguettes": [
+                    "Baguettes"
+                ],
+                "Macarons": [
+                    "Macarons"
+                ],
+                "Pain au Chocolat": [
+                    "Pain au Chocolat"
+                ]
+            }
+        ],
+        "result_join": "SELECT *\nFROM bakery_sales\nINNER JOIN oven_temperature ON bakery_sales.item = CASE oven_temperature.item\n            WHEN 'Croissants' THEN 'Croissants'\n            WHEN 'Baguettes' THEN 'Baguettes'\n            WHEN 'Macarons' THEN 'Macarons'\n            WHEN 'Pain au Chocolat' THEN 'Pain au Chocolat'\n            END\nWHERE oven_temperature.temperature > '200 °C';",
+        "initial_sql_query_where": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = CASE oven_temperature.item             WHEN 'Croissants' THEN 'Croissants'             WHEN 'Baguettes' THEN 'Baguettes'             WHEN 'Macarons' THEN 'Macarons'             WHEN 'Pain au Chocolat' THEN 'Pain au Chocolat'             END WHERE oven_temperature.temperature > '200 °C';",
+        "semantic_list_where": [
+            [
+                [
+                    "400 °F"
+                ],
+                "WHERE oven_temperature.temperature > '200 °C';"
+            ]
+        ],
+        "result_where": [
+            [
+                "Baguettes",
+                "8 dozen",
+                "10.00 per dozen",
+                "Baguettes",
+                "400 °F"
+            ]
+        ],
+        "output": [
+            [
+                "Baguettes",
+                "8 dozen",
+                "10.00 per dozen",
+                "Baguettes",
+                "400 °F"
             ]
         ]
     }

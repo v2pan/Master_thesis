@@ -3,6 +3,8 @@ from row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, ge
 from extractor import extract
 import sqlparse
 from database import query_database, QueryExecutionError
+from other_gemini import RessourceError
+import time
 
 retry_delay = 60
 #Analyze whether JOIN or WHERE clause appear, retrieve the relevant ones
@@ -141,7 +143,19 @@ def combined_pipeline(query, evaluation=False):
         if join_conditions and where_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
             initial_sql_query_join, semantic_list_join, result_join=join_pipeline(initial_sql_query, return_query=False, forward=True, evaluation=True)
-            initial_sql_query_where, semantic_list_where, result_where=row_calculus_pipeline(result_join, evaluation=True)
+            max_retries = 3  # Set the maximum number of retries
+            retry_count = 0
+            while retry_count < max_retries:
+                try:
+                    initial_sql_query_where, semantic_list_where, result_where = row_calculus_pipeline(result_join, evaluation=True)
+                    break  # Exit the loop if successful
+                except RessourceError:
+                    retry_count += 1
+                    print(f"Sleeping for {retry_delay} seconds (attempt {retry_count}/{max_retries})")
+                    time.sleep(retry_delay)
+
+            if retry_count == max_retries:
+                print("Maximum retries exceeded.  Giving up.")
             output=result_where
 
         #Then WHERE clause

@@ -76,15 +76,15 @@ test_cases = [
     {('2023 10 26', 'London', 12, 0, '2023 October 26', 'about', 500), ('2023 10 26', 'London', 12, 0, '2023 October 26', 'homepage', 1000), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'about', 500), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'homepage', 1000), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'contact', 200), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'homepage', 1200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'contact', 200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'homepage', 1200)}
     ),
     ( #NEW FROM HERE, test that out please
-        '''∃d bakery_sales(d, _, _) ∧ oven_temperature(d, >200 °C)''',
+        '''∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C)''',
         {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
     ),
     (
-        '''∃d bakery_sales(d, < 55, price_dozen) ∧ oven_temperature(d, temperature )''',
+        '''∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(d, temperature )''',
         {('Croissants', '5 dozen','12.00 per dozen', '375 °F'), ('Pain au Chocolat', '3 dozen', '15.00 per dozen', '375 °F') }
     ),
     (
-        '''∃d bakery_sales(d, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)''',
+        '''∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)''',
         {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
     ),
     (
