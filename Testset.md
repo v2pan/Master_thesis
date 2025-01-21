@@ -328,7 +328,7 @@ This example uses different units (Fahrenheit and dozens) and joins data based o
 | 24.12.2022  | 1000  |
 
 
-**Calculus**:  ∃c influencers(_, c) ∧ clicks (_, c)
+**Calculus**:  ∃clicks influencers(, clicks) ∧ clicks (, clicks)
 **Result:**  {('makeuptutorial', '1000 thousand','17.01.2011 ' , 1000000),
 ('surviver1000', '1 million','22.11.2014' , 10^6),
 ('princess ', 'one thousand','24.12.2022' , 1000 )}

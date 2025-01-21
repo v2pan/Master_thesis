@@ -959,5 +959,227 @@
                 "400 °F"
             ]
         ]
+    },
+    {
+        "calculus": "∃movie movies(movie,_, _) ∧ movies_personal(movie, _)",
+        "initial_sql_query_join": "SELECT * FROM movies INNER JOIN movies_personal ON movies_personal.movie = CASE      WHEN movies.movie = 'The Shawshank Redemption' THEN 'Die Flucht aus Shawshank'     WHEN movies.movie = 'Wings of Desire' THEN 'Der Himmel über Berlin'     WHEN movies.movie = 'Amélie' THEN 'Die fabelhafte Welt der Amélie'     ELSE movies.movie  -- Handle cases where no translation is needed     END;",
+        "semantic_list_join": [
+            {
+                "Raiders of the Lost Arc": [],
+                "The Shawshank Redemption": [
+                    "Die Flucht aus Shawshank"
+                ],
+                "Wings of Desire": [
+                    "Der Himmel über Berlin"
+                ],
+                "Amélie": [
+                    "Die fabelhafte Welt der Amélie"
+                ]
+            }
+        ],
+        "result_join": [
+            [
+                "Wings of Desire",
+                "fantasy",
+                "4/5",
+                "Der Himmel über Berlin",
+                "5/5"
+            ],
+            [
+                "Amélie",
+                "comedy",
+                "5/5",
+                "Die fabelhafte Welt der Amélie",
+                "4/5"
+            ],
+            [
+                "The Shawshank Redemption",
+                "thriller",
+                "3/5",
+                "Die Flucht aus Shawshank",
+                "3/5"
+            ]
+        ],
+        "initial_sql_query_where": null,
+        "semantic_list_where": null,
+        "result_where": null,
+        "output": [
+            [
+                "Wings of Desire",
+                "fantasy",
+                "4/5",
+                "Der Himmel über Berlin",
+                "5/5"
+            ],
+            [
+                "Amélie",
+                "comedy",
+                "5/5",
+                "Die fabelhafte Welt der Amélie",
+                "4/5"
+            ],
+            [
+                "The Shawshank Redemption",
+                "thriller",
+                "3/5",
+                "Die Flucht aus Shawshank",
+                "3/5"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)",
+        "initial_sql_query_join": "SELECT * FROM movies INNER JOIN movies_personal ON movies.movie = movies_personal.movie WHERE movies_personal.personal_rating > '70%';",
+        "semantic_list_join": [
+            {
+                "Raiders of the Lost Arc": [],
+                "The Shawshank Redemption": [
+                    "Die Flucht aus Shawshank"
+                ],
+                "Wings of Desire": [
+                    "Der Himmel über Berlin"
+                ],
+                "Amélie": [
+                    "Die fabelhafte Welt der Amélie"
+                ]
+            }
+        ],
+        "result_join": "SELECT *\nFROM movies\nINNER JOIN movies_personal\nON movies_personal.movie = CASE movies.movie\n    WHEN 'Raiders of the Lost Arc' THEN 'Raiders of the Lost Arc'\n    WHEN 'The Shawshank Redemption' THEN 'Die Flucht aus Shawshank'\n    WHEN 'Wings of Desire' THEN 'Der Himmel über Berlin'\n    WHEN 'Amélie' THEN 'Die fabelhafte Welt der Amélie'\n    ELSE movies.movie  --Handle cases not in the binding\n    END\nWHERE movies_personal.personal_rating > '70%';",
+        "initial_sql_query_where": "SELECT * FROM movies INNER JOIN movies_personal ON movies_personal.movie = CASE movies.movie     WHEN 'Raiders of the Lost Arc' THEN 'Raiders of the Lost Arc'     WHEN 'The Shawshank Redemption' THEN 'Die Flucht aus Shawshank'     WHEN 'Wings of Desire' THEN 'Der Himmel über Berlin'     WHEN 'Amélie' THEN 'Die fabelhafte Welt der Amélie'     ELSE movies.movie  --Handle cases not in the binding     END WHERE movies_personal.personal_rating > '70%';",
+        "semantic_list_where": [
+            [
+                [
+                    "5/5"
+                ],
+                [
+                    "4/5"
+                ],
+                "WHERE movies_personal.personal_rating > '70%';"
+            ]
+        ],
+        "result_where": [
+            [
+                "Wings of Desire",
+                "fantasy",
+                "4/5",
+                "Der Himmel über Berlin",
+                "5/5"
+            ],
+            [
+                "Amélie",
+                "comedy",
+                "5/5",
+                "Die fabelhafte Welt der Amélie",
+                "4/5"
+            ]
+        ],
+        "output": [
+            [
+                "Wings of Desire",
+                "fantasy",
+                "4/5",
+                "Der Himmel über Berlin",
+                "5/5"
+            ],
+            [
+                "Amélie",
+                "comedy",
+                "5/5",
+                "Die fabelhafte Welt der Amélie",
+                "4/5"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃ movies(\"The sky over Berlin\",_, _)",
+        "initial_sql_query_join": null,
+        "semantic_list_join": null,
+        "result_join": null,
+        "initial_sql_query_where": "SELECT * FROM movies WHERE movies.movie = 'The sky over Berlin';",
+        "semantic_list_where": [
+            [
+                [
+                    "Wings of Desire"
+                ],
+                "WHERE movies.movie = 'The sky over Berlin';"
+            ]
+        ],
+        "result_where": [
+            [
+                "Wings of Desire",
+                "fantasy",
+                "4/5"
+            ]
+        ],
+        "output": [
+            [
+                "Wings of Desire",
+                "fantasy",
+                "4/5"
+            ]
+        ]
+    },
+    {
+        "calculus": "∃clicks influencers(, clicks) ∧ publication_clicks(, clicks)",
+        "initial_sql_query_join": "SELECT * FROM influencers INNER JOIN publication_clicks ON publication_clicks.clicks = CASE influencers.clicks             WHEN '1000 thousand' THEN '1000000'             WHEN '1 million' THEN '1000000'             WHEN 'one thousand' THEN '1000'             ELSE influencers.clicks  -- Handle cases not in the binding             END;",
+        "semantic_list_join": [
+            {
+                "1000 thousand": [
+                    "1000000",
+                    "10^6"
+                ],
+                "50": [],
+                "1 million": [
+                    "1000000",
+                    "10^6"
+                ],
+                "one thousand": [
+                    "1000"
+                ]
+            }
+        ],
+        "result_join": [
+            [
+                "princess",
+                "one thousand",
+                "24.12.2022",
+                "1000"
+            ],
+            [
+                "makeuptutorial",
+                "1000 thousand",
+                "17.01.2011",
+                "1000000"
+            ],
+            [
+                "surviver1000",
+                "1 million",
+                "17.01.2011",
+                "1000000"
+            ]
+        ],
+        "initial_sql_query_where": null,
+        "semantic_list_where": null,
+        "result_where": null,
+        "output": [
+            [
+                "princess",
+                "one thousand",
+                "24.12.2022",
+                "1000"
+            ],
+            [
+                "makeuptutorial",
+                "1000 thousand",
+                "17.01.2011",
+                "1000000"
+            ],
+            [
+                "surviver1000",
+                "1 million",
+                "17.01.2011",
+                "1000000"
+            ]
+        ]
     }
 ]

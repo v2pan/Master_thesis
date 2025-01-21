@@ -1,9 +1,9 @@
-list1= [[['Peter'], "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"],[['ten'], ['11'], "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"] ]
+from evaluation import evaluate_results
 
-list2= [[['Peter'], "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"],[['ten'], ['11'],['fourty'], "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"] ]
+output=[('princess', 'one thousand', '24.12.2022', '1000'), ('makeuptutorial', '1000 thousand', '17.01.2011', '1000000'), ('surviver1000', '1 million', '17.01.2011', '1000000')]
+result={('surviver1000', '1 million', '22.11.2014', 12), ('makeuptutorial', '1000 thousand', '17.01.2011 ', 1000000), ('princess ', 'one thousand', '24.12.2022', 1000)}
 
-from collections import Counter
-list1 = [[1,2,3],[4,5,6],[7,8,9]]
-list2 = [[1,3, 2],[4,5,6],[7,9,8]]
-print(list1[0])
-print(set(list1[0])==set(list2[0]))
+accuracy, precision, recall, f1_score = evaluate_results(result, output)
+
+print(f"Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1 Score: {f1_score}")
+

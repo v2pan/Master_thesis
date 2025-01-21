@@ -89,19 +89,19 @@ test_cases = [
     ),
     (
         '''∃movie movies(movie,_, _) ∧ movies_personal(movie, _)''',
-        {('The Shawshank Redemption', 'thriller','3/5', 'Die Flucht aus Shawshank', '3/5'), ('Wings of Desire', 'fantasy ','4/5' , 'Der Himmel über Berlin', '5/5'), ('Amélie', 'comedy ','5/5 ' , 'Die fabelhafte Welt der Amélie', '4/5')}
+        {('Wings of Desire', 'fantasy', '4/5', 'Der Himmel über Berlin', '5/5'), ('Amélie', 'comedy', '5/5', 'Die fabelhafte Welt der Amélie', '4/5'), ('The Shawshank Redemption', 'thriller', '3/5', 'Die Flucht aus Shawshank', '3/5')}
     ),
     (
         '''∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)''',
-        {('Wings of Desire', 'fantasy ','4/5' , 'Der Himmel über Berlin', '5/5'), ('Amélie', 'comedy ','5/5 ' , 'Die fabelhafte Welt der Amélie', '4/5')}
+        {('Wings of Desire', 'fantasy', '4/5', 'Der Himmel über Berlin', '5/5'), ('Amélie', 'comedy', '5/5', 'Die fabelhafte Welt der Amélie', '4/5')}
     ),
     (
         '''∃ movies("The sky over Berlin",_, _)''',
-        {('Wings of Desire', 'fantasy ','4/5' )}
+        {('Wings of Desire', 'fantasy','4/5' )}
     ),
     (
-        '''∃c influencers(, c) ∧ clicks (, c)''',
-        {('makeuptutorial', '1000 thousand','17.01.2011 ' , 1000000), ('surviver1000', '1 million','22.11.2014' , 10^6), ('princess ', 'one thousand','24.12.2022' , 1000 )}
+        '''∃clicks influencers(, clicks) ∧ publication_clicks(, clicks)''',
+        {('princess', 'one thousand', '24.12.2022', '1000'), ('makeuptutorial', '1000 thousand', '17.01.2011', '1000000'), ('surviver1000', '1 million', '17.01.2011', '1000000')}
     )
 
 ]
