@@ -447,8 +447,8 @@ def evaluation_pipeline(queries):
     
     
 
-#How many runs per expression
+#How many runs per expression, ToDO:  16:17 and ongoing
 RUNS=3
 queries= [i for i, _ in test_cases]
-queries=[queries[11]]
-#evaluation_pipeline(queries)
+queries=queries[16:17]
+evaluation_pipeline(queries)

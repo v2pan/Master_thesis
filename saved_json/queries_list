@@ -10,5 +10,9 @@
     "∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))",
     "∃id (children_table(id, >1) ∧ fathers(id, _))",
     "ARTISTS(a,,), ALBUMS(,a,\"Reputation\",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)",
-    "∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)"
+    "∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)",
+    "∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C)",
+    "∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )",
+    "∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)",
+    "∃movie movies(movie,_, _) ∧ movies_personal(movie, _)"
 ]

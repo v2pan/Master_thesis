@@ -153,6 +153,8 @@ def combined_pipeline(query, evaluation=False):
                     retry_count += 1
                     print(f"Sleeping for {retry_delay} seconds (attempt {retry_count}/{max_retries})")
                     time.sleep(retry_delay)
+                except TypeError:
+                    print("TypeError has occured")
 
             if retry_count == max_retries:
                 print("Maximum retries exceeded.  Giving up.")

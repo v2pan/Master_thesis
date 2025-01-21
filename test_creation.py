@@ -124,8 +124,8 @@ def test_creation_pipeline(queries):
                 
 
 #Test creation done for all 19 examples
-queries= test_cases
-print(len(queries))
+# queries= test_cases[12:]
+# print(queries)
 #test_creation_pipeline(queries)
 
 

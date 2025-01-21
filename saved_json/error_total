@@ -106,6 +106,41 @@
         "semantic_list_where": 0,
         "result_where": 0,
         "correct_results": 2
+    },
+    {
+        "initial_sql_query_join": 0,
+        "semantic_list_join": 0,
+        "result_join": 3,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 0
+    },
+    {
+        "initial_sql_query_join": 0,
+        "semantic_list_join": 0,
+        "result_join": 3,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 0
+    },
+    {
+        "initial_sql_query_join": 0,
+        "semantic_list_join": 0,
+        "result_join": 3,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 0
+    },
+    {
+        "initial_sql_query_join": 3,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 0
     }
-] 
- 
+]
