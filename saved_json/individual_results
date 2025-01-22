@@ -1,6 +1,6 @@
 [
     {
-        "calculus": "∃movie movies(movie,_, _) ∧ movies_personal(movie, _)",
+        "calculus": "∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)",
         "errors": [
             "initial_sql_query_join",
             "semantic_list_join",

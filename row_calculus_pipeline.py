@@ -429,7 +429,7 @@ def compare_semantics_in_list(input_list):
 
 #Designed for intial query
 def initial_query(query,context):
-        response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, meaning try to use only one 'SELECT' command, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
+        response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, meaning try to use only one 'SELECT' command, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '. Only use tables explicitly mentioned in the query, each table has the structure 'table(attr1, atrr2, attr3)'  The structure of the database is the following: {context}.", True,max_token=1000)
         return response, temp_meta
 
 
@@ -520,11 +520,10 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False):
     #Print total usage
     print(usage_metadata_total)
     #Return result
-    if result:
-        if evaluation:
-            return initial_sql_query, semantic_list, result
-        else:
-            return result
+    if evaluation:
+        return initial_sql_query, semantic_list, result
+    else:
+        return result
 
 #Shareowner and Animalowner examples with equality
 # calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''

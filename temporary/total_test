@@ -1120,7 +1120,7 @@
         ]
     },
     {
-        "calculus": "∃clicks influencers(, clicks) ∧ publication_clicks(, clicks)",
+        "calculus": "∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)",
         "initial_sql_query_join": "SELECT * FROM influencers INNER JOIN publication_clicks ON publication_clicks.clicks = CASE influencers.clicks             WHEN '1000 thousand' THEN '1000000'             WHEN '1 million' THEN '1000000'             WHEN 'one thousand' THEN '1000'             ELSE influencers.clicks  -- Handle cases not in the binding             END;",
         "semantic_list_join": [
             {

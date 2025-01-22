@@ -267,7 +267,7 @@ def comparison_logic(result_dic, target_instance):
 def error_logic(loaded_dictionary, queries):
     max_retries = 30
     #MODIFY
-    retry_delay = 45
+    retry_delay = 60
 
     
 
@@ -447,8 +447,8 @@ def evaluation_pipeline(queries):
     
     
 
-#How many runs per expression, ToDO:  16:17 and ongoing
+#How many runs per expression, Done everything
 RUNS=3
 queries= [i for i, _ in test_cases]
-queries=queries[16:17]
-evaluation_pipeline(queries)
+# queries=queries[18:19]
+# evaluation_pipeline(queries)

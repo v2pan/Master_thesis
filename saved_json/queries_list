@@ -14,5 +14,8 @@
     "∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C)",
     "∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )",
     "∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)",
-    "∃movie movies(movie,_, _) ∧ movies_personal(movie, _)"
+    "∃movie movies(movie,_, _) ∧ movies_personal(movie, _)",
+    "∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)",
+    "∃ movies(\"The sky over Berlin\",_, _)",
+    "∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)"
 ]

@@ -100,7 +100,7 @@ test_cases = [
         {('Wings of Desire', 'fantasy','4/5' )}
     ),
     (
-        '''∃clicks influencers(, clicks) ∧ publication_clicks(, clicks)''',
+        '''∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)''',
         {('princess', 'one thousand', '24.12.2022', '1000'), ('makeuptutorial', '1000 thousand', '17.01.2011', '1000000'), ('surviver1000', '1 million', '17.01.2011', '1000000')}
     )
 
