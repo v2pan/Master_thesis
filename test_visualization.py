@@ -28,6 +28,7 @@ def visualize_errors_category(error_total, queries_list, categorization):
     fig, axes = plt.subplots(rows, cols, figsize=(8, 8)) #Reduced figsize
     axes = axes.ravel()
 
+    control_counter=0
     for i, category in enumerate(categorization):
         ax = axes[i]
         colors = ['red', 'red', 'red', 'red', 'red', 'red', 'blue']
@@ -53,6 +54,8 @@ def visualize_errors_category(error_total, queries_list, categorization):
             "probabilities": list(probs),
             "total_counts": list(total_counts_per_category)
         }
+
+        control_counter += sum(total_dic["total_counts"])
 
         total_dic = pd.DataFrame(total_dic) 
         # Define a mapping from categories to numbers
@@ -105,5 +108,6 @@ def visualize_errors_category(error_total, queries_list, categorization):
     fig.savefig(filepath_total_fig, dpi=300, bbox_inches='tight')
     print("Total plot saved to 'saved_plots' folder.")
     plt.show()
+    print("The total counter is: ", control_counter)
 
 visualize_errors_category(error_total, queries_list, categorization)
