@@ -16,7 +16,7 @@ genai.configure(api_key=api_key)
 # 1 million TPM
 # 1,500 RPD
 
-def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model="gemini-1.5-flash"):  # Add optional argument
+def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model="gemini-1.5-flash-8b"):  # Add optional argument
     model = genai.GenerativeModel(model)
     try:
         result = model.generate_content(contents=prompt,
@@ -53,7 +53,7 @@ def get_embedding(text,task_type="retrieval_document"):
 
 
 
-def gemini_json(prompt,response_type):
+def gemini_json(prompt,response_type, model="gemini-1.5-flash"):
     """
     Sends a prompt to the Gemini API and returns the response as JSON.
 
@@ -67,7 +67,7 @@ def gemini_json(prompt,response_type):
 
     """
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash-8b")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         result = model.generate_content(
             #"Answer the following questions [Does 'dog' and 'chien' have the same semantic meaning?, Does 'dog' and 'chat have the same semantic meaning?, Does dog and cat have the same semantic meaning?]",
             prompt,
@@ -90,6 +90,29 @@ class Table(typing.TypedDict):
     category: str
 
 
-
-# response = gemini_json(prompt, response_type=list[bool])  # Expect a list of booleans back
+# prompt="Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n"
+# answer=ask_gemini(prompt)
+# response = gemini_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool])  # Expect a list of booleans back
 # print(response)
+
+prompt="Answer the following questions with True or False. If there are different units or scales, first convert them,then do the comparison for example 10 inches are approxiamtely 0.254 mters which is less than 1 meter. The questions are  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n"
+true_reponse=[False, True, False, False]
+
+models = ["gemini-1.5-flash", "gemini-1.5-flash-8b", ]
+num_tries = 2
+
+results = {}
+for model in models:
+    results[model] = []
+    for i in range(num_tries):
+        response = gemini_json(prompt, response_type=list[bool])
+        results[model].append(response)
+
+# Print the results in a table format
+print("| Try |", end="")
+for model in models:
+    print(f" {model} |", end="")
+print()
+print("|---|---|---|")
+for i in range(num_tries):
+    print(f"| {i+1} | {results[models[0]][i]} | {results[models[1]][i]} |")

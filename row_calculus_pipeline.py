@@ -383,7 +383,7 @@ def compare_semantics_in_list(input_list):
 
             #Final prompt with list
             total_prompt="Answer the following questions with True or False." # Change in connection with bakery Fahrenheit/Celcius example
-            total_prompt=f"Answer the following questions with True or False. eason you thinking, especially considering the units, converting units to another and then answering the question.  \n"
+            total_prompt=f"Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n"
             # Iterate over the items in temp_list and compare with temp_string
             for item in temp_list:
                 item=item[0]

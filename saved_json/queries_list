@@ -18,4 +18,4 @@
     "∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)",
     "∃ movies(\"The sky over Berlin\",_, _)",
     "∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)"
-]
+] 
