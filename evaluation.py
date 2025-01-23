@@ -25,6 +25,50 @@ def evaluate_results(expected, actual):
 
     return accuracy, precision, recall, f1_score
 
+def write_all_metrics_to_file(metrics, filename = "all_metrics.txt"):
+    """Writes all individual metrics to a text file."""
+    if metrics:
+        try:
+            with open(filename, "w") as f:
+                f.write("--- Individual Metrics ---\n")
+                for i, m in enumerate(metrics):
+                    accuracy, precision, recall, f1, calculus = m
+                    f.write(f"Calculus {calculus}:\n")
+                    f.write(f"  Accuracy: {accuracy:.4f}\n")
+                    f.write(f"  Precision: {precision:.4f}\n")
+                    f.write(f"  Recall: {recall:.4f}\n")
+                    f.write(f"  F1-score: {f1:.4f}\n")
+                f.write("\n--- Overall Metrics ---\n")
+                accuracy_mean = sum(m[0] for m in metrics) / len(metrics)
+                precision_mean = sum(m[1] for m in metrics) / len(metrics)
+                recall_mean = sum(m[2] for m in metrics) / len(metrics)
+                f1_score_mean = sum(m[3] for m in metrics) / len(metrics)
+                f.write(f"Mean Accuracy: {accuracy_mean:.4f}\n")
+                f.write(f"Mean Precision: {precision_mean:.4f}\n")
+                f.write(f"Mean Recall: {recall_mean:.4f}\n")
+                f.write(f"Mean F1-score: {f1_score_mean:.4f}\n")
+            print(f"Metrics written to '{filename}'")
+        except OSError as e:
+            print(f"Error writing metrics to file: {e}")
+    else:
+        print("No metrics to write to file.")
+
+def append_metrics_to_file(metrics, filename="metrics/test_evaluation_metrics.txt"):
+    """Appends metrics to the end of the file."""
+    try:
+        with open(filename, "a") as f:  # Open for appending
+            f.write("\n")
+            f.write("--- Individual Metrics ---\n")
+            f.write(f"Calculus {metrics[4]}:\n")
+            f.write(f"  Accuracy: {metrics[0]:.4f}\n")
+            f.write(f"  Precision: {metrics[1]:.4f}\n")
+            f.write(f"  Recall: {metrics[2]:.4f}\n")
+            f.write(f"  F1-score: {metrics[3]:.4f}\n")
+
+    except OSError as e:
+        print(f"Error writing metrics to file: {e}")
+
+
 
 
 test_cases = [
@@ -159,33 +203,7 @@ test_cases = [
 #     print("No successful test cases to calculate mean metrics.")
 
 
-# def write_all_metrics_to_file(metrics, filename = "all_metrics.txt"):
-#     """Writes all individual metrics to a text file."""
-#     if metrics:
-#         try:
-#             with open(filename, "w") as f:
-#                 f.write("--- Individual Metrics ---\n")
-#                 for i, m in enumerate(metrics):
-#                     accuracy, precision, recall, f1, calculus = m
-#                     f.write(f"Calculus {calculus}:\n")
-#                     f.write(f"  Accuracy: {accuracy:.4f}\n")
-#                     f.write(f"  Precision: {precision:.4f}\n")
-#                     f.write(f"  Recall: {recall:.4f}\n")
-#                     f.write(f"  F1-score: {f1:.4f}\n")
-#                 f.write("\n--- Overall Metrics ---\n")
-#                 accuracy_mean = sum(m[0] for m in metrics) / len(metrics)
-#                 precision_mean = sum(m[1] for m in metrics) / len(metrics)
-#                 recall_mean = sum(m[2] for m in metrics) / len(metrics)
-#                 f1_score_mean = sum(m[3] for m in metrics) / len(metrics)
-#                 f.write(f"Mean Accuracy: {accuracy_mean:.4f}\n")
-#                 f.write(f"Mean Precision: {precision_mean:.4f}\n")
-#                 f.write(f"Mean Recall: {recall_mean:.4f}\n")
-#                 f.write(f"Mean F1-score: {f1_score_mean:.4f}\n")
-#             print(f"Metrics written to '{filename}'")
-#         except OSError as e:
-#             print(f"Error writing metrics to file: {e}")
-#     else:
-#         print("No metrics to write to file.")
+
 
 # write_all_metrics_to_file(metrics)
 

@@ -1,9 +1,13 @@
-from evaluation import evaluate_results
+metrics = [
+    [10, 20, 30],
+    [12, 22, 32],
+    [15, 25, 35]
+]
 
-output=[('princess', 'one thousand', '24.12.2022', '1000'), ('makeuptutorial', '1000 thousand', '17.01.2011', '1000000'), ('surviver1000', '1 million', '17.01.2011', '1000000')]
-result={('surviver1000', '1 million', '22.11.2014', 12), ('makeuptutorial', '1000 thousand', '17.01.2011 ', 1000000), ('princess ', 'one thousand', '24.12.2022', 1000)}
+if not metrics:
+    averages = []
+else:
+    num_positions = len(metrics[0])  # Assumes all inner lists have the same length
+    averages = [sum(metrics[i][j] for i in range(len(metrics))) / len(metrics) for j in range(num_positions)]
 
-accuracy, precision, recall, f1_score = evaluate_results(result, output)
-
-print(f"Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1 Score: {f1_score}")
-
+print(f"The averages for each position are: {averages}")

@@ -1,0 +1,6 @@
+--- Individual Metrics ---
+Calculus ∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C):
+  Accuracy: 0.2500
+  Precision: 1.0000
+  Recall: 0.2500
+  F1-score: 0.4000

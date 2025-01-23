@@ -348,15 +348,15 @@ def compare_semantics_in_list(input_list):
             condition=outer_list[1]
             
             #Let LLM generate a goal to make sure LLM takes right decision
-            goal,temp_meta=ask_gemini(f'''Write out the goal for this clause in natural language. Focus on the
-                            semantic meaning. {outer_list[-2]}. Be brief.
-                            Input: 'WHERE person.id <> 2'
-                            Output: Retrieve instances where the id of the person is not 2
-                            Input : {outer_list[-2]}
-                            Output:
-                            ''', True, max_token=100)
-            print(f"The goal is {goal}")
-            update_metadata(temp_meta)
+            # goal,temp_meta=ask_gemini(f'''Write out the goal for this clause in natural language. Focus on the
+            #                 semantic meaning. {outer_list[-2]}. Be brief.
+            #                 Input: 'WHERE person.id <> 2'
+            #                 Output: Retrieve instances where the id of the person is not 2
+            #                 Input : {outer_list[-2]}
+            #                 Output:
+            #                 ''', True, max_token=100)
+            # print(f"The goal is {goal}")
+            #update_metadata(temp_meta)
             #Ask LLM to generate a phrase for the comparison
             phrase,temp_meta=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
                               Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
@@ -404,7 +404,10 @@ def compare_semantics_in_list(input_list):
                 total_prompt+=prompt
 
             #Figure out the binding by giving out a list of lists    
-            response = gemini_json(total_prompt, response_type=list[bool])
+            # response = gemini_json(total_prompt, response_type=list[bool])
+
+            answer=ask_gemini(total_prompt)
+            response = gemini_json(f"For this question \n{total_prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool])  # Expect a list of booleans back
 
             #Check if response has same length
             if len(response)!=len(temp_list):

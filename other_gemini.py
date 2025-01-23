@@ -90,29 +90,45 @@ class Table(typing.TypedDict):
     category: str
 
 
-# prompt="Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n"
-# answer=ask_gemini(prompt)
-# response = gemini_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool])  # Expect a list of booleans back
 # print(response)
 
-prompt="Answer the following questions with True or False. If there are different units or scales, first convert them,then do the comparison for example 10 inches are approxiamtely 0.254 mters which is less than 1 meter. The questions are  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n"
-true_reponse=[False, True, False, False]
+# prompt='''Answer the following questions with True or False. If the units are different,
+# rewrite all to the same unit and only then answer the question.
+# The questions are 
+#  \n '200 °F'  is greater than '200 °C' \n
+# '400 °F'  is greater than '200 °C' \n 
+# '350 °F'  is greater than '200 °C' \n
+#  '200 °F'  is greater than '200 °C' \n'''
 
-models = ["gemini-1.5-flash", "gemini-1.5-flash-8b", ]
-num_tries = 2
+# prompt='''Answer the following questions with True or False. 
+# The questions are 
+#  \n '400 °C'  is greater than '200 °C' \n
+# '100 °C'  is greater than '200 °C' \n 
+# '50 °C'  is greater than '200 °C' \n
+#  '800 °F'  is greater than '200 °C' \n'''
+# prompt="Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n"
 
-results = {}
-for model in models:
-    results[model] = []
-    for i in range(num_tries):
-        response = gemini_json(prompt, response_type=list[bool])
-        results[model].append(response)
+# true_reponse=[False, True, False, False]
 
-# Print the results in a table format
-print("| Try |", end="")
-for model in models:
-    print(f" {model} |", end="")
-print()
-print("|---|---|---|")
-for i in range(num_tries):
-    print(f"| {i+1} | {results[models[0]][i]} | {results[models[1]][i]} |")
+# models = ["gemini-1.5-flash", "gemini-1.5-flash-8b", ]
+# num_tries = 3
+
+# results = {}
+# for model in models:
+#     results[model] = []
+#     for i in range(num_tries):
+#         #response = gemini_json(prompt, response_type=list[bool])
+
+#         answer=ask_gemini(prompt)
+#         response = gemini_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool])  # Expect a list of booleans back
+
+#         results[model].append(response)
+
+# # Print the results in a table format
+# print("| Try |", end="")
+# for model in models:
+#     print(f" {model} |", end="")
+# print()
+# print("|---|---|---|")
+# for i in range(num_tries):
+#     print(f"| {i+1} | {results[models[0]][i]} | {results[models[1]][i]} |")

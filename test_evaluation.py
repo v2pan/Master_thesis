@@ -14,7 +14,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 from combined_pipeline import combined_pipeline
-from evaluation import test_cases, evaluate_results
+from evaluation import test_cases, evaluate_results, write_all_metrics_to_file, append_metrics_to_file
 import seaborn as sns
 import pandas as pd
 import re
@@ -275,6 +275,7 @@ def error_logic(loaded_dictionary, queries):
     queries_list=[]
     api_retries = 0
     #Iterate over the whole list of input queries
+    overall_metrics = []
     for query in queries:
 
         
@@ -284,7 +285,7 @@ def error_logic(loaded_dictionary, queries):
         
         #Counter variable
         l=0
-                
+        metrics = []  # List to store metrics for each test case
         while l < RUNS:
                         
             #GET results from the 
@@ -324,6 +325,24 @@ def error_logic(loaded_dictionary, queries):
             for key in error_cnt.keys():
                 error_cnt[key] += error_cnt_tmp[key]
             l+=1
+            
+            #Write target output as tuple
+            target_output = [tuple(target_instance["output"][0])]
+            #Now do also the Precision KPI stuff please
+            accuracy, precision, recall, f1_score = evaluate_results(output, target_output)
+            metrics.append([accuracy, precision, recall, f1_score])
+
+        #Calculate average values for accuracy, precision, recall, f1_score
+        #and add it to appropriate folder
+        num_positions = len(metrics[0])  # Assumes all inner lists have the same length
+        averages = [sum(metrics[i][j] for i in range(len(metrics))) / len(metrics) for j in range(num_positions)]
+        metrics_list=[]
+        [metrics_list.append(i) for i in averages]
+        metrics_list.append(query)
+        append_metrics_to_file(metrics_list)
+        
+        #overall_metrics.append(metrics_list)
+
 
         error_total.append(error_cnt)   
         queries_list.append(query)
@@ -334,6 +353,11 @@ def error_logic(loaded_dictionary, queries):
 
         append_to_json(error_cnt, path_error_total)
         append_to_json(query, path_queries_list)
+    
+    #Write that to a file
+    #write_all_metrics_to_file(overall_metrics, filename="test_evaluation_metrics")
+
+    #Return necessary output
     return error_total, queries_list
 
 def visualize_errors(error_total, queries_list):
@@ -343,7 +367,7 @@ def visualize_errors(error_total, queries_list):
     path_ind_dic= os.path.join(os.getcwd(), "saved_json", "individual_results")
     path_total_dic= os.path.join(os.getcwd(), "saved_json", "total_results")
     filepath_total_fig=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
-    filepath_individual_plot=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
+    
 
     num_plots = len(error_total)
     num_cols = 2  # Adjust number of columns as needed
@@ -385,6 +409,7 @@ def visualize_errors(error_total, queries_list):
     for j in range(i + 1, len(axes)):
         fig.delaxes(axes[j])
 
+    filepath_individual_plot=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
     #Individual plot
     plt.tight_layout()
     plt.suptitle(f"Counts of Result Types for {RUNS} Runs")
@@ -448,7 +473,7 @@ def evaluation_pipeline(queries):
     
 
 #How many runs per expression, Done everything
-RUNS=3
+RUNS=1
 queries= [i for i, _ in test_cases]
 queries=queries[12:13]
 evaluation_pipeline(queries)

@@ -1,6 +1,6 @@
 [
     {
-        "calculus": "∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)",
+        "calculus": "∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C)",
         "errors": [
             "initial_sql_query_join",
             "semantic_list_join",
@@ -11,18 +11,18 @@
             "correct_results"
         ],
         "error_counts": [
-            3,
             0,
             0,
+            1,
             0,
             0,
             0,
             0
         ],
         "probabilities": [
+            0.0,
+            0.0,
             1.0,
-            0.0,
-            0.0,
             0.0,
             0.0,
             0.0,

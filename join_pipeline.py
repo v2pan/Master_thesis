@@ -90,14 +90,14 @@ def compare_semantics_in_list(input_list,order):
                 condition = outer_list[1]
                 original_expression = outer_list[2]  # Access the original expression
 
-                goal = ask_gemini(f"""Write out the goal for this clause in natural language. Focus on the
-                                semantic meaning. {original_expression}. Be brief.
-                                Input: 'WHERE person.id <> 2'
-                                Output: Retrieve instances where the id of the person is not 2
-                                Input : {original_expression}
-                                Output:
-                                """)
-                print(f"The goal is: {goal}")
+                # goal = ask_gemini(f"""Write out the goal for this clause in natural language. Focus on the
+                #                 semantic meaning. {original_expression}. Be brief.
+                #                 Input: 'WHERE person.id <> 2'
+                #                 Output: Retrieve instances where the id of the person is not 2
+                #                 Input : {original_expression}
+                #                 Output:
+                #                 """)
+                # print(f"The goal is: {goal}")
 
                 phrase, temp_meta = ask_gemini(f"""Write the output in natural language and ignore possible numbers.
                                 Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
