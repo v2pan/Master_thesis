@@ -150,8 +150,8 @@ def load_data(filepath):
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             loaded_dictionary = json.load(f)
-        print(f"Dictionary loaded successfully from {filepath}")
-        print(loaded_dictionary) # Print the loaded dictionary to verify
+        #print(f"Dictionary loaded successfully from {filepath}")
+        #print(loaded_dictionary) # Print the loaded dictionary to verify
         return loaded_dictionary
     except FileNotFoundError:
         print(f"Error: File not found at {filepath}")
@@ -222,25 +222,17 @@ def comparison_logic(result_dic, target_instance):
     target_initial_query_result_join = results_list[2]
     target_initial_query_result_where = results_list[3]
  
+    result_join_data=data["result_join"]
+    result_join_target=target_instance["result_join"]
 
-    #FIX the issue of farwarding the initial_query
-    # if initial_sql_query_join_copy is not None:
-    #     if initial_sql_query_join_copy == data["result_join"] or initial_sql_query_join_copy.replace('\n', ' ') == data["result_where"]:
-    #         data["result_join"]=[]
+    if result_join_data is not None:
+        if "SELECT" in result_join_data and type(result_join_data)==str:
+            result_join_data=initial_query_transform(result_join_data)
+    if result_join_target is not None:
+        if  "SELECT" in result_join_target and type(result_join_target)==str:
+            result_join_target=initial_query_transform(result_join_target)
 
-    #TESTING PURPOSE
-    # if target_initial_query_result_join!=initial_query_result_join:
-    #     pass
-    # elif not compare_lists_of_lists(process_list(target_instance["semantic_list_join"]), process_list(data["semantic_list_join"])):
-    #     pass
-    # elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]):
-    #     pass
-    # elif target_initial_query_result_where!=initial_query_result_where:
-    #     pass
-    # elif not compare_lists_of_lists(process_list(target_instance["semantic_list_where"]), process_list(data["semantic_list_where"])):
-    #     pass
-    # elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
-    #     pass
+
 
     #No add the data to the error counter, identify location of the error
     #If result is the same, then the result is correct and nothing more is investigated
@@ -251,7 +243,7 @@ def comparison_logic(result_dic, target_instance):
             error_cnt["initial_sql_query_join"]+=1
         elif not compare_semantic_join(target_instance["semantic_list_join"], data["semantic_list_join"]):
             error_cnt["semantic_list_join"]+=1
-        elif not compare_lists_of_lists(target_instance["result_join"], data["result_join"]) and semantic_list_join[0] is not None:
+        elif result_join_data!=result_join_target and semantic_list_join[0] is not None:
             error_cnt["result_join"]+=1
         elif target_initial_query_result_where!=initial_query_result_where:
             error_cnt["initial_sql_query_where"]+=1
@@ -271,12 +263,11 @@ def error_logic(loaded_dictionary, queries):
 
     
 
-    error_total=[]
-    queries_list=[]
+
     error_query_dic={}
     api_retries = 0
     #Iterate over the whole list of input queries
-    overall_metrics = []
+ 
     for query in queries:
 
         
@@ -374,110 +365,13 @@ def evaluation_pipeline(queries):
 #How many runs per expression, Done everything
 RUNS=3
 queries= [i for i, _ in test_cases]
-queries=queries[12:13]
-evaluation_pipeline(queries)
+queries=queries[17:]
+#evaluation_pipeline(queries)
 
 
 
 
 
 
-
-
-#OLD
-# def visualize_errors(error_total, queries_list):
-#     #FINAL EVALUATION PLOT
-
-#     #PATHs for saving plots and dictionaries
-#     path_ind_dic= os.path.join(os.getcwd(), "saved_json", "individual_results")
-#     path_total_dic= os.path.join(os.getcwd(), "saved_json", "total_results")
-#     filepath_total_fig=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
-    
-
-#     num_plots = len(error_total)
-#     num_cols = 2  # Adjust number of columns as needed
-#     num_rows = (num_plots + num_cols - 1) // num_cols
-
-#     fig, axes = plt.subplots(num_rows, num_cols, figsize=(10, 4 * num_rows))
-#     axes = axes.flatten()
-
-#     #Create a list of dictionaries to also save the data, in order to replot it etc.
-#     dic_list=[]
-#     colors = ['red', 'red', 'red', 'red', 'red', 'red', 'blue'] # Define colors for the bars
-
-#     for i, error_cnt in enumerate(error_total):
-#         error_spots = list(error_cnt.keys())
-#         counts = list(error_cnt.values())
-#         total_counts = sum(counts)
-#         if total_counts > 0: #Avoid division by zero
-#             probs = [count / total_counts for count in counts]
-#         else:
-#             probs = [0] * len(queries) #All probabilities are 0 if total_counts is 0
-
-#         title_part1, title_part2 = split_title_at_space(queries_list[i])
-
-#         #Create dictionary and append data
-#         tmp_dic={
-#             "calculus" : queries_list[i],
-#             "errors" : error_spots,
-#             "error_counts" : counts,
-#             "probabilities" : probs
-#         }
-
-#         sns.barplot(x='errors', y='error_counts', data=tmp_dic, ax=axes[i], palette=colors).set_title(f"{title_part1}\n{title_part2}")
-#         axes[i].tick_params(axis='x', rotation=30)
-#         #Append to dictionary list
-#         dic_list.append(tmp_dic)
-
-
-#     # Remove extra subplots if necessary
-#     for j in range(i + 1, len(axes)):
-#         fig.delaxes(axes[j])
-
-#     filepath_individual_plot=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
-#     #Individual plot
-#     plt.tight_layout()
-#     plt.suptitle(f"Counts of Result Types for {RUNS} Runs")
-#     plt.subplots_adjust(top=0.85)
-#     fig.savefig(filepath_individual_plot, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
-
-#     plt.show()
-
-#     # TOTAL PLOT overl all distinct values
-#     fig_total, ax_total = plt.subplots(figsize=(10, 6))
-#     categories = error_total[0].keys()  # Assuming all dictionaries have the same keys
-#     width = 0.35
-
-#     x = np.arange(len(categories))
-#     total_counts_per_category = np.zeros(len(categories))
-
-#     for error_cnt in error_total:
-#         for i, cat in enumerate(categories):
-#             total_counts_per_category[i] += error_cnt[cat]
-
-#     total_counts = np.sum(total_counts_per_category)
-#     if total_counts > 0:
-#         probs = total_counts_per_category / total_counts
-#     else:
-#         probs = np.zeros(len(categories))
-
-#     #Create total dictionary
-#     total_dic={
-#             "categories" : list(categories),
-#             "probabilities" : list(probs),
-#             "total_counts" : list(total_counts_per_category)
-#         }
-    
-#     #Save the two dictionaires
-#     with open(path_ind_dic, 'w', encoding="utf-8") as f:
-#         json.dump(dic_list, f, indent=4, ensure_ascii=False )
-#     with open(path_total_dic, 'w', encoding='utf-8') as f:
-#         json.dump(total_dic, f, indent=4, ensure_ascii=False)
-
-#     sns.barplot(x='categories', y='total_counts', data=total_dic, ax=ax_total, palette=colors).set_title(f"Total Probabilities of Result Types")
-#     plt.xticks(rotation=30)
-#     plt.tight_layout()
-#     fig_total.savefig(filepath_total_fig, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
-#     plt.show()
 
 

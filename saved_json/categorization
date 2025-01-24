@@ -3,14 +3,14 @@
     "∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))",
     "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
     "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))",
-    "∃ movies(\"The sky over Berlin\",_, _)"
+    "∃ movies(\"The sky over Berlin\",_,_)"
   ],
   "Different scales": [
     "∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))",
     "∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)",
-    "∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C)",
-    "∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )",
-    "∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)"
+    "∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)",
+    "∃item bakery_sales(item, < 55,_) ∧ oven_temperature(item,_)",
+    "∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)"
   ],
   "Inconsistencies": [
     "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",

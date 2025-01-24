@@ -304,7 +304,10 @@ def execute_queries_on_conditions(conditions_list):
             # Check if the condition contains both "SELECT" and "FROM"
             if isinstance(item, str) and 'SELECT' in item and 'FROM' in item:
                 # Execute the query if it contains the correct keywords
-                query_result = query_database(item,False)
+                try:
+                    query_result = query_database(item)
+                except Exception as e:
+                    raise Exception(f"Error executing query: {e}")
                 
                 # Replace the condition with the query result
                 copy_list[outer_index][inner_index] = query_result

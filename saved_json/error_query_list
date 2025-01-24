@@ -107,22 +107,13 @@
         "result_where": 0,
         "correct_results": 0
     },
-    "∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )": {
-        "initial_sql_query_join": 0,
+    "∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)": {
+        "initial_sql_query_join": 2,
         "semantic_list_join": 0,
-        "result_join": 3,
+        "result_join": 0,
         "initial_sql_query_where": 0,
         "semantic_list_where": 0,
-        "result_where": 0,
-        "correct_results": 0
-    },
-    "∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)": {
-        "initial_sql_query_join": 0,
-        "semantic_list_join": 0,
-        "result_join": 3,
-        "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 0,
+        "result_where": 1,
         "correct_results": 0
     },
     "∃movie movies(movie,_, _) ∧ movies_personal(movie, _)": {
@@ -137,13 +128,13 @@
     "∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
-        "result_join": 3,
-        "initial_sql_query_where": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 2,
         "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 0
+        "correct_results": 1
     },
-    "∃ movies(\"The sky over Berlin\",_, _)": {
+    "∃ movies(\"The sky over Berlin\",_,_)": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
         "result_join": 0,
@@ -161,7 +152,7 @@
         "result_where": 0,
         "correct_results": 0
     },
-    "∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C)": {
+    "∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
         "result_join": 1,
@@ -169,5 +160,14 @@
         "semantic_list_where": 0,
         "result_where": 0,
         "correct_results": 2
+    },
+    "∃item bakery_sales(item, < 55,_) ∧ oven_temperature(item,_)": {
+        "initial_sql_query_join": 0,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 3,
+        "result_where": 0,
+        "correct_results": 0
     }
 }

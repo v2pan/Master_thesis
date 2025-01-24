@@ -811,7 +811,7 @@
         ]
     },
     {
-        "calculus": "∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C)",
+        "calculus": "∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)",
         "initial_sql_query_join": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = oven_temperature.item WHERE oven_temperature.temperature > '200 °C';",
         "semantic_list_join": [
             {
@@ -859,7 +859,7 @@
         ]
     },
     {
-        "calculus": "∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )",
+        "calculus": "∃item bakery_sales(item, < 55,_) ∧ oven_temperature(item,_)",
         "initial_sql_query_join": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = oven_temperature.item WHERE bakery_sales.quantity < 55;",
         "semantic_list_join": [
             {
@@ -907,7 +907,7 @@
         ]
     },
     {
-        "calculus": "∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(d, >180 °C)",
+        "calculus": "∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)",
         "initial_sql_query_join": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = oven_temperature.item WHERE bakery_sales.quantity > 90 AND oven_temperature.temperature > 180;",
         "semantic_list_join": [
             {
@@ -1091,7 +1091,7 @@
         ]
     },
     {
-        "calculus": "∃ movies(\"The sky over Berlin\",_, _)",
+        "calculus": "∃ movies(\"The sky over Berlin\",_,_)",
         "initial_sql_query_join": null,
         "semantic_list_join": null,
         "result_join": null,

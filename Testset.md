@@ -263,10 +263,10 @@ The example realtes to bakery sales
 **Calculus**:  ∃item bakery_sales(item, _, _) ∧ oven_temperature(item, >200 °C)
 **Result:**  {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
 
-**Calculus**:  ∃item bakery_sales(item, < 55, price_dozen) ∧ oven_temperature(item, temperature )
+**Calculus**:  ∃item bakery_sales(item, < 55,_) ∧ oven_temperature(item,_)
 **Result:**  {('Croissants', '5  dozen','12.00 per dozen', '200 °F'), ('Pain au Chocolat', '3 dozen', '15.00 per dozen', '200 °F') }
 
-**Calculus**:  ∃item bakery_sales(item, > 90, price_dozen) ∧ oven_temperature(item, >180 °C)
+**Calculus**:  ∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)
 **Result:**  {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
 
 
