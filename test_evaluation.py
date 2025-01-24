@@ -19,7 +19,7 @@ import seaborn as sns
 import pandas as pd
 import re
 from matplotlib import ticker
-from test_creation import append_to_json
+from test_creation import append_to_json, append_to_json_dic
 
 
 
@@ -273,6 +273,7 @@ def error_logic(loaded_dictionary, queries):
 
     error_total=[]
     queries_list=[]
+    error_query_dic={}
     api_retries = 0
     #Iterate over the whole list of input queries
     overall_metrics = []
@@ -343,118 +344,16 @@ def error_logic(loaded_dictionary, queries):
         
         #overall_metrics.append(metrics_list)
 
-
-        error_total.append(error_cnt)   
-        queries_list.append(query)
-
+        error_query_dic[query]=error_cnt
         #Additionally write to path
-        path_error_total= os.path.join(os.getcwd(), "saved_json", "error_total")
-        path_queries_list= os.path.join(os.getcwd(), "saved_json", "queries_list")
-
-        append_to_json(error_cnt, path_error_total)
-        append_to_json(query, path_queries_list)
+        path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list")
+        append_to_json_dic(error_query_dic, path_query_error)
     
     #Write that to a file
     #write_all_metrics_to_file(overall_metrics, filename="test_evaluation_metrics")
 
     #Return necessary output
-    return error_total, queries_list
-
-def visualize_errors(error_total, queries_list):
-    #FINAL EVALUATION PLOT
-
-    #PATHs for saving plots and dictionaries
-    path_ind_dic= os.path.join(os.getcwd(), "saved_json", "individual_results")
-    path_total_dic= os.path.join(os.getcwd(), "saved_json", "total_results")
-    filepath_total_fig=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
-    
-
-    num_plots = len(error_total)
-    num_cols = 2  # Adjust number of columns as needed
-    num_rows = (num_plots + num_cols - 1) // num_cols
-
-    fig, axes = plt.subplots(num_rows, num_cols, figsize=(10, 4 * num_rows))
-    axes = axes.flatten()
-
-    #Create a list of dictionaries to also save the data, in order to replot it etc.
-    dic_list=[]
-    colors = ['red', 'red', 'red', 'red', 'red', 'red', 'blue'] # Define colors for the bars
-
-    for i, error_cnt in enumerate(error_total):
-        error_spots = list(error_cnt.keys())
-        counts = list(error_cnt.values())
-        total_counts = sum(counts)
-        if total_counts > 0: #Avoid division by zero
-            probs = [count / total_counts for count in counts]
-        else:
-            probs = [0] * len(queries) #All probabilities are 0 if total_counts is 0
-
-        title_part1, title_part2 = split_title_at_space(queries_list[i])
-
-        #Create dictionary and append data
-        tmp_dic={
-            "calculus" : queries_list[i],
-            "errors" : error_spots,
-            "error_counts" : counts,
-            "probabilities" : probs
-        }
-
-        sns.barplot(x='errors', y='error_counts', data=tmp_dic, ax=axes[i], palette=colors).set_title(f"{title_part1}\n{title_part2}")
-        axes[i].tick_params(axis='x', rotation=30)
-        #Append to dictionary list
-        dic_list.append(tmp_dic)
-
-
-    # Remove extra subplots if necessary
-    for j in range(i + 1, len(axes)):
-        fig.delaxes(axes[j])
-
-    filepath_individual_plot=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
-    #Individual plot
-    plt.tight_layout()
-    plt.suptitle(f"Counts of Result Types for {RUNS} Runs")
-    plt.subplots_adjust(top=0.85)
-    fig.savefig(filepath_individual_plot, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
-
-    plt.show()
-
-    # TOTAL PLOT overl all distinct values
-    fig_total, ax_total = plt.subplots(figsize=(10, 6))
-    categories = error_total[0].keys()  # Assuming all dictionaries have the same keys
-    width = 0.35
-
-    x = np.arange(len(categories))
-    total_counts_per_category = np.zeros(len(categories))
-
-    for error_cnt in error_total:
-        for i, cat in enumerate(categories):
-            total_counts_per_category[i] += error_cnt[cat]
-
-    total_counts = np.sum(total_counts_per_category)
-    if total_counts > 0:
-        probs = total_counts_per_category / total_counts
-    else:
-        probs = np.zeros(len(categories))
-
-    #Create total dictionary
-    total_dic={
-            "categories" : list(categories),
-            "probabilities" : list(probs),
-            "total_counts" : list(total_counts_per_category)
-        }
-    
-    #Save the two dictionaires
-    with open(path_ind_dic, 'w', encoding="utf-8") as f:
-        json.dump(dic_list, f, indent=4, ensure_ascii=False )
-    with open(path_total_dic, 'w', encoding='utf-8') as f:
-        json.dump(total_dic, f, indent=4, ensure_ascii=False)
-
-    sns.barplot(x='categories', y='total_counts', data=total_dic, ax=ax_total, palette=colors).set_title(f"Total Probabilities of Result Types")
-    plt.xticks(rotation=30)
-    plt.tight_layout()
-    fig_total.savefig(filepath_total_fig, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
-    plt.show()
-
+    return None
 
 
 #MAIN FUNCTION
@@ -465,15 +364,120 @@ def evaluation_pipeline(queries):
     loaded_dictionary = load_data(filepath)
 
     #Evaluate the results
-    error_total, queries_list =error_logic(loaded_dictionary,queries)
+    error_logic(loaded_dictionary,queries)
 
-    visualize_errors(error_total, queries_list)
+    #visualize_errors(error_total, queries_list)
     
     
     
 
 #How many runs per expression, Done everything
-RUNS=1
+RUNS=3
 queries= [i for i, _ in test_cases]
 queries=queries[12:13]
 evaluation_pipeline(queries)
+
+
+
+
+
+
+
+
+#OLD
+# def visualize_errors(error_total, queries_list):
+#     #FINAL EVALUATION PLOT
+
+#     #PATHs for saving plots and dictionaries
+#     path_ind_dic= os.path.join(os.getcwd(), "saved_json", "individual_results")
+#     path_total_dic= os.path.join(os.getcwd(), "saved_json", "total_results")
+#     filepath_total_fig=filepath = os.path.join(os.getcwd(), "saved_plots", "total_probs")
+    
+
+#     num_plots = len(error_total)
+#     num_cols = 2  # Adjust number of columns as needed
+#     num_rows = (num_plots + num_cols - 1) // num_cols
+
+#     fig, axes = plt.subplots(num_rows, num_cols, figsize=(10, 4 * num_rows))
+#     axes = axes.flatten()
+
+#     #Create a list of dictionaries to also save the data, in order to replot it etc.
+#     dic_list=[]
+#     colors = ['red', 'red', 'red', 'red', 'red', 'red', 'blue'] # Define colors for the bars
+
+#     for i, error_cnt in enumerate(error_total):
+#         error_spots = list(error_cnt.keys())
+#         counts = list(error_cnt.values())
+#         total_counts = sum(counts)
+#         if total_counts > 0: #Avoid division by zero
+#             probs = [count / total_counts for count in counts]
+#         else:
+#             probs = [0] * len(queries) #All probabilities are 0 if total_counts is 0
+
+#         title_part1, title_part2 = split_title_at_space(queries_list[i])
+
+#         #Create dictionary and append data
+#         tmp_dic={
+#             "calculus" : queries_list[i],
+#             "errors" : error_spots,
+#             "error_counts" : counts,
+#             "probabilities" : probs
+#         }
+
+#         sns.barplot(x='errors', y='error_counts', data=tmp_dic, ax=axes[i], palette=colors).set_title(f"{title_part1}\n{title_part2}")
+#         axes[i].tick_params(axis='x', rotation=30)
+#         #Append to dictionary list
+#         dic_list.append(tmp_dic)
+
+
+#     # Remove extra subplots if necessary
+#     for j in range(i + 1, len(axes)):
+#         fig.delaxes(axes[j])
+
+#     filepath_individual_plot=filepath = os.path.join(os.getcwd(), "saved_plots", "individual_probs")
+#     #Individual plot
+#     plt.tight_layout()
+#     plt.suptitle(f"Counts of Result Types for {RUNS} Runs")
+#     plt.subplots_adjust(top=0.85)
+#     fig.savefig(filepath_individual_plot, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
+
+#     plt.show()
+
+#     # TOTAL PLOT overl all distinct values
+#     fig_total, ax_total = plt.subplots(figsize=(10, 6))
+#     categories = error_total[0].keys()  # Assuming all dictionaries have the same keys
+#     width = 0.35
+
+#     x = np.arange(len(categories))
+#     total_counts_per_category = np.zeros(len(categories))
+
+#     for error_cnt in error_total:
+#         for i, cat in enumerate(categories):
+#             total_counts_per_category[i] += error_cnt[cat]
+
+#     total_counts = np.sum(total_counts_per_category)
+#     if total_counts > 0:
+#         probs = total_counts_per_category / total_counts
+#     else:
+#         probs = np.zeros(len(categories))
+
+#     #Create total dictionary
+#     total_dic={
+#             "categories" : list(categories),
+#             "probabilities" : list(probs),
+#             "total_counts" : list(total_counts_per_category)
+#         }
+    
+#     #Save the two dictionaires
+#     with open(path_ind_dic, 'w', encoding="utf-8") as f:
+#         json.dump(dic_list, f, indent=4, ensure_ascii=False )
+#     with open(path_total_dic, 'w', encoding='utf-8') as f:
+#         json.dump(total_dic, f, indent=4, ensure_ascii=False)
+
+#     sns.barplot(x='categories', y='total_counts', data=total_dic, ax=ax_total, palette=colors).set_title(f"Total Probabilities of Result Types")
+#     plt.xticks(rotation=30)
+#     plt.tight_layout()
+#     fig_total.savefig(filepath_total_fig, dpi=300, bbox_inches='tight')  # Save the figure with higher resolution
+#     plt.show()
+
+

@@ -51,6 +51,41 @@ def append_to_json(output, filepath):
             print(f"An error occurred while appending to {filepath}: {e}")
             return False
         
+#Appending to JSON file 
+def append_to_json_dic(dic, filepath):
+    """Appends a dictionary to an existing JSON file or creates a new one if it doesn't exist."""
+    if not os.path.exists(filepath):
+        try:
+            #Append a list of dictionaries
+            write={}
+            for key,value in dic.items():
+                    write[key]=value
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(write, f, indent=4, ensure_ascii=False)
+            print(f"Created new file {filepath} with data.")
+            return True
+        except Exception as e:
+            print(f"Error creating file {filepath}: {e}")
+            return False
+    else:
+        try:
+            with open(filepath, 'r+', encoding='utf-8') as f:
+                existing_data = json.load(f)
+                for key,value in dic.items():
+                    existing_data[key]=value# Append the new data
+                f.seek(0)  # Crucial: Go back to the beginning of the file
+                json.dump(existing_data, f, indent=4, ensure_ascii=False)
+                f.truncate()  # Important: Truncate the file to remove the old content
+                print(f"Data appended to {filepath} successfully.")
+                return True
+        except json.JSONDecodeError as e:
+            print(f"Error decoding existing data in {filepath}: {e}.  Creating new file.")
+            return False #Recursively try creating a new file if decoding fails.
+        except Exception as e:
+            print(f"An error occurred while appending to {filepath}: {e}")
+            return False
+        
+        
 
 
 #MAIN FUNCTION

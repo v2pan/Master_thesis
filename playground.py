@@ -1,13 +1,14 @@
-metrics = [
-    [10, 20, 30],
-    [12, 22, 32],
-    [15, 25, 35]
-]
+import os
+import json
 
-if not metrics:
-    averages = []
-else:
-    num_positions = len(metrics[0])  # Assumes all inner lists have the same length
-    averages = [sum(metrics[i][j] for i in range(len(metrics))) / len(metrics) for j in range(num_positions)]
+path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list")
+with open(path_query_error, 'r') as f:
+            query_error_dic = json.load(f)
 
-print(f"The averages for each position are: {averages}")
+tmp_dic={"Hello": {"a": 1, "b": 2, "c": 3}}
+for key,value in tmp_dic.items():
+        query_error_dic[key]=value
+
+print(query_error_dic)
+
+

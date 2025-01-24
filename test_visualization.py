@@ -8,19 +8,23 @@ import pandas as pd
 
 from test_evaluation import visualize_errors
 
-path_error_total= os.path.join(os.getcwd(), "saved_json", "error_total")
-path_queries_list= os.path.join(os.getcwd(), "saved_json", "queries_list")
+# path_error_total= os.path.join(os.getcwd(), "saved_json", "error_total")
+# path_queries_list= os.path.join(os.getcwd(), "saved_json", "queries_list")
 path_categorization= os.path.join(os.getcwd(), "saved_json", "categorization")
 
-with open(path_error_total, 'r') as f:
-            error_total = json.load(f)
-with open(path_queries_list, 'r') as f:
-            queries_list = json.load(f)
+# with open(path_error_total, 'r') as f:
+#             error_total = json.load(f)
+# with open(path_queries_list, 'r') as f:
+#             queries_list = json.load(f)
 with open(path_categorization, 'r') as f:
             categorization = json.load(f)
 
+#New dic data structure
+path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list")
+with open(path_query_error, 'r') as f:
+            query_error_dic = json.load(f)
 
-def visualize_errors_category(error_total, queries_list, categorization):
+def visualize_errors_category(query_error_dic, categorization):
     num_categories = len(categorization)
     rows = int(math.sqrt(num_categories))
     cols = math.ceil(num_categories / rows)
@@ -32,16 +36,30 @@ def visualize_errors_category(error_total, queries_list, categorization):
     for i, category in enumerate(categorization):
         ax = axes[i]
         colors = ['red', 'red', 'red', 'red', 'red', 'red', 'blue']
-        categories_all = error_total[0].keys()
+
+        #Get all the categories
+        l=0
+        categories_all=None
+        for key,values in query_error_dic.items():
+            if l==1:
+                break
+            categories_all=list(values.keys())
+            l+=1
+
+
         width = 0.35
         x = np.arange(len(categories_all))
         total_counts_per_category = np.zeros(len(categories_all))
 
-        for k in range(len(error_total)):
-            error_cnt = error_total[k]
-            if queries_list[k] in categorization[category]:
-                for l, cat in enumerate(categories_all):
-                    total_counts_per_category[l] += error_cnt[cat]
+
+
+        for key,value in query_error_dic.items():
+            if key in categorization[category]:
+                tmp_count=0
+                for v in value.values():
+                    total_counts_per_category[tmp_count] += v
+                    tmp_count+=1
+       
 
         total_counts = np.sum(total_counts_per_category)
         if total_counts > 0:
@@ -110,4 +128,6 @@ def visualize_errors_category(error_total, queries_list, categorization):
     plt.show()
     print("The total counter is: ", control_counter)
 
-visualize_errors_category(error_total, queries_list, categorization)
+
+visualize_errors_category(query_error_dic, categorization)
+#visualize_errors_category(error_total, queries_list, categorization)
