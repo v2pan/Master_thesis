@@ -132,3 +132,16 @@ Calculus ∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks):
   Precision: 0.0000
   Recall: 0.0000
   F1-score: 0.0000
+
+
+
+--- Individual Metrics ---
+Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
+  Accuracy: 0.2778
+  Precision: 0.6667
+  Recall: 0.2778
+  F1-score: 0.3889
+prompt_token_count: 2534.3333333333335
+candidates_token_count: 188.33333333333334
+total_token_count: 2722.6666666666665
+total_calls: 8.0

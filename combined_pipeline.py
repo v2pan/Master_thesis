@@ -1,9 +1,9 @@
 from join_pipeline import join_pipeline
-from row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, get_context, initial_query, update_metadata
+from row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, get_context, initial_query
 from extractor import extract
 import sqlparse
 from database import query_database, QueryExecutionError
-from other_gemini import RessourceError
+from other_gemini import RessourceError, add_metadata
 import time
 
 retry_delay = 60
@@ -39,19 +39,24 @@ def analyze_sql_query(sql_query):
 
 
     return  where_conditions, join_conditions
-    
+
+
 
 
 #Combination of both pipeline, adjustment was necessary
 def combined_pipeline(query, evaluation=False):
 
     #Metadata to keep track of use 
+
+    global usage_metadata_total
     usage_metadata_total = {
                 "prompt_token_count": 0,
                 "candidates_token_count": 0,
                 "total_token_count": 0,
                 "total_calls": 0
             }
+    
+
     total_count=0
     total_retries=4
 
@@ -59,8 +64,8 @@ def combined_pipeline(query, evaluation=False):
         #Get context
         count=0
         while count<total_retries:
-            tables = get_relevant_tables(query)
-            
+            tables, temp_meta = get_relevant_tables(query, return_metadata=True)
+            usage_metadata_total=add_metadata(temp_meta, usage_metadata_total)
             if tables is not None:
                 break
             else:
@@ -83,7 +88,7 @@ def combined_pipeline(query, evaluation=False):
         response, temp_meta = initial_query(query,context)
         
         #Update the metadata
-        update_metadata(temp_meta)
+        add_metadata(temp_meta, usage_metadata_total)
 
         #Extract the SQL query from the response
         initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
@@ -116,23 +121,28 @@ def combined_pipeline(query, evaluation=False):
         #First Problematic Join
         if join_conditions and where_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-            output_query=join_pipeline(initial_sql_query, forward=True)
-            output=row_calculus_pipeline(output_query)
+            output_query, temp_meta=join_pipeline(initial_sql_query, forward=True, return_metadata=True)
+            add_metadata(temp_meta, usage_metadata_total)
+            output, temp_meta=row_calculus_pipeline(output_query, return_metadata=True)
+            add_metadata(temp_meta, usage_metadata_total)
 
         #Then WHERE clause
         elif where_conditions:
             print(f"The \n”{initial_sql_query}\n has a WHERE clause.")
-            output=row_calculus_pipeline(initial_sql_query)
+            output, temp_meta=row_calculus_pipeline(initial_sql_query, return_metadata=True)
+            add_metadata(temp_meta, usage_metadata_total)
         
         elif join_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-            output=join_pipeline(initial_sql_query)
+            output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
+            add_metadata(temp_meta, usage_metadata_total)
         else:
             print(f"The \n{initial_sql_query}\n has no WHERE or JOIN clause.")
             
         
         print(f"The output is {output}")
-        return output
+        print(f"The metadata is {usage_metadata_total}")
+        return output, usage_metadata_total
     
     else:
         #Initialize with None values
@@ -142,12 +152,14 @@ def combined_pipeline(query, evaluation=False):
 
         if join_conditions and where_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-            initial_sql_query_join, semantic_list_join, result_join=join_pipeline(initial_sql_query, return_query=False, forward=True, evaluation=True)
+            initial_sql_query_join, semantic_list_join, result_join, temp_meta=join_pipeline(initial_sql_query, return_query=False, forward=True, evaluation=True,  return_metadata=True)
+            add_metadata(temp_meta, usage_metadata_total)
             max_retries = 3  # Set the maximum number of retries
             retry_count = 0
             while retry_count < max_retries:
                 try:
-                    initial_sql_query_where, semantic_list_where, result_where = row_calculus_pipeline(result_join, evaluation=True)
+                    initial_sql_query_where, semantic_list_where, result_where, temp_meta = row_calculus_pipeline(result_join, evaluation=True, return_metadata=True)
+                    add_metadata(temp_meta, usage_metadata_total)
                     break  # Exit the loop if successful
                 except RessourceError:
                     retry_count += 1
@@ -163,12 +175,14 @@ def combined_pipeline(query, evaluation=False):
         #Then WHERE clause
         elif where_conditions:
             print(f"The \n”{initial_sql_query}\n has a WHERE clause.")
-            initial_sql_query_where, semantic_list_where, result_where=row_calculus_pipeline(initial_sql_query, evaluation=True)
+            initial_sql_query_where, semantic_list_where, result_where, temp_meta=row_calculus_pipeline(initial_sql_query, evaluation=True, return_metadata=True)
+            add_metadata(temp_meta, usage_metadata_total)
             output=result_where
         
         elif join_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-            initial_sql_query_join, semantic_list_join, result_join=join_pipeline(initial_sql_query, evaluation=True)
+            initial_sql_query_join, semantic_list_join, result_join, temp_meta=join_pipeline(initial_sql_query, evaluation=True, return_metadata=True)
+            add_metadata(temp_meta, usage_metadata_total)
             output=result_join
         
         else:
@@ -176,17 +190,18 @@ def combined_pipeline(query, evaluation=False):
             
         
         print(f"The modified query is {output_query}")
-        return initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output
+        print(f"The metadata is {usage_metadata_total}")
+        return initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output, usage_metadata_total
 
 
 
 # queries=[
-        # "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
-        # "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
-        # "∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )", #Tmp not used
-        # "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))",
-        # "∃id (children_table(id, >1) ∧ fathers(id, _))" #Tmp not used
-        # ]
+#         "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
+#         "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
+#         "∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )", #Tmp not used
+#         "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))",
+#         "∃id (children_table(id, >1) ∧ fathers(id, _))" #Tmp not used
+#         ]
 
 # [combined_pipeline(query) for query in queries]
 

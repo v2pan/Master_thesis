@@ -1,10 +1,20 @@
 import sqlparse
 import re
-from row_calculus_pipeline import execute_queries_on_conditions,  update_metadata, get_context, get_relevant_tables
-from other_gemini import ask_gemini, gemini_json
+from row_calculus_pipeline import execute_queries_on_conditions,  get_context, get_relevant_tables
+from other_gemini import ask_gemini, gemini_json, add_metadata
 from database import query_database, QueryExecutionError
 from extractor import extract
 import copy
+
+
+
+#Metadata to keep track of use for the JOIN pipeline
+usage_metadata_join = {
+            "prompt_token_count": 0,
+            "candidates_token_count": 0,
+            "total_token_count": 0,
+            "total_calls": 0
+        }
 
 
 #Trying out to implement the Join WHERE multiple things are linked
@@ -85,7 +95,8 @@ def compare_semantics_in_list(input_list,order):
                     An example would be if the types were different or the formats (e.g., '18 January 2012' and '18.01.2012'), if elements had the same meaning in different languages (e.g., 'bridge' and 'brücke') or if numbers would be written as text.
                     Considering the provided lists represent what they represent, one in {type(temp_list1[0][0])} format and the other in {type(temp_list2[0][0])} format, does a case where different types represent the same semantic meaning occur in the list? If the types are different, always answer 'true'.True or False.'''
                     #Check if it is necessary to rewrite the JOIN condition
-                    necessary=gemini_json(prompt, response_type=bool)
+                    necessary, temp_meta=gemini_json(prompt, response_type=bool, return_metadata=True)
+                    _=add_metadata(temp_meta, usage_metadata_join)
             if necessary:
                 condition = outer_list[1]
                 original_expression = outer_list[2]  # Access the original expression
@@ -110,7 +121,9 @@ def compare_semantics_in_list(input_list,order):
                                 Output: has the same meaning as (also in another language) or is the same as
                                 Input:{condition}.
                                 Output:""", True, max_token=100)
-                update_metadata(temp_meta)
+                #Update the metadata
+                _=add_metadata(temp_meta, usage_metadata_join)
+                #add_metadata(temp_meta)
                 print(f"The phrase is: {phrase}")
 
                 same_meaning_list = []
@@ -132,7 +145,9 @@ def compare_semantics_in_list(input_list,order):
                         total_prompt += prompt
 
                     #Get response from LLM
-                    response = gemini_json(total_prompt, response_type=list[bool])
+                    response, temp_meta = gemini_json(total_prompt, response_type=list[bool], return_metadata=True)
+                    _=add_metadata(temp_meta, usage_metadata_join)
+
                     relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
                     #Add relevant semantic equivalents to the list
                     dict[item_str] = relevant_items
@@ -149,7 +164,7 @@ def compare_semantics_in_list(input_list,order):
 
     return dict_list, order
 
-def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False):
+def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False):
 
 
     # #Get the relevant tables
@@ -177,10 +192,14 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
     # #Used for predicate calculus, selecting all rows
     # response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
     # #Update the metadata
-    # update_metadata(temp_meta)
+    # add_metadata(temp_meta)
 
     # initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
     # print(f"The SQL query is: {initial_sql_query}")
+
+    #Set global metadata to 0
+    for i in usage_metadata_join.keys():
+        usage_metadata_join[i]=0
 
     # Example usage
     join_conditions, order = extract_join_conditions_sqlparse(initial_sql_query)
@@ -194,18 +213,31 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
     print(order)
 
     #If no element are present, no need to rewrite the JOIN condition, return as it was
-    if not any(semantic_dic):
-        if return_query:
-                return initial_sql_query
-        if evaluation and not forward:
-                return initial_sql_query, semantic_dic, initial_sql_query
-        elif evaluation and forward:
-                return initial_sql_query, semantic_dic, initial_sql_query
-        else:
-            if forward:
-                return initial_sql_query
+    if not any(semantic_dic): 
+        if not return_metadata:
+            if return_query:
+                    return initial_sql_query
+            if evaluation and not forward:
+                    return initial_sql_query, semantic_dic, initial_sql_query
+            elif evaluation and forward:
+                    return initial_sql_query, semantic_dic, initial_sql_query
             else:
-                return initial_sql_query
+                if forward:
+                    return initial_sql_query
+                else:
+                    return initial_sql_query
+        if return_metadata:
+            if return_query:
+                    return initial_sql_query, usage_metadata_join
+            if evaluation and not forward:
+                    return initial_sql_query, semantic_dic, initial_sql_query, usage_metadata_join
+            elif evaluation and forward:
+                    return initial_sql_query, semantic_dic, initial_sql_query, usage_metadata_join
+            else:
+                if forward:
+                    return initial_sql_query, usage_metadata_join
+                else:
+                    return initial_sql_query, usage_metadata_join
 
     #Create the binding string for, necessary for multiple JOINs
     binding_str = ""
@@ -264,8 +296,9 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
         print(f"The final prompt is \n {final_prompt}")
         # Try to modify the query with our chosen binding
         response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
+        _ = add_metadata(temp_meta, usage_metadata_join)
         #Update the metadata
-        update_metadata(temp_meta)
+        #add_metadata(temp_meta)
         print(f"The response is {response}")
 
         #Extract query and get result
@@ -290,15 +323,27 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
                 retries_left-=1
                 print("Query not executable")
                 result=None
-            if evaluation and not forward:
-                return sql_query, semantic_dic, result
-            elif evaluation and forward:
-                return initial_sql_query, semantic_dic, sql_query
-            else:
-                if forward:
-                    return sql_query
+            if not return_metadata:
+                if evaluation and not forward:
+                    return sql_query, semantic_dic, result
+                elif evaluation and forward:
+                    return initial_sql_query, semantic_dic, sql_query
                 else:
-                    return result
+                    if forward:
+                        return sql_query
+                    else:
+                        return result
+            else:
+                if evaluation and not forward:
+                    return sql_query, semantic_dic, result, usage_metadata_join
+                elif evaluation and forward:
+                    return initial_sql_query, semantic_dic, sql_query, usage_metadata_join
+                else:
+                    if forward:
+                        return sql_query, usage_metadata_join
+                    else:
+                        return result, usage_metadata_join
+
 
 # sql_query = '''SELECT 
 #     children_table.id, 

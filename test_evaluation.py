@@ -3,7 +3,7 @@ from database import query_database
 from extractor import extract
 from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
 from database import query_database, QueryExecutionError
-from other_gemini import gemini_json,ask_gemini
+from other_gemini import gemini_json,ask_gemini, add_metadata
 from extractor import extract
 import json
 from other_gemini import RessourceError
@@ -14,7 +14,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 from combined_pipeline import combined_pipeline
-from evaluation import test_cases, evaluate_results, write_all_metrics_to_file, append_metrics_to_file
+from evaluation import test_cases, evaluate_results, write_all_metrics_to_file, append_metrics_to_file, append_metadata_to_file
 import seaborn as sns
 import pandas as pd
 import re
@@ -28,12 +28,7 @@ from test_creation import append_to_json, append_to_json_dic
 #TO BE MODIFIED, design a file to get the output of the test, print via the playground file
 # to understand where the problem has occured
 #Metadata to keep track of use 
-usage_metadata_total = {
-            "prompt_token_count": 0,
-            "candidates_token_count": 0,
-            "total_token_count": 0,
-            "total_calls": 0
-        }
+
 
 
 
@@ -267,9 +262,19 @@ def error_logic(loaded_dictionary, queries):
     error_query_dic={}
     api_retries = 0
     #Iterate over the whole list of input queries
+    
+    if not isinstance(queries, list):
+        queries = [queries]
+
  
     for query in queries:
 
+        # usage_metadata_total = {
+        #     "prompt_token_count": 0,
+        #     "candidates_token_count": 0,
+        #     "total_token_count": 0,
+        #     "total_calls": 0
+        # }
         
         #error_cnt={"initial_result": 0, "semantic_list": 0, "wrong_result": 0, "correct_results": 0}
         error_cnt={"initial_sql_query_join": 0, "semantic_list_join": 0, "result_join": 0, "initial_sql_query_where": 0, "semantic_list_where": 0, "result_where": 0,  "correct_results": 0}
@@ -278,11 +283,17 @@ def error_logic(loaded_dictionary, queries):
         #Counter variable
         l=0
         metrics = []  # List to store metrics for each test case
+        metadata={
+            "prompt_token_count": 0,
+            "candidates_token_count": 0,
+            "total_token_count": 0,
+            "total_calls": 0
+        }
         while l < RUNS:
                         
             #GET results from the 
             try:
-                initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output =combined_pipeline(query=query, evaluation=True)
+                initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output, tmp_metadata =combined_pipeline(query=query, evaluation=True)
             except QueryExecutionError as e:
                 print("Exception has occured, when executing on database")
                 continue
@@ -323,6 +334,7 @@ def error_logic(loaded_dictionary, queries):
             #Now do also the Precision KPI stuff please
             accuracy, precision, recall, f1_score = evaluate_results(output, target_output)
             metrics.append([accuracy, precision, recall, f1_score])
+            metadata = add_metadata(tmp_metadata, metadata)
 
         #Calculate average values for accuracy, precision, recall, f1_score
         #and add it to appropriate folder
@@ -332,6 +344,12 @@ def error_logic(loaded_dictionary, queries):
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
         append_metrics_to_file(metrics_list)
+
+        #Work with metadata
+        for i in metadata.keys():
+            metadata[i]=metadata[i]/RUNS
+
+        append_metadata_to_file(metadata)
         
         #overall_metrics.append(metrics_list)
 
@@ -365,8 +383,8 @@ def evaluation_pipeline(queries):
 #How many runs per expression, Done everything
 RUNS=3
 queries= [i for i, _ in test_cases]
-queries=queries[17:]
-#evaluation_pipeline(queries)
+queries=queries[5]
+evaluation_pipeline(queries)
 
 
 

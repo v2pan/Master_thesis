@@ -5,39 +5,29 @@ from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
 import sqlparse
 import re
 from database import query_database
-from other_gemini import gemini_json,ask_gemini, RessourceError
+from other_gemini import gemini_json,ask_gemini, RessourceError,  add_metadata
 from extractor import extract
 import copy
 import time
 
 
+
 retry_delay=60
+
 #Metadata to keep track of use 
-usage_metadata_total = {
+usage_metadata_row = {
             "prompt_token_count": 0,
             "candidates_token_count": 0,
             "total_token_count": 0,
             "total_calls": 0
         }
 
-#Function to update metadata
-def update_metadata(metadata):
-    """
-    Updates the usage metadata with the values from the input metadata dictionary.
 
-    Args:
-    - metadata (dict): The metadata dictionary to update the usage metadata with.
-    """
-    global usage_metadata_total
-    usage_metadata_total["prompt_token_count"] += metadata["prompt_token_count"]
-    usage_metadata_total["candidates_token_count"] += metadata["candidates_token_count"]
-    usage_metadata_total["total_token_count"] += metadata["total_token_count"]
-    usage_metadata_total["total_calls"] += 1
 
 
 #Automatic retrieval of relevant tables from the database
 retries = 4
-def get_relevant_tables(calculus):
+def get_relevant_tables(calculus, return_metadata=False):
     """
     Retrieves relevant tables from a database, handling retries and potential errors.
 
@@ -72,7 +62,7 @@ def get_relevant_tables(calculus):
             while attemps>0:
                 #Extracting relevant tables by asking LLM boolean calls
                 try:
-                    categories = gemini_json(prompt=input_prompt, response_type=list[bool])
+                    categories, temp_meta = gemini_json(prompt=input_prompt, response_type=list[bool], return_metadata=True)
                 except RessourceError as e:
                         print(f"Exhaustion Error. Sleeping for {retry_delay} seconds")
                         time.sleep(retry_delay)
@@ -83,8 +73,10 @@ def get_relevant_tables(calculus):
                     break
 
             relevant_tables = [table_names[i] for i, is_relevant in enumerate(categories) if is_relevant]
-            
-            return relevant_tables  #Return tables if successfully found
+            if return_metadata:
+                return relevant_tables, temp_meta
+            else:
+                return relevant_tables  #Return tables if successfully found
 
         except Exception as e:  # Catch potential errors (e.g., database connection issues)
             count += 1
@@ -359,7 +351,7 @@ def compare_semantics_in_list(input_list):
             #                 Output:
             #                 ''', True, max_token=100)
             # print(f"The goal is {goal}")
-            #update_metadata(temp_meta)
+            #add_metadata(temp_meta)
             #Ask LLM to generate a phrase for the comparison
             phrase,temp_meta=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
                               Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
@@ -374,7 +366,7 @@ def compare_semantics_in_list(input_list):
                               Output:''',True, max_token=100)
             
             #Update the metadata
-            update_metadata(temp_meta)
+            _ = add_metadata(temp_meta,usage_metadata_row)
             print(f"The phrase is:\n {phrase}. ")
 
             print(f"temp_string: {temp_string}")
@@ -385,7 +377,7 @@ def compare_semantics_in_list(input_list):
             #
 
             #Final prompt with list
-            total_prompt="Answer the following questions with True or False." # Change in connection with bakery Fahrenheit/Celcius example
+            #total_prompt="Answer the following questions with True or False." # Change in connection with bakery Fahrenheit/Celcius example
             total_prompt=f"Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n"
             # Iterate over the items in temp_list and compare with temp_string
             for item in temp_list:
@@ -409,9 +401,10 @@ def compare_semantics_in_list(input_list):
             #Figure out the binding by giving out a list of lists    
             # response = gemini_json(total_prompt, response_type=list[bool])
 
-            answer=ask_gemini(total_prompt)
-            response = gemini_json(f"For this question \n{total_prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool])  # Expect a list of booleans back
-
+            answer,temp_meta=ask_gemini(total_prompt,return_metadata=True)
+            _=add_metadata(temp_meta,usage_metadata_row)
+            response, temp_meta = gemini_json(f"For this question \n{total_prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], return_metadata=True)  # Expect a list of booleans back
+            _=add_metadata(temp_meta,usage_metadata_row)
             #Check if response has same length
             if len(response)!=len(temp_list):
                 print("Error")
@@ -440,7 +433,7 @@ def initial_query(query,context):
 
 
 #MAIN FUNCTION
-def row_calculus_pipeline(initial_sql_query, evaluation=False):
+def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=False):
     
     # #Get context
     # retries=4
@@ -475,12 +468,17 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False):
     # response, temp_meta = initial_query(query,context)
     
     # #Update the metadata
-    # update_metadata(temp_meta)
+    # add_metadata(temp_meta)
 
     # #Extract the SQL query from the response
     # initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
     # print(f"The SQL query is: {initial_sql_query}")
 
+
+    #Metadata to keep track of use set so 0
+    for i in usage_metadata_row.keys():
+        usage_metadata_row[i]=0
+    
     #INNER LOGIC: Analyze SQL query, retrieve necessary items to retrieve, compare them using the LLM
     conditions = extract_where_conditions_sqlparse(initial_sql_query)
     query_results = execute_queries_on_conditions(conditions)
@@ -505,7 +503,7 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False):
     # Try to modify the query with our chosen binding
     response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
     #Update the metadata
-    update_metadata(temp_meta)
+    _ = add_metadata(temp_meta,usage_metadata_row)
 
     print(f"The response is {response}")
 
@@ -524,12 +522,20 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False):
         except:
             result=None
     #Print total usage
-    print(usage_metadata_total)
+    #print(usage_metadata_total)
     #Return result
-    if evaluation:
-        return initial_sql_query, semantic_list, result
-    else:
-        return result
+    print(usage_metadata_row)
+    if not return_metadata:
+        if evaluation:
+            return initial_sql_query, semantic_list, result
+        else:
+            return result
+    if return_metadata:
+        if evaluation:
+            return initial_sql_query, semantic_list, result, usage_metadata_row
+        else:
+            return result, usage_metadata_row
+    
 
 #Shareowner and Animalowner examples with equality
 # calculus='''{name, shares | ∃id (SHAREOWNER1ROW(id, name, shares) ∧ ANIMALOWNER1ROW(id , _, 'dog'))}'''

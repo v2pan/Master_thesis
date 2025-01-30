@@ -73,6 +73,24 @@ def append_metrics_to_file(metrics, filename="metrics/test_evaluation_metrics.tx
     except OSError as e:
         print(f"Error writing metrics to file: {e}")
 
+def append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics.txt"):
+    """Appends metrics to the end of the file."""
+    try:
+        with open(filename, "a") as f:  # Open for appending
+            # f.write("\n")
+            # f.write("--- Individual Metrics ---\n")
+            # f.write(f"Calculus {metrics[4]}:\n")
+            # f.write(f"  Accuracy: {metrics[0]:.4f}\n")
+            # f.write(f"  Precision: {metrics[1]:.4f}\n")
+            # f.write(f"  Recall: {metrics[2]:.4f}\n")
+            # f.write(f"  F1-score: {metrics[3]:.4f}\n")
+            for i in metadata.keys():
+                f.write(f"{i} AVERAGE: {metadata[i]}\n")
+
+    except OSError as e:
+        print(f"Error writing metrics to file: {e}")
+
+
 
 
 

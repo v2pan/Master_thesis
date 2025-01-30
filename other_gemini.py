@@ -34,6 +34,8 @@ def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model="g
             "prompt_token_count": result.usage_metadata.prompt_token_count,
             "candidates_token_count": result.usage_metadata.candidates_token_count,
             "total_token_count": result.usage_metadata.total_token_count,
+            "total_token_count": result.usage_metadata.total_token_count,
+            "total_calls": 1
         }
         return result.text, usage_metadata
         
@@ -53,7 +55,7 @@ def get_embedding(text,task_type="retrieval_document"):
 
 
 
-def gemini_json(prompt,response_type, model="gemini-1.5-flash"):
+def gemini_json(prompt,response_type, model="gemini-1.5-flash", return_metadata=False):
     """
     Sends a prompt to the Gemini API and returns the response as JSON.
 
@@ -77,7 +79,16 @@ def gemini_json(prompt,response_type, model="gemini-1.5-flash"):
         )
         #print(f"The result text is {result.text}")
         json_data=json.loads(result.text)
-        return json_data
+        if return_metadata:
+            usage_metadata = {
+                "prompt_token_count": result.usage_metadata.prompt_token_count,
+                "candidates_token_count": result.usage_metadata.candidates_token_count,
+                "total_token_count": result.usage_metadata.total_token_count,
+                "total_calls": 1
+            }
+            return json_data, usage_metadata
+        else:
+            return json_data
     except ResourceExhausted as e:
         print("Time exception has occured")
         raise RessourceError("API rate limit exceeded!")
@@ -88,6 +99,36 @@ class CATEGORY(typing.TypedDict):
     category: str
 class Table(typing.TypedDict):
     category: str
+
+#Function to update metadata
+# def update_metadata(metadata, usage_metadata_total):
+#     """
+#     Updates the usage metadata with the values from the input metadata dictionary.
+
+#     Args:
+#     - metadata (dict): The metadata dictionary to update the usage metadata with.
+#     """
+#     usage_metadata_total["prompt_token_count"] += metadata["prompt_token_count"]
+#     usage_metadata_total["candidates_token_count"] += metadata["candidates_token_count"]
+#     usage_metadata_total["total_token_count"] += metadata["total_token_count"]
+#     usage_metadata_total["total_calls"] += 1
+#     return usage_metadata_total
+    
+
+#Function to update metadata
+def add_metadata(metadata, usage_metadata_total):
+    """
+    Updates the usage metadata with the values from the input metadata dictionary.
+
+    Args:
+    - metadata (dict): The metadata dictionary to update the usage metadata with.
+    """
+    usage_metadata_total["prompt_token_count"] += metadata["prompt_token_count"]
+    usage_metadata_total["candidates_token_count"] += metadata["candidates_token_count"]
+    usage_metadata_total["total_token_count"] += metadata["total_token_count"]
+    usage_metadata_total["total_calls"] += metadata["total_calls"]
+    return usage_metadata_total
+    
 
 
 # print(response)
