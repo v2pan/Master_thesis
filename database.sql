@@ -129,6 +129,19 @@ CREATE TABLE public.artists (
 ALTER TABLE public.artists OWNER TO postgres;
 
 --
+-- Name: bakery_sales; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.bakery_sales (
+    item text,
+    quantity text,
+    price text
+);
+
+
+ALTER TABLE public.bakery_sales OWNER TO postgres;
+
+--
 -- Name: children_table; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -215,6 +228,43 @@ CREATE TABLE public.mothers (
 ALTER TABLE public.mothers OWNER TO postgres;
 
 --
+-- Name: movies; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.movies (
+    movie text NOT NULL,
+    category text,
+    rating text
+);
+
+
+ALTER TABLE public.movies OWNER TO postgres;
+
+--
+-- Name: movies_personal; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.movies_personal (
+    movie text NOT NULL,
+    personal_rating text
+);
+
+
+ALTER TABLE public.movies_personal OWNER TO postgres;
+
+--
+-- Name: oven_temperature; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.oven_temperature (
+    item text,
+    temperature text
+);
+
+
+ALTER TABLE public.oven_temperature OWNER TO postgres;
+
+--
 -- Name: players; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -226,6 +276,18 @@ CREATE TABLE public.players (
 
 
 ALTER TABLE public.players OWNER TO postgres;
+
+--
+-- Name: publication_clicks; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.publication_clicks (
+    publication text,
+    clicks text
+);
+
+
+ALTER TABLE public.publication_clicks OWNER TO postgres;
 
 --
 -- Name: shareowner; Type: TABLE; Schema: public; Owner: postgres
@@ -386,6 +448,18 @@ COPY public.artists (id, name, language) FROM stdin;
 
 
 --
+-- Data for Name: bakery_sales; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.bakery_sales (item, quantity, price) FROM stdin;
+Croissants	5 dozen	12.00 per dozen
+Baguettes	8 dozen	10.00 per dozen
+Macarons	7 dozen	12.00 per dozen
+Pain au Chocolat	3 dozen	15.00 per dozen
+\.
+
+
+--
 -- Data for Name: children_table; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -471,6 +545,42 @@ COPY public.mothers (id, name) FROM stdin;
 
 
 --
+-- Data for Name: movies; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.movies (movie, category, rating) FROM stdin;
+Raiders of the Lost Arc	action	4/5
+The Shawshank Redemption	thriller	3/5
+Wings of Desire	fantasy	4/5
+Amélie	comedy	5/5
+\.
+
+
+--
+-- Data for Name: movies_personal; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.movies_personal (movie, personal_rating) FROM stdin;
+Die Flucht aus Shawshank	3/5
+Der Himmel über Berlin	5/5
+Die fabelhafte Welt der Amélie	4/5
+Lola rennt	2/5
+\.
+
+
+--
+-- Data for Name: oven_temperature; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.oven_temperature (item, temperature) FROM stdin;
+Croissants	200 °F
+Baguettes	400 °F
+Macarons	350 °F
+Pain au Chocolat	200 °F
+\.
+
+
+--
 -- Data for Name: players; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -479,6 +589,18 @@ COPY public.players (id, name, born) FROM stdin;
 2	Paul	18.04.1968
 3	Xi	January 1986
 4	Michael	18.01.1997
+\.
+
+
+--
+-- Data for Name: publication_clicks; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.publication_clicks (publication, clicks) FROM stdin;
+17.01.2011	1000000
+08.03.2016	500
+22.11.2014	10^6
+24.12.2022	1000
 \.
 
 

@@ -35,10 +35,15 @@ Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(
 
 --- Individual Metrics ---
 Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
-  Accuracy: 0.2000
-  Precision: 0.3333
-  Recall: 0.3333
-  F1-score: 0.3333
+  Accuracy: 0.2778
+  Precision: 0.6667
+  Recall: 0.2778
+  F1-score: 0.3889
+prompt_token_count: 2534.3333333333335
+candidates_token_count: 188.33333333333334
+total_token_count: 2722.6666666666665
+total_calls: 8.0
+
 
 --- Individual Metrics ---
 Calculus ∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) ):
@@ -135,13 +140,3 @@ Calculus ∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks):
 
 
 
---- Individual Metrics ---
-Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
-  Accuracy: 0.2778
-  Precision: 0.6667
-  Recall: 0.2778
-  F1-score: 0.3889
-prompt_token_count: 2534.3333333333335
-candidates_token_count: 188.33333333333334
-total_token_count: 2722.6666666666665
-total_calls: 8.0
