@@ -31,7 +31,6 @@ from test_creation import append_to_json, append_to_json_dic
 
 
 
-
 def split_title_at_space(title):
     """Splits a title at the closest space to the midpoint."""
     if not title or len(title) <= 1:

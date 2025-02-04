@@ -4,6 +4,9 @@ from join_pipeline import join_pipeline
 from combined_pipeline import combined_pipeline
 from other_gemini import RessourceError
 from database import QueryExecutionError
+import re
+import statistics
+import pandas as pd
 
 def evaluate_results(expected, actual):
     """Calculates accuracy, precision, recall, and F1-score, handling tuples."""
@@ -90,6 +93,69 @@ def append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics.
     except OSError as e:
         print(f"Error writing metrics to file: {e}")
 
+# #Calculate average values
+# def calculate_average_metrics(filepath):
+#     """Calculates and prints average metrics from a file."""
+#     try:
+#         with open(filepath, "r") as f:
+#             lines = f.readlines()
+#     except FileNotFoundError:
+#         print(f"Error: File '{filepath}' not found.")
+#         return
+
+#     kpis= ['Accuracy', 'Precision', 'Recall', 'F1-score']
+#     metrics = {}
+#     for line in lines:
+#         for kpi in kpis:
+#         # Extract calculus name (more robust matching)
+#         match = re.search(f"kpi", line)
+#         if match:
+#             number = match.group(1).strip()
+#             metrics[number] = .append(number) 
+        
+#     with open(filepath, "a") as f:
+#             f.write("\n--- Average Metrics ---\n")
+#             for kpi in metrics.keys():
+#                 f.write(f"Average {kpi}: {metrics[kpi].mean()}\n")
+
+def calculate_average_metrics(filepath):
+    """Calculates and prints average metrics from a file."""
+    try:
+        with open(filepath, "r") as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        print(f"Error: File '{filepath}' not found.")
+        return
+
+    kpis = ['Accuracy', 'Precision', 'Recall', 'F1-score']
+    metrics_data = {}  # Use a dictionary to store the data
+
+
+    for line in lines:
+        for kpi in kpis:
+            match = re.search(r"{}:\s*([\d.]+)".format(kpi), line)  # Improved regex
+            if match:
+                value = float(match.group(1))  # Extract and convert to float
+                if kpi not in metrics_data:
+                    metrics_data[kpi] = []
+                metrics_data[kpi].append(value)
+
+
+    # Check if any metrics were found
+    if not metrics_data:
+        print("No matching metrics found in the file.")
+        return
+
+
+    with open(filepath, "a") as f:
+        f.write("\n--- Average Metrics ---\n")
+        for kpi, values in metrics_data.items():
+            if values:  # Check if the list is not empty
+              avg = statistics.mean(values)
+              f.write(f"Average {kpi}: {avg:.2f}\n")  # Format to 2 decimal places
+            else:
+              f.write(f"Average {kpi}: N/A\n")  # Indicate no data
+
 
 
 
@@ -142,93 +208,35 @@ test_cases = [
     '''∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)''', #12
     {('2023 10 26', 'London', 12, 0, '2023 October 26', 'about', 500), ('2023 10 26', 'London', 12, 0, '2023 October 26', 'homepage', 1000), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'about', 500), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'homepage', 1000), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'contact', 200), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'homepage', 1200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'contact', 200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'homepage', 1200)}
     ),
-    ( #NEW FROM HERE, test that out please
-        '''∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)''',
+    ( 
+        '''∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)''', #13
         {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
     ),
     (
-        '''∃item bakery_sales(item, < 55,_) ∧ oven_temperature(item,_)''',
+        '''∃item bakery_sales(item, < 55,_) ∧ oven_temperature(item,_)''', #14
         {('Pain au Chocolat', '3 dozen', '15.00 per dozen', '200 °F') }
     ),
     (
-        '''∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)''',
+        '''∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)''', #15
         {('Baguettes', '400 °F','8 dozen', '10.00 per dozen')}
     ),
     (
-        '''∃movie movies(movie,_, _) ∧ movies_personal(movie, _)''',
+        '''∃movie movies(movie,_, _) ∧ movies_personal(movie, _)''', #16
         {('Wings of Desire', 'fantasy', '4/5', 'Der Himmel über Berlin', '5/5'), ('Amélie', 'comedy', '5/5', 'Die fabelhafte Welt der Amélie', '4/5'), ('The Shawshank Redemption', 'thriller', '3/5', 'Die Flucht aus Shawshank', '3/5')}
     ),
     (
-        '''∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)''',
+        '''∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)''', #17
         {('Wings of Desire', 'fantasy', '4/5', 'Der Himmel über Berlin', '5/5'), ('Amélie', 'comedy', '5/5', 'Die fabelhafte Welt der Amélie', '4/5')}
     ),
     (
-        '''∃ movies(\"The sky over Berlin\",_,_)''',
+        '''∃ movies(\"The sky over Berlin\",_,_)''', #18
         {('Wings of Desire', 'fantasy','4/5' )}
     ),
     (
-        '''∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)''',
+        '''∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)''', #19
         {('princess', 'one thousand', '24.12.2022', '1000'), ('makeuptutorial', '1000 thousand', '17.01.2011', '1000000'), ('surviver1000', '1 million', '17.01.2011', '1000000')}
     )
 
 ]
 
-# max_retries = 10
-# retry_delay = 60
-
-# metrics = []  # List to store metrics for each test case
-# retries = 0
-# for calculus, expected_result in test_cases:
-    
-#     while retries < max_retries:
-#         try:
-#             #Run the actual pipeline
-#             actual_result = set(combined_pipeline(calculus))
-
-#             #Calculate the necessary metrics
-#             accuracy, precision, recall, f1_score = evaluate_results(expected_result, actual_result)
-#             metrics.append((accuracy, precision, recall, f1_score, calculus))
-#             break  # Exit the inner loop if successful
-#         except RessourceError as e: #Quota exception occurs quite frequently, due to free version of the API 
-#             print("Ressource Error!")
-#             retries += 1
-#             print(f"Error running calculus '{calculus}' (attempt {retries}/{max_retries}): {e}")
-#             if retries < max_retries:
-#                 print(f"Waiting {retry_delay} seconds before retrying...")
-#                 time.sleep(retry_delay)
-#             else:
-#                 print(f"Maximum retries reached for calculus '{calculus}'.")
-#                 metrics.append((0, 0, 0, 0,calculus)) # Append zeros for failed cases
-#                 continue
-#         except QueryExecutionError as e:
-#             print("Exception has occured, when executing on database")
-#             metrics.append((0, 0, 0, 0,calculus))
-#             continue
-#         except TypeError as e:
-#             print("Type Error has occured")
-
-                
-
-
-# if metrics:  # Check if there are any metrics (to avoid errors if all tests failed)
-#     accuracy_mean = sum(m[0] for m in metrics) / len(metrics)
-#     precision_mean = sum(m[1] for m in metrics) / len(metrics)
-#     recall_mean = sum(m[2] for m in metrics) / len(metrics)
-#     f1_score_mean = sum(m[3] for m in metrics) / len(metrics)
-
-
-#     print("\n--- Overall Metrics ---")
-#     print(f"Mean Accuracy: {accuracy_mean:.4f}")
-#     print(f"Mean Precision: {precision_mean:.4f}")
-#     print(f"Mean Recall: {recall_mean:.4f}")
-#     print(f"Mean F1-score: {f1_score_mean:.4f}")
-# else:
-#     print("No successful test cases to calculate mean metrics.")
-
-
-
-
-# write_all_metrics_to_file(metrics)
-
-
-
+#calculate_average_metrics("metrics/test_evaluation_metrics.txt")

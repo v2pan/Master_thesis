@@ -113,8 +113,100 @@ result=query_database(query) #Query database to get result of the modified query
 return result #Return the results of the query to the user
 ```
 
-Also the **join_pipeline** was implemented, which accounts for examples where during the join procedure the binding is modified using the CASE statement. The logic is pretty similar to that of the **row_calculus_pipeline** and a seperate pseudocode is not listed. The JOIN pipeline 
-can now also handle multiple JOINs and distingusih in which case to use a CASE statement at all.
+
+This is the pseudocode for the **join pipeline**.
+
+
+```python
+query ← INPUT  #Get predicate calculus expression as input
+
+
+#Extract all JOIN comparisons (e.g. JOIN animal.category=owner.animal) using a SQL parser and divide it into  the different parts
+join_conditions ← extract_join_conditions_sqlparse(initial_sql_query):
+   join_conditions= [] # List to fill with divided JOIN statments, divided into left part, right part and compariosn operator  
+   for token in sqlparse(sql_query): # Iteration over all tokens in SQL query
+      if isinstance(token, sqlparse.sql.Comparison): # If is part of a JOIN clause
+
+        left = str(token.left).strip() #Identiy attributes on left part of the JOIN condition
+        right = str(token.right).strip() #Identiy attributes on rigth part of the JOIN condition
+        operator = str(token.token_next(0)).strip # Identify comparison operator e.g. '=', '>', '<'
+
+        #List to mark the order of the different attributes
+        order = [copy.deepcopy(left), copy.deepcopy(right)]
+
+        # Use column to generate a SQL query e.g. 'animal.category' -> 'SELECT category FROM animal;'
+        left <- Convert_to_SQL(left)
+        right <- Convert_to_SQL(right)  
+
+        # Append to conditions, structure: {('SELECT category FROM  animal', "=",'JOIN animal.category=owner.animal'', SELECT animal from owner), (...)} 
+        join_conditions.append([left, operator, token.normalized,  right])
+        order_list.append(order) #[animal.category, owner.animal]
+   return join_conditions, order_list
+
+#Execute SQL queries inside conditions against the database
+new_list ← execute_queries_on_conditions(join_conditions): 
+   for i in  join_conditions: # For the whole conditions list {(...),(...),(...)}
+      for l in i: # Inside a comparison e.g. ('SELECT category FROM  animal', "=",'JOIN animal.category=owner.animal'', 'SELECT animal from owner') 
+         if l is SQL_query: # Check if the element is a SQL query
+            l ← query_database(l) # Substitute SQL query with result from database of that query e.g 'SELECT category FROM  animal;' ---> ('chien','perro','chat','dog')
+   return conditions #Structure is the following {(('chien','perro','chat','dog'), "=",'JOIN animal.category=owner.animal'', ('cat','snake', 'dog'))), (...)} 
+
+
+# Main Soft Binding Procedure using the LLM 
+semantic_dic ← compare_semantics_in_list(new_list): 
+  
+  
+  dict_list = [] ← [] #Initialize empty list for storing the bindings
+
+  #Iterate for each outer_list e.g. ('chien','perro','chat','dog'), "=",'JOIN animal.category=owner.animal'', ('cat','snake', 'dog'))
+  for each outer_list in new_list: 
+
+      temp_list1 ← outer_list[0] #Get left part
+      temp_list2 ← outer_list[-1] #Get right part
+
+      #Check if a LLM comparison is necessary or not. It would not be necessary if the type of both columns is int or date for example.
+      necessary ← gemini(f"Based on these list {temp_list1} and {temp_list2} and especially the type of lists, is there a possbility for residual noise")
+
+      #Only proceed if it is necessary
+      if necessary:
+        #Compare a list e.g. ('chien','perro','chat','dog') with the fixed binding e.g. 'dog'
+        temp_string, temp_list ← separate_binding_and_list(sublist) #Generate the temp_string e.g 'dog' and the temp_list e.g ('chien','perro','chat','dog')   
+
+        #Abstracts meaning of comparison operator in natural language 
+        # e.g " A = B" ---> " A has the same semantic meaning as B"'
+        phrase ← ask_LLM("Get semantic phrase for: " + sublist[1]) #sublist[1] contains comparison operator e.g. "=", "<", ">"  
+
+        for item in temp_list1:
+          
+          #Create total prompt
+          total_prompt = f"Answer the following questions with True or False.\n"
+
+            for other_item in temp_list2:
+              #Add instances to the total prompt
+              total_prompt+= f"'{item_str}' {phrase} '{other_item_str}' \n" 
+
+          #Add the instances which are relevant dic['dog']=['dog', 'chien', 'perro']
+          response = gemini_json(total_prompt, response_type=list[bool])
+          dict[item]= [temp_list2[i] for i, is_relevant in enumerate(response) if is_relevant]
+      
+      #Append dictionary to total dictionary
+      dict_list.append(dict)
+
+        
+  return dict_list
+
+#Modified query Construction
+
+#Construct the modified query based on the semantics list e.g "WHERE animal.category='dog'" --->
+#---> "WHERE animal.category='dog' OR animal.category='perro' OR animal.category='chien'"
+query ← ask_LLM(f"Based on semantic dic {semantic_dic} and the intital query {sql_query} generate  a new query")
+
+
+result=query_database(query) #Query database to get result of the modified query
+return result #Return the results of the query to the user
+```
+
+Together the different pipelines are access via the **combined_pipeline** in order to generate the wanted results.
 
 
 # Results 
