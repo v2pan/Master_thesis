@@ -67,49 +67,41 @@ prompt="Answer the following questions with True or False. Reason you thinking a
 true_reponse=[False, True, False, False]
 
 models = ["gemini-2.0-flash", "gemini-1.5-flash"]
-reasons = ["direct", "cot"]
 num_tries = 3
 
 results = {}
 metrics = {}
-for reason in reasons:
-    results[reason] = []
-    metrics[reason] = []
-    for model in models:
-        results[reason][model] = []
-        metrics[reason][model] = []
-        for i in range(num_tries):
-            #response = gemini_json(prompt, response_type=list[bool])
+for model in models:
+    results[model] = []
+    metrics[model] = []
+    for i in range(num_tries):
+        #response = gemini_json(prompt, response_type=list[bool])
 
-            if reason=="cot":
+        answer=ask_gemini(prompt, model=model)
+        response = gemini_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
 
-                answer=ask_gemini(prompt, model=model)
-                response = gemini_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
-            elif reason=="direct":
-                response = gemini_json(f"For this question \n{prompt} \n  Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
+        results[model].append(response)
 
-            results[reason][model].append(response)
-
-            accuracy, precision, recall, f1 = calculate_metrics(true_reponse, response)
+        accuracy, precision, recall, f1 = calculate_metrics(true_reponse, response)
 
 
-            metrics[reason][model].append([ accuracy, precision, recall, f1 ])
+        metrics[model].append([ accuracy, precision, recall, f1 ])
 
 
 # models = ["gemini-2.0-flash", "gemini-1.5-flash"]
 # metrics={'gemini-2.0-flash':[[1.0, 1.0, 1.0, 1.0], [0.75, 0, 0.0, 0], [1.0, 1.0, 1.0, 1.0]] , 'gemini-1.5-flash': [[0.75, 0.5, 1.0, 0.6666666666666666], [0.5, 0.0, 0.0, 0], [1.0, 1.0, 1.0, 1.0]]}
-fig, axes = plt.subplots(len(reason), len(models), figsize=(10, 5 * len(models)))  # Adjust figure size
-for l, reason in enumerate(reasons):
-    for i, model in enumerate(models):
-            mean_scores = np.mean(metrics[model], axis=0)
-            ax = axes[l][i]
+fig, axes = plt.subplots(1, len(models), figsize=(10, 5 * len(models)))  # Adjust figure size
 
-            ax.bar(["Accuracy", "Precision", "Recall", "F1-score"], mean_scores)
-            ax.set_ylabel("Mean Score")
-            ax.set_title(model+reason)
-            ax.set_ylim(0, 1)  # Ensure scores are within 0-1 range
-            ax.set_xticks(range(len(mean_scores)))
-            ax.set_xticklabels(["Accuracy", "Precision", "Recall", "F1-score"], rotation=45, ha="right")  #X-Axis Labels
+for i, model in enumerate(models):
+        mean_scores = np.mean(metrics[model], axis=0)
+        ax = axes[i]
+
+        ax.bar(["Accuracy", "Precision", "Recall", "F1-score"], mean_scores)
+        ax.set_ylabel("Mean Score")
+        ax.set_title(model)
+        ax.set_ylim(0, 1)  # Ensure scores are within 0-1 range
+        ax.set_xticks(range(len(mean_scores)))
+        ax.set_xticklabels(["Accuracy", "Precision", "Recall", "F1-score"], rotation=45, ha="right")  #X-Axis Labels
 
 plt.tight_layout()  # Adjust subplot parameters for better spacing
 plt.show()
