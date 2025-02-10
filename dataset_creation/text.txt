@@ -1,0 +1,6 @@
+SELECT capitol, state_abrev, name, population
+FROM state_capitol
+LEFT JOIN state_trans ON state_trans.state_abrev = state_capitol.state
+LEFT JOIN states ON states.name = state_trans.state;
+
+#For getting correct result
