@@ -428,7 +428,7 @@
         ]
     },
     {
-        "calculus": "∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)",
+        "calculus": "∃date weather(date, city, temperature, rainfall) ∧ website_visits(date, page, visits)",
         "initial_sql_query_join": "SELECT *  FROM weather INNER JOIN website_visits ON website_visits.date = CASE weather.date WHEN '2023 10 26' THEN '2023 October 26' WHEN '2023 10 27' THEN '2023 October 27' END;",
         "semantic_list_join": [
             {
@@ -859,7 +859,7 @@
         ]
     },
     {
-        "calculus": "∃item bakery_sales(item, < 55,_) ∧ oven_temperature(item,_)",
+        "calculus": "∃item bakery_sales(item,quantity < 55,_) ∧ oven_temperature(item,_)",
         "initial_sql_query_join": "SELECT * FROM bakery_sales INNER JOIN oven_temperature ON bakery_sales.item = oven_temperature.item WHERE bakery_sales.quantity < 55;",
         "semantic_list_join": [
             {

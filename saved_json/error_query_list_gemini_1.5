@@ -12,12 +12,21 @@
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
         "result_join": 0,
-        "initial_sql_query_where": 2,
-        "semantic_list_where": 1,
-        "result_where": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 3,
         "correct_results": 0
     },
     "∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))": {
+        "initial_sql_query_join": 0,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 3
+    },
+    "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
         "result_join": 0,
@@ -31,18 +40,9 @@
         "semantic_list_join": 0,
         "result_join": 0,
         "initial_sql_query_where": 0,
-        "semantic_list_where": 1,
-        "result_where": 0,
-        "correct_results": 2
-    },
-    "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))": {
-        "initial_sql_query_join": 3,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 0,
         "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 0
+        "correct_results": 3
     },
     "∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))": {
         "initial_sql_query_join": 0,
@@ -67,65 +67,38 @@
         "semantic_list_join": 0,
         "result_join": 0,
         "initial_sql_query_where": 0,
-        "semantic_list_where": 1,
+        "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 2
+        "correct_results": 3
     },
     "∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z))": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
-        "result_join": 0,
+        "result_join": 2,
         "initial_sql_query_where": 0,
         "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 3
+        "correct_results": 1
     },
     "∃id (children_table(id, >1) ∧ fathers(id, _))": {
         "initial_sql_query_join": 0,
-        "semantic_list_join": 2,
+        "semantic_list_join": 3,
         "result_join": 0,
         "initial_sql_query_where": 0,
         "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 1
+        "correct_results": 0
     },
-    "∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)": {
-        "initial_sql_query_join": 0,
+    "∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)": {
+        "initial_sql_query_join": 1,
         "semantic_list_join": 0,
         "result_join": 0,
         "initial_sql_query_where": 0,
-        "semantic_list_where": 1,
+        "semantic_list_where": 0,
         "result_where": 0,
         "correct_results": 2
     },
-    "∃item bakery_sales(item,quantity < 55,_) ∧ oven_temperature(item,_)": {
-        "initial_sql_query_join": 2,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 0,
-        "correct_results": 1
-    },
-    "∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)": {
-        "initial_sql_query_join": 2,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 0,
-        "correct_results": 1
-    },
-    "∃movie movies(movie,_, _) ∧ movies_personal(movie, _)": {
-        "initial_sql_query_join": 0,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 0,
-        "correct_results": 3
-    },
-    "∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)": {
+    "ARTISTS(a,,), ALBUMS(,a,\"Reputation\",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)": {
         "initial_sql_query_join": 3,
         "semantic_list_join": 0,
         "result_join": 0,
@@ -134,7 +107,25 @@
         "result_where": 0,
         "correct_results": 0
     },
-    "∃ movies(\"The sky over Berlin\",_,_)": {
+    "∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)": {
+        "initial_sql_query_join": 2,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 1,
+        "correct_results": 0
+    },
+    "∃movie movies(movie,_, _) ∧ movies_personal(movie, _)": {
+        "initial_sql_query_join": 3,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 0
+    },
+    "∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
         "result_join": 0,
@@ -143,41 +134,40 @@
         "result_where": 0,
         "correct_results": 1
     },
+    "∃ movies(\"The sky over Berlin\",_,_)": {
+        "initial_sql_query_join": 0,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 3,
+        "result_where": 0,
+        "correct_results": 0
+    },
     "∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks)": {
-        "initial_sql_query_join": 0,
+        "initial_sql_query_join": 3,
         "semantic_list_join": 0,
         "result_join": 0,
         "initial_sql_query_where": 0,
         "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 3
+        "correct_results": 0
     },
-    "∃date weather(date, city, temperature, rainfall) ∧ website_visits(date, page, visits)": {
+    "∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
-        "result_join": 0,
+        "result_join": 1,
         "initial_sql_query_where": 0,
         "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 3
+        "correct_results": 2
     },
-
-    "∃dae weather(date, city, temperature, rainfall) ∧ website_visits(date, page, visits)": {
+    "∃item bakery_sales(item, < 55,_) ∧ oven_temperature(item,_)": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
         "result_join": 0,
         "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
+        "semantic_list_where": 3,
         "result_where": 0,
-        "correct_results": 3
-    },
-    "ARTISTS(a,,), ALBUMS(,a,\"Reputation\",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,)": {
-        "initial_sql_query_join": 0,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 0,
-        "correct_results": 3
+        "correct_results": 0
     }
 }

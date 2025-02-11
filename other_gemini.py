@@ -16,7 +16,7 @@ genai.configure(api_key=api_key)
 # 1 million TPM
 # 1,500 RPD
 
-def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model="gemini-1.5-flash-8b"):  # Add optional argument
+def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model="gemini-2.0-flash"):  # Add optional argument
     model = genai.GenerativeModel(model)
     try:
         result = model.generate_content(contents=prompt,
@@ -55,7 +55,7 @@ def get_embedding(text,task_type="retrieval_document"):
 
 
 
-def gemini_json(prompt,response_type, model="gemini-1.5-flash", return_metadata=False):
+def gemini_json(prompt,response_type, model="gemini-2.0-flash", return_metadata=False):
     """
     Sends a prompt to the Gemini API and returns the response as JSON.
 
@@ -90,7 +90,7 @@ def gemini_json(prompt,response_type, model="gemini-1.5-flash", return_metadata=
         else:
             return json_data
     except ResourceExhausted as e:
-        print("Time exception has occured")
+        print("Time exception has occured in JSOn")
         raise RessourceError("API rate limit exceeded!")
 #Define Filter class for ret
 class QUERY(typing.TypedDict):
