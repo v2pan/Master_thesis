@@ -1,10 +1,11 @@
 import sqlparse
 import re
 from row_calculus_pipeline import execute_queries_on_conditions,  get_context, get_relevant_tables
-from other_gemini import ask_gemini, gemini_json, add_metadata
+from other_gemini import ask_gemini, gemini_json, add_metadata, RessourceError
 from database import query_database, QueryExecutionError
 from extractor import extract
 import copy
+import time
 
 
 
@@ -145,7 +146,14 @@ def compare_semantics_in_list(input_list,order):
                         total_prompt += prompt
 
                     #Get response from LLM
-                    response, temp_meta = gemini_json(total_prompt, response_type=list[bool], return_metadata=True)
+                    json_success=False
+                    while not json_success:
+                        try:
+                            response, temp_meta = gemini_json(total_prompt, response_type=list[bool], return_metadata=True)
+                            json_success=True
+                        except RessourceError:
+                            print(f"Resource Error occured in Join Pipeline JSON")
+                            time.sleep(60)
                     _=add_metadata(temp_meta, usage_metadata_join)
 
                     relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]

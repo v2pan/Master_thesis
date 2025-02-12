@@ -13,7 +13,7 @@ import json
 from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
-from combined_pipeline import combined_pipeline
+from combined_pipeline import combined_pipeline, hard_pipeline
 from evaluation import test_cases, evaluate_results, write_all_metrics_to_file, append_metrics_to_file, append_metadata_to_file, append_time_to_file
 import seaborn as sns
 import pandas as pd
@@ -277,7 +277,6 @@ def error_logic(loaded_dictionary, queries):
         # }
         
         #error_cnt={"initial_result": 0, "semantic_list": 0, "wrong_result": 0, "correct_results": 0}
-        error_cnt={"initial_sql_query_join": 0, "semantic_list_join": 0, "result_join": 0, "initial_sql_query_where": 0, "semantic_list_where": 0, "result_where": 0,  "correct_results": 0}
         #Iterate over all the runs to get the results
         
         #Counter variable
@@ -295,7 +294,7 @@ def error_logic(loaded_dictionary, queries):
                         
             #GET results from the 
             try:
-                initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output, tmp_metadata =combined_pipeline(query=query, evaluation=True)
+             output, tmp_metadata =hard_pipeline(query=query)
             except QueryExecutionError as e:
                 print("Exception has occured, when executing on database")
                 continue
@@ -311,24 +310,12 @@ def error_logic(loaded_dictionary, queries):
                     print(f"Maximum retries reached.")
                     # Append zeros for failed cases
                     raise Exception(f"Maximum retries reached.")
-            result_dic={
-                "initial_sql_query_join" : initial_sql_query_join,
-                "semantic_list_join" : semantic_list_join,
-                "result_join" : result_join,
-                "initial_sql_query_where" : initial_sql_query_where,
-                "semantic_list_where" : semantic_list_where,
-                "result_where" : result_where,
-                "output" : output
-            }
             #Retrieve target instances from the loaded dictionary
             target_value= query
             target_instance = None
             for i in loaded_dictionary:
                 if i["calculus"]==target_value:
                     target_instance = i
-            error_cnt_tmp = comparison_logic(result_dic, target_instance)
-            for key in error_cnt.keys():
-                error_cnt[key] += error_cnt_tmp[key]
             l+=1
             
             #Write target output as a list of tuples as expected
@@ -354,21 +341,17 @@ def error_logic(loaded_dictionary, queries):
         metrics_list=[]
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
-        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_analysis.txt")
+        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_hard.txt")
 
         #Work with metadata
         for i in metadata.keys():
             metadata[i]=metadata[i]/RUNS
 
-        append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics_analysis.txt")
+        append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics_hard.txt")
         
         #Append the time taken for the whole pipeline
-        append_time_to_file(times, filename="metrics/test_evaluation_metrics_analysis.txt")
+        append_time_to_file(times, filename="metrics/test_evaluation_metrics_hard.txt")
 
-        error_query_dic[query]=error_cnt
-        #Additionally write to path
-        path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list")
-        append_to_json_dic(error_query_dic, path_query_error)
     
     #Write that to a file
     #write_all_metrics_to_file(overall_metrics, filename="test_evaluation_metrics")
@@ -378,7 +361,7 @@ def error_logic(loaded_dictionary, queries):
 
 
 #MAIN FUNCTION
-def evaluation_pipeline(queries):
+def evaluation_pipeline_hard(queries):
 
     #Load the relevant dictionary
     filepath = os.path.join(os.getcwd(), "temporary", "total_test")
@@ -395,15 +378,7 @@ def evaluation_pipeline(queries):
 #How many runs per expression, Done everything
 RUNS=3
 queries= [i for i, _ in test_cases]
-#10, 
-# #12 done, #13 done, #14 done, #15done, #16 doen, #11 skipped
-index=[0,1,3,4,7,9,12,13,14,16,17]
-index=[16,17]
-new_queries=[]
-for i in index:
-    new_queries.append(queries[i])
-queries=new_queries
-evaluation_pipeline(queries)
+evaluation_pipeline_hard(queries)
 
 
 

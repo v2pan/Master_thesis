@@ -194,7 +194,61 @@ def combined_pipeline(query, evaluation=False):
         return initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output, usage_metadata_total
 
 
+def hard_pipeline(query):
+    #Metadata to keep track of use 
 
+    global usage_metadata_total
+    usage_metadata_total = {
+                "prompt_token_count": 0,
+                "candidates_token_count": 0,
+                "total_token_count": 0,
+                "total_calls": 0
+            }
+    
+
+    total_count=0
+    total_retries=4
+
+    while total_count<total_retries:
+        #Get context
+        count=0
+        while count<total_retries:
+            tables, temp_meta = get_relevant_tables(query, return_metadata=True)
+            usage_metadata_total=add_metadata(temp_meta, usage_metadata_total)
+            if tables is not None:
+                break
+            else:
+                count+=1
+
+        if tables is None:
+            return None
+        
+        print(f"The relevant tables are {tables}")
+        context = get_context(tables)
+
+        #Optional, if were to use JSON files
+        #Gets context by reading JSON files
+        #context= get_context_json(tables)
+
+        print(f"The context is {context}")
+        print(f"The query is {query}")
+
+        #Used for predicate calculus, selecting all rows
+        response, temp_meta = initial_query(query,context)
+        
+        #Update the metadata
+        add_metadata(temp_meta, usage_metadata_total)
+
+        #Extract the SQL query from the response
+        initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
+        print(f"The SQL query is: {initial_sql_query}")
+
+        #Check whether the SQL query is invalid
+        try:
+            initial_query_result=query_database(initial_query)
+        except QueryExecutionError as e:
+            initial_query_result=[]
+        return initial_query_result, temp_meta
 # queries=[
 #         "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
 #         "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",

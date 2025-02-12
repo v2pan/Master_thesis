@@ -1,4 +1,4 @@
---- Individual Metrics ---
+--- Individual Metrics --- ?
 Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
   Accuracy: 0.0000
   Precision: 0.0000
@@ -10,7 +10,7 @@ total_token_count AVERAGE: 3845.3333333333335
 total_calls AVERAGE: 6.0
 
 --- Individual Metrics ---
-Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
+Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12): ?
   Accuracy: 0.3611
   Precision: 1.0000
   Recall: 0.3611
@@ -75,7 +75,7 @@ candidates_token_count AVERAGE: 252.33333333333334
 total_token_count AVERAGE: 3587.3333333333335
 total_calls AVERAGE: 9.0
 
---- Individual Metrics ---
+--- Individual Metrics --- ?
 Calculus ∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money)):
   Accuracy: 0.2222
   Precision: 0.6667
@@ -98,7 +98,7 @@ total_token_count AVERAGE: 5311.0
 total_calls AVERAGE: 12.0
 
 --- Individual Metrics ---
-Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
+Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)): ?
   Accuracy: 0.1667
   Precision: 0.3333
   Recall: 0.1667
@@ -152,7 +152,7 @@ candidates_token_count AVERAGE: 324.6666666666667
 total_token_count AVERAGE: 3109.0
 total_calls AVERAGE: 8.0
 
---- Individual Metrics ---
+--- Individual Metrics --- ?
 Calculus ∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%):
   Accuracy: 0.0000
   Precision: 0.0000
@@ -207,3 +207,6 @@ prompt_token_count AVERAGE:3874.3333333333333
 candidates_token_count AVERAGE: 417.0
 total_token_count AVERAGE: 4324.666666666667
 total_calls AVERAGE: 12.00
+
+
+

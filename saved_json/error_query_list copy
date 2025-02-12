@@ -77,17 +77,17 @@
         "result_join": 0,
         "initial_sql_query_where": 0,
         "semantic_list_where": 2,
-        "result_where": 0,
-        "correct_results": 1
+        "result_where": 1,
+        "correct_results": 0
     },
     "∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12)": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
         "result_join": 0,
-        "initial_sql_query_where": 3,
+        "initial_sql_query_where": 1,
         "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 0
+        "correct_results": 2
     },
     "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))": {
         "initial_sql_query_join": 0,
@@ -103,18 +103,18 @@
         "semantic_list_join": 0,
         "result_join": 0,
         "initial_sql_query_where": 0,
-        "semantic_list_where": 1,
+        "semantic_list_where": 0,
         "result_where": 0,
-        "correct_results": 0
+        "correct_results": 1
     },
     "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))": {
         "initial_sql_query_join": 0,
         "semantic_list_join": 0,
         "result_join": 0,
         "initial_sql_query_where": 0,
-        "semantic_list_where": 1,
+        "semantic_list_where": 3,
         "result_where": 0,
-        "correct_results": 2
+        "correct_results": 0
     },
     "∃id (children_table(id, >1) ∧ fathers(id, _))": {
         "initial_sql_query_join": 0,
@@ -126,46 +126,10 @@
         "correct_results": 0
     },
     "∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)": {
-        "initial_sql_query_join": 2,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 0,
-        "correct_results": 1
-    },
-    "∃item bakery_sales(item,quantity < 55,_) ∧ oven_temperature(item,_)": {
-        "initial_sql_query_join": 0,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 0,
-        "correct_results": 3
-    },
-    "∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)": {
-        "initial_sql_query_join": 1,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 1,
-        "correct_results": 1
-    },
-    "∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%)": {
         "initial_sql_query_join": 3,
         "semantic_list_join": 0,
         "result_join": 0,
         "initial_sql_query_where": 0,
-        "semantic_list_where": 0,
-        "result_where": 0,
-        "correct_results": 0
-    },
-    "∃ movies(\"The sky over Berlin\",_,_)": {
-        "initial_sql_query_join": 0,
-        "semantic_list_join": 0,
-        "result_join": 0,
-        "initial_sql_query_where": 3,
         "semantic_list_where": 0,
         "result_where": 0,
         "correct_results": 0

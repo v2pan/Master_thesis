@@ -109,7 +109,7 @@ with open(path_categorization, 'r') as f:
             categorization = json.load(f)
 
 #New dic data structure
-path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list")
+path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list_gemini_2_0")
 with open(path_query_error, 'r') as f:
             query_error_dic = json.load(f)
 
@@ -212,7 +212,7 @@ def visualize_errors_category(query_error_dic, categorization):
     title = " || ".join(parts[:3] + ["\n"] + parts[3:])
     fig.suptitle(f"{title}") #Smaller fontsize
     plt.tight_layout()
-    filepath_total_fig = os.path.join(os.getcwd(), "saved_plots", "total_plot_category.png")
+    filepath_total_fig = os.path.join(os.getcwd(), "saved_plots", "total_plot_category_gemini_2_0.png")
     fig.savefig(filepath_total_fig, dpi=300, bbox_inches='tight')
     print("Total plot saved to 'saved_plots' folder.")
     plt.show()

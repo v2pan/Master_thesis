@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from evaluation import calculate_average_metrics
 
 def visualize_results(results):
     """Visualizes the results in a bar plot."""
@@ -26,7 +27,7 @@ def visualize_results(results):
 
     
 
-    save_path="saved_plots/average_metrics.png.png"
+    save_path="saved_plots/average_metrics_gemini_2_0.png"
     # Save the figure
     try:
         plt.savefig(save_path, dpi=300)  # Higher dpi for better quality
@@ -35,6 +36,10 @@ def visualize_results(results):
         print(f"Error saving figure: {e}")
 
     plt.show()
+
+
+calculate_average_metrics("metrics/test_evaluation_metrics_gemini_2_0.txt")
+
 
 # Example usage (replace with your results)
 results = {
@@ -47,4 +52,4 @@ results = {
 
 
 
-visualize_results(results)
+#visualize_results(results)

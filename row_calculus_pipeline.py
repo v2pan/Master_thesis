@@ -319,7 +319,7 @@ def compare_semantics_in_list(input_list):
     Returns:
     - semantic_list (list of lists): A list of lists where each sublist contains expressions with the same semantic meaning.
     """
-    semantic_list = []  # We will build this list to store the results
+    semantic_list = []  # Store the results
     
     # Iterate over each sublist in the input list
     for outer_list in input_list:

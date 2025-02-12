@@ -1,0 +1,60 @@
+
+--- Individual Metrics ---
+Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 218.0
+candidates_token_count AVERAGE: 20.0
+total_token_count AVERAGE: 238.0
+total_calls AVERAGE: 1.0
+ AVERAGE Time: 2.1712
+
+--- Individual Metrics ---
+Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 216.0
+candidates_token_count AVERAGE: 30.333333333333332
+total_token_count AVERAGE: 246.33333333333334
+total_calls AVERAGE: 1.0
+ AVERAGE Time: 2.307
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog')):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 300.0
+candidates_token_count AVERAGE: 47.333333333333336
+total_token_count AVERAGE: 347.3333333333333
+total_calls AVERAGE: 1.0
+ AVERAGE Time: 22.268
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog')):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 288.0
+candidates_token_count AVERAGE: 37.666666666666664
+total_token_count AVERAGE: 325.6666666666667
+total_calls AVERAGE: 1.0
+ AVERAGE Time: 2.2562
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 289.0
+candidates_token_count AVERAGE: 65.66666666666667
+total_token_count AVERAGE: 354.6666666666667
+total_calls AVERAGE: 1.0
+ AVERAGE Time: 3.139
