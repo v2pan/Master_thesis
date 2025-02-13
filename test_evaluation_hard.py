@@ -290,11 +290,11 @@ def error_logic(loaded_dictionary, queries):
         }
         times=[]
         while l < RUNS:
-            start=time.time()
+            start=time.process_time()
                         
             #GET results from the 
             try:
-             output, tmp_metadata =hard_pipeline(query=query)
+                output, tmp_metadata =hard_pipeline(query=query)
             except QueryExecutionError as e:
                 print("Exception has occured, when executing on database")
                 continue
@@ -331,7 +331,7 @@ def error_logic(loaded_dictionary, queries):
             accuracy, precision, recall, f1_score = evaluate_results(output, target_output)
             metrics.append([accuracy, precision, recall, f1_score])
             metadata = add_metadata(tmp_metadata, metadata)
-            end=time.time()
+            end=time.process_time()
             times.append(end-start)
 
         #Calculate average values for accuracy, precision, recall, f1_score
@@ -378,6 +378,7 @@ def evaluation_pipeline_hard(queries):
 #How many runs per expression, Done everything
 RUNS=3
 queries= [i for i, _ in test_cases]
+# queries=queries[10]
 evaluation_pipeline_hard(queries)
 
 

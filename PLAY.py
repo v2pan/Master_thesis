@@ -26,6 +26,13 @@
 # end=time.time()
 # print(f"Time taken: {end-start} seconds")
 
-import numpy as np
-times = [1,2,4]
-print(round(np.mean(times),2))
+import time
+
+start = time.process_time()
+
+for i in range(100000000):
+    pass
+
+# time.sleep(5)
+end=time.process_time()
+print(f"Time taken: {end-start} seconds")

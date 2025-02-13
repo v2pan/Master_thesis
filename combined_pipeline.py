@@ -245,7 +245,7 @@ def hard_pipeline(query):
 
         #Check whether the SQL query is invalid
         try:
-            initial_query_result=query_database(initial_query)
+            initial_query_result=query_database(initial_sql_query)
         except QueryExecutionError as e:
             initial_query_result=[]
         return initial_query_result, temp_meta

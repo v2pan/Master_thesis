@@ -278,8 +278,7 @@ def error_logic(loaded_dictionary, queries):
         
         #error_cnt={"initial_result": 0, "semantic_list": 0, "wrong_result": 0, "correct_results": 0}
         error_cnt={"initial_sql_query_join": 0, "semantic_list_join": 0, "result_join": 0, "initial_sql_query_where": 0, "semantic_list_where": 0, "result_where": 0,  "correct_results": 0}
-        #Iterate over all the runs to get the results
-        
+        #IterTest
         #Counter variable
         l=0
         metrics = []  # List to store metrics for each test case
@@ -291,7 +290,7 @@ def error_logic(loaded_dictionary, queries):
         }
         times=[]
         while l < RUNS:
-            start=time.time()
+            start=time.process_time()
                         
             #GET results from the 
             try:
@@ -344,7 +343,7 @@ def error_logic(loaded_dictionary, queries):
             accuracy, precision, recall, f1_score = evaluate_results(output, target_output)
             metrics.append([accuracy, precision, recall, f1_score])
             metadata = add_metadata(tmp_metadata, metadata)
-            end=time.time()
+            end=time.process_time()
             times.append(end-start)
 
         #Calculate average values for accuracy, precision, recall, f1_score
@@ -354,21 +353,21 @@ def error_logic(loaded_dictionary, queries):
         metrics_list=[]
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
-        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_analysis.txt")
+        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_time.txt")
 
         #Work with metadata
         for i in metadata.keys():
             metadata[i]=metadata[i]/RUNS
 
-        append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics_analysis.txt")
+        append_metadata_to_file(metadata, filename="metrics/test_evaluation_time.txt")
         
         #Append the time taken for the whole pipeline
-        append_time_to_file(times, filename="metrics/test_evaluation_metrics_analysis.txt")
+        append_time_to_file(times, filename="metrics/test_evaluation_time.txt")
 
         error_query_dic[query]=error_cnt
         #Additionally write to path
-        path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list")
-        append_to_json_dic(error_query_dic, path_query_error)
+        #path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list")
+        #append_to_json_dic(error_query_dic, path_query_error)
     
     #Write that to a file
     #write_all_metrics_to_file(overall_metrics, filename="test_evaluation_metrics")
@@ -393,16 +392,16 @@ def evaluation_pipeline(queries):
     
 
 #How many runs per expression, Done everything
-RUNS=3
+RUNS=1
 queries= [i for i, _ in test_cases]
 #10, 
 # #12 done, #13 done, #14 done, #15done, #16 doen, #11 skipped
-index=[0,1,3,4,7,9,12,13,14,16,17]
-index=[16,17]
-new_queries=[]
-for i in index:
-    new_queries.append(queries[i])
-queries=new_queries
+# index=[0,1,3,4,7,9,12,13,14,16,17]
+# index=[16,17]
+# new_queries=[]
+# for i in index:
+#     new_queries.append(queries[i])
+# queries=new_queries
 evaluation_pipeline(queries)
 
 

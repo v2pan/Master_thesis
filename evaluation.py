@@ -291,5 +291,5 @@ test_cases = [
 
 ]
 
-#calculate_average_metrics("metrics/test_evaluation_metrics.txt")
-calculate_average_tokens("metrics/test_evaluation_metrics.txt")
+# calculate_average_metrics("metrics/test_evaluation_metrics_soft.txt")
+#calculate_average_tokens("metrics/test_evaluation_metrics.txt")
