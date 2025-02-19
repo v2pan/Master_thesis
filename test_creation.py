@@ -114,22 +114,6 @@ def test_creation_pipeline(queries):
                     "result_where": result_where,
                     "output": output   
                 }
-
-
-                # data = {
-                #     "calculus": query,
-                #     # "pipeline": "row_calculus_pipeline",
-                #     # "tables_num": len(tables),
-                #     # "tables": tables,
-                #     "initial_result": result_of_initial_query,
-                #     "initial_sql_query": sql_query.replace('\n', ' '),
-                #     # "condition": conditions,
-                #     "semantic_list": semantic_list,
-                #     # "query_results": query_results,
-                #     # "sql_query": new_sql_query.replace('\n', ' '),
-                #     "result": result,
-
-                # }
                 try:
                     accuracy, precision, recall, f1_score = evaluate_results(result, output)
                 except TypeError as e:

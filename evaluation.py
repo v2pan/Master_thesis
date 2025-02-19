@@ -174,7 +174,7 @@ def calculate_average_tokens(filepath):
         print(f"Error: File '{filepath}' not found.")
         return
     
-    kpis = ['prompt_token_count', 'candidates_token_count', 'total_token_count', 'total_calls']
+    kpis = ['prompt_token_count', 'candidates_token_count', 'total_token_count', 'total_calls', 'AVERAGE Time']
     metrics_data = {}  # Use a dictionary to store the data
     for kpi in kpis:
         metrics_data[kpi] = []
@@ -291,5 +291,5 @@ test_cases = [
 
 ]
 
-# calculate_average_metrics("metrics/test_evaluation_metrics_soft.txt")
-#calculate_average_tokens("metrics/test_evaluation_metrics.txt")
+# calculate_average_metrics("metrics/test_evaluation_metrics_1_5_soft.txt")
+# calculate_average_tokens("metrics/test_evaluation_metrics_1_5_soft.txt")

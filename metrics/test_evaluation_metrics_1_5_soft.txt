@@ -1,0 +1,241 @@
+
+--- Individual Metrics ---
+Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
+  Accuracy: 0.5556
+  Precision: 1.0000
+  Recall: 0.5556
+  F1-score: 0.7111
+prompt_token_count AVERAGE: 3044.3333333333335
+candidates_token_count AVERAGE: 327.0
+total_token_count AVERAGE: 3371.3333333333335
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.204
+
+--- Individual Metrics ---
+Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 3218.0
+candidates_token_count AVERAGE: 483.3333333333333
+total_token_count AVERAGE: 3701.3333333333335
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.1569
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog')):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+prompt_token_count AVERAGE: 3001.3333333333335
+candidates_token_count AVERAGE: 235.66666666666666
+total_token_count AVERAGE: 3237.0
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.543
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog')):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+prompt_token_count AVERAGE: 3163.0
+candidates_token_count AVERAGE: 406.3333333333333
+total_token_count AVERAGE: 3569.3333333333335
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.3971
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+prompt_token_count AVERAGE: 3169.3333333333335
+candidates_token_count AVERAGE: 390.3333333333333
+total_token_count AVERAGE: 3559.6666666666665
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.3957
+
+--- Individual Metrics ---
+Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
+  Accuracy: 0.6667
+  Precision: 0.6667
+  Recall: 0.6667
+  F1-score: 0.6667
+prompt_token_count AVERAGE: 2889.6666666666665
+candidates_token_count AVERAGE: 296.3333333333333
+total_token_count AVERAGE: 3186.0
+total_calls AVERAGE: 8.0
+ AVERAGE Time: 0.6522
+
+--- Individual Metrics ---
+Calculus ∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) ):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+prompt_token_count AVERAGE: 3334.6666666666665
+candidates_token_count AVERAGE: 256.0
+total_token_count AVERAGE: 3590.6666666666665
+total_calls AVERAGE: 9.0
+ AVERAGE Time: 0.3591
+
+--- Individual Metrics ---
+Calculus ∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money)):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 3256.0
+candidates_token_count AVERAGE: 564.3333333333334
+total_token_count AVERAGE: 3820.3333333333335
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.2434
+
+--- Individual Metrics ---
+Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+prompt_token_count AVERAGE: 4547.333333333333
+candidates_token_count AVERAGE: 633.3333333333334
+total_token_count AVERAGE: 5180.666666666667
+total_calls AVERAGE: 12.0
+ AVERAGE Time: 0.7285
+
+--- Individual Metrics ---
+Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
+  Accuracy: 0.1667
+  Precision: 0.1667
+  Recall: 0.3333
+  F1-score: 0.2222
+prompt_token_count AVERAGE: 3839.0
+candidates_token_count AVERAGE: 599.3333333333334
+total_token_count AVERAGE: 4438.333333333333
+total_calls AVERAGE: 12.0
+ AVERAGE Time: 0.562
+
+--- Individual Metrics ---
+Calculus ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,):
+  Accuracy: 0.3333
+  Precision: 0.3333
+  Recall: 0.3333
+  F1-score: 0.3333
+prompt_token_count AVERAGE: 2627.6666666666665
+candidates_token_count AVERAGE: 197.33333333333334
+total_token_count AVERAGE: 2825.0
+total_calls AVERAGE: 3.3333333333333335
+ AVERAGE Time: 0.1682
+
+--- Individual Metrics ---
+Calculus ∃date weather(date, city, temperature, rainfall) ∧ website_visits(date, page, visits):
+  Accuracy: 0.6667
+  Precision: 0.6667
+  Recall: 0.6667
+  F1-score: 0.6667
+prompt_token_count AVERAGE: 2833.6666666666665
+candidates_token_count AVERAGE: 320.3333333333333
+total_token_count AVERAGE: 3154.0
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.4292
+
+--- Individual Metrics ---
+Calculus ∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C):
+  Accuracy: 0.5278
+  Precision: 1.0000
+  Recall: 0.5278
+  F1-score: 0.6333
+prompt_token_count AVERAGE: 4428.333333333333
+candidates_token_count AVERAGE: 867.0
+total_token_count AVERAGE: 5295.333333333333
+total_calls AVERAGE: 12.0
+ AVERAGE Time: 0.6127
+
+--- Individual Metrics ---
+Calculus ∃item bakery_sales(item,quantity < 55,_) ∧ oven_temperature(item,_):
+  Accuracy: 0.1667
+  Precision: 0.6667
+  Recall: 0.1667
+  F1-score: 0.2667
+prompt_token_count AVERAGE: 4147.666666666667
+candidates_token_count AVERAGE: 657.0
+total_token_count AVERAGE: 4804.666666666667
+total_calls AVERAGE: 12.0
+ AVERAGE Time: 0.5826
+
+--- Individual Metrics ---
+Calculus ∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C):
+  Accuracy: 0.3333
+  Precision: 0.3333
+  Recall: 0.3333
+  F1-score: 0.3333
+prompt_token_count AVERAGE: 4558.666666666667
+candidates_token_count AVERAGE: 850.6666666666666
+total_token_count AVERAGE: 5409.333333333333
+total_calls AVERAGE: 12.666666666666666
+ AVERAGE Time: 1.0327
+
+--- Individual Metrics ---
+Calculus ∃movie movies(movie,_, _) ∧ movies_personal(movie, _):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 2784.6666666666665
+candidates_token_count AVERAGE: 334.0
+total_token_count AVERAGE: 3118.6666666666665
+total_calls AVERAGE: 8.0
+ AVERAGE Time: 0.5708
+
+--- Individual Metrics ---
+Calculus ∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%):
+  Accuracy: 0.2222
+  Precision: 0.3333
+  Recall: 0.2222
+  F1-score: 0.2667
+prompt_token_count AVERAGE: 4147.666666666667
+candidates_token_count AVERAGE: 762.0
+total_token_count AVERAGE: 4909.666666666667
+total_calls AVERAGE: 12.0
+ AVERAGE Time: 0.4461
+
+--- Individual Metrics ---
+Calculus ∃ movies("The sky over Berlin",_,_):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 2585.6666666666665
+candidates_token_count AVERAGE: 522.0
+total_token_count AVERAGE: 3107.6666666666665
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.2922
+
+--- Individual Metrics ---
+Calculus ∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 2723.0
+candidates_token_count AVERAGE: 369.6666666666667
+total_token_count AVERAGE: 3092.6666666666665
+total_calls AVERAGE: 8.0
+ AVERAGE Time: 0.3334
+
+--- Average Metrics ---
+Average Accuracy: 0.45
+Average Precision: 0.54
+Average Recall: 0.46
+Average F1-score: 0.48
+
+--- Average Metrics ---
+Average prompt_token_count: 3384.19
+Average candidates_token_count: 477.47
+Average total_token_count: 3861.67
+Average total_calls: 8.26
+Average AVERAGE Time: 0.46

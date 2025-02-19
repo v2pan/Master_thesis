@@ -1,38 +1,16 @@
-# import os
-# from test_evaluation import load_data
-# from evaluation import evaluate_results
-# import time
-# start=time.time()
-# filepath = os.path.join(os.getcwd(), "temporary", "total_test")
-# loaded_dictionary = load_data(filepath)
+from combined_pipeline import combined_pipeline
+from evaluation import evaluate_results
+pred_query="∃s state_capitol(s, _) ∧ states(s, _)"
 
-# target_value="∃date weather(date, city, temperature, rainfall) ∧ website_visits(date, page, visits)"
-# #target_value="∃item bakery_sales(item,_,_) ∧ oven_temperature(item, >200 °C)"
-# for i in loaded_dictionary:
-#     if i["calculus"]==target_value:
-#         target_instance = i
+metadata, output = combined_pipeline(pred_query)
+print(f"The metadata is {metadata}")
+print(f"The output is {output}")
 
-# list_output=[]
-# output=target_instance["output"]
-# for i in output:
-#     list_output.append(tuple(i))
-# output=list_output
-# pipeline_output=[('2023 10 26', 'London', 12, 0, '2023 October 26', 'about', 500), ('2023 10 26', 'London', 12, 0, '2023 October 26', 'homepage', 1000), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'about', 500), ('2023 10 26', 'New York', 15, 2, '2023 October 26', 'homepage', 1000), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'contact', 200), ('2023 10 27', 'London', 10, 5, '2023 October 27', 'homepage', 1200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'contact', 200), ('2023 10 27', 'New York', 13, 1, '2023 October 27', 'homepage', 1200)]
-# # set_output=set()
-# # for i in output:
-# #     set_output.add(set(i))
-# accuracy, precision, recall, f1_score=evaluate_results(output,pipeline_output)
-# print(precision)
-# end=time.time()
-# print(f"Time taken: {end-start} seconds")
 
-import time
 
-start = time.process_time()
-
-for i in range(100000000):
-    pass
-
-# time.sleep(5)
-end=time.process_time()
-print(f"Time taken: {end-start} seconds")
+target_output=[('Montgomery', 'AL', 'Alabama', 4903185), ('Juneau', 'AK', 'Alaska', 733391), ('Phoenix', 'AZ', 'Arizona', 7278717), ('Little Rock', 'AR', 'Arkansas', 3017804), ('Sacramento', 'CA', 'California', 39512223), ('Denver', 'CO', 'Colorado', 5758736), ('Hartford', 'CT', 'Connecticut', 3565287), ('Dover', 'DE', 'Delaware', 989948), ('Tallahassee', 'FL', 'Florida', 21478738), ('Atlanta', 'GA', 'Georgia', 10617423), ('Honolulu', 'HI', 'Hawaii', 1415872), ('Boise', 'ID', 'Idaho', 1881201), ('Springfield', 'IL', 'Illinois', 12671821), ('Indianapolis', 'IN', 'Indiana', 6732212), ('Des Moines', 'IA', 'Iowa', 3155070), ('Topeka', 'KS', 'Kansas', 2913314), ('Frankfort', 'KY', 'Kentucky', 4467673), ('Baton Rouge', 'LA', 'Louisiana', 4648794), ('Augusta', 'ME', 'Maine', 1344212), ('Annapolis', 'MD', 'Maryland', 6045680), ('Boston', 'MA', 'Massachusetts', 6949503), ('Lansing', 'MI', 'Michigan', 9986857), ('Saint Paul', 'MN', 'Minnesota', 5639615), ('Jackson', 'MS', 'Mississippi', 2961279), ('Jefferson City', 'MO', 'Missouri', 6154913), ('Helena', 'MT', 'Montana', 1103311), ('Lincoln', 'NE', 'Nebraska', 1934408), ('Carson City', 'NV', 'Nevada', 3080156), ('Concord', 'NH', 'New Hampshire', 1359711), ('Trenton', 'NJ', 'New Jersey', 8882190), ('Santa Fe', 'NM', 'New Mexico', 2096829), ('Albany', 'NY', 'New York', 19453561), ('Raleigh', 'NC', 'North Carolina', 10488084), ('Bismarck', 'ND', 'North Dakota', 762062), ('Columbus', 'OH', 'Ohio', 11689473), ('Oklahoma City', 'OK', 'Oklahoma', 3923561), ('Salem', 'OR', 'Oregon', 4237256), ('Harrisburg', 'PA', 'Pennsylvania', 12801989), ('Providence', 'RI', 'Rhode Island', 1059361), ('Columbia', 'SC', 'South Carolina', 5148714), ('Pierre', 'SD', 'South Dakota', 884659), ('Nashville', 'TN', 'Tennessee', 6910818), ('Austin', 'TX', 'Texas', 29189580), ('Salt Lake City', 'UT', 'Utah', 3323971), ('Montpelier', 'VT', 'Vermont', 623989), ('Richmond', 'VA', 'Virginia', 8600467), ('Olympia', 'WA', 'Washington', 7701186), ('Charleston', 'WV', 'West Virginia', 1792147), ('Madison', 'WI', 'Wisconsin', 5822434), ('Cheyenne', 'WY', 'Wyoming', 578759),('Montgomery', 'AL', 'Alabama', 4903185), ('Juneau', 'AK', 'Alaska', 733391), ('Phoenix', 'AZ', 'Arizona', 7278717), ('Little Rock', 'AR', 'Arkansas', 3017804), ('Sacramento', 'CA', 'California', 39512223), ('Denver', 'CO', 'Colorado', 5758736), ('Hartford', 'CT', 'Connecticut', 3565287), ('Dover', 'DE', 'Delaware', 989948), ('Tallahassee', 'FL', 'Florida', 21478738), ('Atlanta', 'GA', 'Georgia', 10617423), ('Honolulu', 'HI', 'Hawaii', 1415872), ('Boise', 'ID', 'Idaho', 1881201), ('Springfield', 'IL', 'Illinois', 12671821), ('Indianapolis', 'IN', 'Indiana', 6732212), ('Des Moines', 'IA', 'Iowa', 3155070), ('Topeka', 'KS', 'Kansas', 2913314), ('Frankfort', 'KY', 'Kentucky', 4467673), ('Baton Rouge', 'LA', 'Louisiana', 4648794), ('Augusta', 'ME', 'Maine', 1344212), ('Annapolis', 'MD', 'Maryland', 6045680), ('Boston', 'MA', 'Massachusetts', 6949503), ('Lansing', 'MI', 'Michigan', 9986857), ('Saint Paul', 'MN', 'Minnesota', 5639615), ('Jackson', 'MS', 'Mississippi', 2961279), ('Jefferson City', 'MO', 'Missouri', 6154913), ('Helena', 'MT', 'Montana', 1103311), ('Lincoln', 'NE', 'Nebraska', 1934408), ('Carson City', 'NV', 'Nevada', 3080156), ('Concord', 'NH', 'New Hampshire', 1359711), ('Trenton', 'NJ', 'New Jersey', 8882190), ('Santa Fe', 'NM', 'New Mexico', 2096829), ('Albany', 'NY', 'New York', 19453561), ('Raleigh', 'NC', 'North Carolina', 10488084), ('Bismarck', 'ND', 'North Dakota', 762062), ('Columbus', 'OH', 'Ohio', 11689473), ('Oklahoma City', 'OK', 'Oklahoma', 3923561), ('Salem', 'OR', 'Oregon', 4237256), ('Harrisburg', 'PA', 'Pennsylvania', 12801989), ('Providence', 'RI', 'Rhode Island', 1059361), ('Columbia', 'SC', 'South Carolina', 5148714), ('Pierre', 'SD', 'South Dakota', 884659), ('Nashville', 'TN', 'Tennessee', 6910818), ('Austin', 'TX', 'Texas', 29189580), ('Salt Lake City', 'UT', 'Utah', 3323971), ('Montpelier', 'VT', 'Vermont', 623989), ('Richmond', 'VA', 'Virginia', 8600467), ('Olympia', 'WA', 'Washington', 7701186), ('Charleston', 'WV', 'West Virginia', 1792147), ('Madison', 'WI', 'Wisconsin', 5822434), ('Cheyenne', 'WY', 'Wyoming', 578759)]
+accuracy, precision, recall, f1_score = evaluate_results(output, target_output)
+print(f"The accuracy is {accuracy}")
+print(f"The precision is {precision}")
+print(f"The recall is {recall}")
+print(f"The f1_score is {f1_score}")

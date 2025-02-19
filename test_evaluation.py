@@ -353,21 +353,24 @@ def error_logic(loaded_dictionary, queries):
         metrics_list=[]
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
-        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_time.txt")
+
+        modelname= "gemini-1.5-flash"
+        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_" + modelname + ".txt")
 
         #Work with metadata
         for i in metadata.keys():
             metadata[i]=metadata[i]/RUNS
 
-        append_metadata_to_file(metadata, filename="metrics/test_evaluation_time.txt")
+        append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics_" + modelname + ".txt")
         
         #Append the time taken for the whole pipeline
-        append_time_to_file(times, filename="metrics/test_evaluation_time.txt")
+        append_time_to_file(times, filename="metrics/test_evaluation_metrics_" + modelname + ".txt")
 
         error_query_dic[query]=error_cnt
+        
         #Additionally write to path
-        #path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list")
-        #append_to_json_dic(error_query_dic, path_query_error)
+        path_query_error= os.path.join(os.getcwd(), "saved_json", "error_query_list_" + modelname)
+        append_to_json_dic(error_query_dic, path_query_error)
     
     #Write that to a file
     #write_all_metrics_to_file(overall_metrics, filename="test_evaluation_metrics")
@@ -389,19 +392,16 @@ def evaluation_pipeline(queries):
     #visualize_errors(error_total, queries_list)
     
     
-    
 
-#How many runs per expression, Done everything
-RUNS=1
-queries= [i for i, _ in test_cases]
-#10, 
-# #12 done, #13 done, #14 done, #15done, #16 doen, #11 skipped
-# index=[0,1,3,4,7,9,12,13,14,16,17]
 # index=[16,17]
 # new_queries=[]
 # for i in index:
 #     new_queries.append(queries[i])
 # queries=new_queries
+
+#How many runs per expression, Done everything
+RUNS=1
+queries= [i for i, _ in test_cases]
 evaluation_pipeline(queries)
 
 

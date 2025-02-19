@@ -341,16 +341,16 @@ def error_logic(loaded_dictionary, queries):
         metrics_list=[]
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
-        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_hard.txt")
+        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_1_5_hard.txt.")
 
         #Work with metadata
         for i in metadata.keys():
             metadata[i]=metadata[i]/RUNS
 
-        append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics_hard.txt")
+        append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics_1_5_hard.txt.")
         
         #Append the time taken for the whole pipeline
-        append_time_to_file(times, filename="metrics/test_evaluation_metrics_hard.txt")
+        append_time_to_file(times, filename="metrics/test_evaluation_metrics_1_5_hard.txt.")
 
     
     #Write that to a file

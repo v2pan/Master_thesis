@@ -249,14 +249,8 @@ def hard_pipeline(query):
         except QueryExecutionError as e:
             initial_query_result=[]
         return initial_query_result, temp_meta
-# queries=[
-#         "∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12)",
-#         "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))",
-#         "∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )", #Tmp not used
-#         "∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money))",
-#         "∃id (children_table(id, >1) ∧ fathers(id, _))" #Tmp not used
-#         ]
 
-# [combined_pipeline(query) for query in queries]
 
+answer=combined_pipeline('∃s state_capitol_short(name, _) ∧ states_short(name, _)')
+print(answer)
 

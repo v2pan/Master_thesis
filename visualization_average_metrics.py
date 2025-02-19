@@ -27,7 +27,7 @@ def visualize_results(results):
 
     
 
-    save_path="saved_plots/average_metrics_gemini_2_0_hard.png"
+    save_path="saved_plots/average_metrics_gemini_1_5_soft.png"
     # Save the figure
     try:
         plt.savefig(save_path, dpi=300)  # Higher dpi for better quality
@@ -37,14 +37,13 @@ def visualize_results(results):
 
     plt.show()
 
-#calculate_average_metrics("metrics/test_evaluation_metrics_soft.txt")
 
 # Example usage (replace with your results)
 results = {
-    "Average Accuracy": 0.17,
-    "Average Precision": 0.17,
-    "Average Recall": 0.22,
-    "Average F1-score": 0.19
+    "Average Accuracy": 0.45,
+    "Average Precision": 0.54,
+    "Average Recall": 0.46,
+    "Average F1-score": 0.48
 
 }
 
