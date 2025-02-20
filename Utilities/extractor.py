@@ -1,4 +1,4 @@
-from other_gemini import ask_gemini
+from Utilities.llm import ask_llm
 
 
 #Extract some fragment form the response

@@ -1,12 +1,12 @@
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
+from Utilities.database import query_database
+from Utilities.extractor import extract
+from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
 import sqlparse
 import re
-from database import query_database
-from other_gemini import gemini_json,ask_gemini
-from extractor import extract
+from Utilities.database import query_database
+from Utilities.llm import llm_json,ask_llm
+from Utilities.extractor import extract
 import copy
 
 #Metadata to keep track of use 
@@ -107,7 +107,7 @@ def get_context(tables):
     print("--------------------")
     
     # Final combination of descriptive texts, with inter-table relationships
-    '''final_text = ask_gemini(
+    '''final_text = ask_llm(
         f"Combine and describe the relationships between the following tables if necessary. {combined_text}"
     )'''
 
@@ -218,7 +218,7 @@ def execute_queries_on_conditions(conditions_list):
 def compare_semantics_in_list(input_list):
     """
     Compare each pair of expressions in a sublist to determine if they have the same semantic meaning
-    using the gemini_json function. 
+    using the llm_json function. 
 
     Args:
     - input_list (list of lists): The input list of expressions and comparisons.
@@ -248,7 +248,7 @@ def compare_semantics_in_list(input_list):
                 left=False
             condition=outer_list[1]
             print(type(condition))
-            phrase,temp_meta=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
+            phrase,temp_meta=ask_llm(f'''Write the output out in natural languge and ignore possible numbers
                               Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
                               Output: is smaller than
                               Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
@@ -265,7 +265,7 @@ def compare_semantics_in_list(input_list):
             print(f"temp_string: {temp_string}")
             print(f"temp_list: {temp_list}")
 
-            # Compare the string with the items in the list using gemini_json
+            # Compare the string with the items in the list using llm_json
             same_meaning_list = []
             seen_items = set()  # To track items we've already added
             
@@ -281,14 +281,14 @@ def compare_semantics_in_list(input_list):
                     prompt = f"'{temp_string}  {phrase} {item}'"
                 else:
                     prompt = f" '{item}  {phrase} {temp_string}'"
-                gemini_prompt, temp_meta=ask_gemini(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}.
+                gemini_prompt, temp_meta=ask_llm(f''' Reformulate the following prompt to natural lagnuage if necessary {prompt}.
                                         Input: " '('two',)  is bigger than \n 9
                                         Output: "two is bigger than 9
                                         Input: {prompt}
                                         Output:''', True, max_token=100)
                 #Update the metadata
                 update_metadata(temp_meta)
-                response = gemini_json(gemini_prompt, response_type=bool)
+                response = llm_json(gemini_prompt, response_type=bool)
 
                 # If the response is True, add the item to the list
                 if response:
@@ -315,7 +315,7 @@ def row_calculus_pipeline(query, tables):
     print(f"The context is {context}")
     print(f"The query is {query}")
 
-    response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. The structure of the database is the following: {context}.", True,max_token=1000)
+    response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. The structure of the database is the following: {context}.", True,max_token=1000)
     #Update the metadata
     update_metadata(temp_meta)
 
@@ -339,7 +339,7 @@ def row_calculus_pipeline(query, tables):
         Output:'''
     print(f"The final prompt is {final_prompt}")
     # Try to modify the query with our chosen binding
-    response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
+    response,temp_meta = ask_llm(final_prompt,True, max_token=1000)
     #Update the metadata
     update_metadata(temp_meta)
 

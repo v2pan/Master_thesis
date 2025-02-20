@@ -5,8 +5,8 @@ from unittest.mock import patch, MagicMock
 import warnings
 
 # Import your modules (replace with your actual paths)
-from row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, get_context, extract_where_conditions_sqlparse, execute_queries_on_conditions, compare_semantics_in_list, initial_query 
-from database import query_database, QueryExecutionError
+from Main.row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, get_context, extract_where_conditions_sqlparse, execute_queries_on_conditions, compare_semantics_in_list, initial_query 
+from Utilities.database import query_database, QueryExecutionError
 
 import os
 import json

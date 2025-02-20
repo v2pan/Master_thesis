@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from evaluation import calculate_average_metrics
+from Evaluation.evaluation import calculate_average_metrics
 
 def visualize_results(results):
     """Visualizes the results in a bar plot."""

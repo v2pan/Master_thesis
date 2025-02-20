@@ -2,15 +2,15 @@
 # import os
 # from database import query_database
 # from extractor import extract
-# from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
+# from llm import ask_llm, llm_json, QUERY, CATEGORY
 # import sqlparse
 # import re
 # from database import query_database, QueryExecutionError
-# from other_gemini import gemini_json,ask_gemini
+# from llm import llm_json,ask_llm
 # from extractor import extract
 # import copy
 # import json
-# from other_gemini import RessourceError
+# from llm import RessourceError
 # import time
 # import os
 # import json

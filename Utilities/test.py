@@ -4,8 +4,8 @@ import os
 from unittest.mock import patch, MagicMock
 import warnings
 
-from evaluation import test_cases
-from test_evaluation import initial_query_transform,  compare_lists_of_lists, load_data, error_logic, comparison_logic
+from Evaluation.evaluation import test_cases
+from Evaluation.test_evaluation import initial_query_transform,  compare_lists_of_lists, load_data, error_logic, comparison_logic
 
 
 

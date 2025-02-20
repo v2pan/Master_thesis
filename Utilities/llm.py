@@ -1,7 +1,10 @@
+import sys
+import os
+sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
 import google.generativeai as genai
 import json
 import typing_extensions as typing
-from database import query_database
+from Utilities.database import query_database
 from google.api_core.exceptions import ResourceExhausted
 from ollama import chat
 from ollama import ChatResponse
@@ -9,12 +12,16 @@ from ollama import ResponseError
 import ollama
 from typing import List
 
+
 class RessourceError(Exception):
     pass
 
-with open("api_key.txt", "r") as file:
+script_dir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(script_dir, "api_key.txt"), "r") as file:
     api_key = file.read().strip()  # Read the file and remove any surrounding whitespace
+
 genai.configure(api_key=api_key)
+
 
 #For the model gemini-1.5-flash, the rate limits are
 # 15 RPM
@@ -26,7 +33,7 @@ MODEL="gemini-1.5-flash"
 # "gemini-2.0-flash"
 #"deepseek-r1:1.5b"
 #"llama3.2"
-def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model=MODEL):  # Add optional argument
+def ask_llm(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model=MODEL):  # Add optional argument
     """
     Return the answer to the question
 
@@ -91,7 +98,7 @@ def ask_gemini(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model=MO
 
 
 
-def gemini_json(prompt,response_type, model=MODEL, return_metadata=False):
+def llm_json(prompt,response_type, model=MODEL, return_metadata=False):
     """
     Sends a prompt to the LLM and returns the response as JSON.
 
@@ -232,4 +239,4 @@ def extract_boolean_values(response_string):
     
 
 
-# print(gemini_json("Is Berlin the capital of Germany?", response_type=bool))
+print(llm_json("Is Berlin the capital of Germany?", response_type=bool))

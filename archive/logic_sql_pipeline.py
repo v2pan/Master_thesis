@@ -1,9 +1,9 @@
 import psycopg2
 import re
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini
+from Utilities.database import query_database
+from Utilities.extractor import extract
+from Utilities.llm import ask_llm
 
 def write_tables_text( tables):
     # Get the directory of the current script
@@ -62,14 +62,14 @@ def write_tables_text( tables):
             #print(f"Rows: {rws}")
             
             # Convert cond and rws into descriptive text
-#             content_text = ask_gemini(f'''Convert database information: {str(cond)} {rws}
+#             content_text = ask_llm(f'''Convert database information: {str(cond)} {rws}
 #             Convert every row entry into key value pairs, however maintain the characteristics of the columns. If input is Unique: [('owner_id', 'NO', 'integer', 'PRIMARY KEY'), ('animalname', 'YES', 'text', None), ('category', 'YES', 'text', None)]
 # Rows: [(1, 'bill', 'dog'), (2, 'diego', 'cat')]". The output should be: '[
 #   {{"owner_id": 1, "animalname": "bill", "category": "dog"}},
 #   {{"owner_id": 2, "animalname": "diego", "category": "cat"}}
 # ]''')
             # Convert cond and rws into descriptive text
-            content_text = ask_gemini(f'''Convert database information: {str(cond)} {rws}
+            content_text = ask_llm(f'''Convert database information: {str(cond)} {rws}
             Make it into a descriptive text only if the actual data. If input is Unique: [('owner_id', 'NO', 'integer', 'PRIMARY KEY'), ('animalname', 'YES', 'text', None), ('category', 'YES', 'text', None)]
 Rows: [(1, 'bill', 'dog'), (2, 'diego', 'cat')]". The output should be: The animal with the owner_id 1 has the animalname "bill" and is a dog. The animal with the owner_id 2 has the animalname "diego" and is a cat. ''')
             
@@ -93,7 +93,7 @@ Rows: [(1, 'bill', 'dog'), (2, 'diego', 'cat')]". The output should be: The anim
     print("--------------------")
     
     # Final combination of descriptive texts, with inter-table relationships
-    '''final_text = ask_gemini(
+    '''final_text = ask_llm(
         f"Combine and describe the relationships between the following tables if necessary. {combined_text}"
     )'''
     final_text = combined_text
@@ -107,22 +107,22 @@ def logic_sql_pipeline(query, tables):
     print(f"The query is {query}")
 
     #Get response
-    response=ask_gemini(f"Write a new query in natural text, according to this. Input:'FInd out what Peter's heighr is.' Output: 'Peter's height is [number]'. Input:'{query}'. Output:")
+    response=ask_llm(f"Write a new query in natural text, according to this. Input:'FInd out what Peter's heighr is.' Output: 'Peter's height is [number]'. Input:'{query}'. Output:")
     print(f"The new query is: {response}")
 
     print(f"The context is {context}")
     #Get SQL query
-    response = ask_gemini(f"Convert the following query to SQL: {query}. The strucutre of the database is the following: {context}.")
+    response = ask_llm(f"Convert the following query to SQL: {query}. The strucutre of the database is the following: {context}.")
     print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
     print(f"SQL answer is: {query_database(sql_query, True)}")
 
     #Convert SQL to human language
-    instructions = ask_gemini(f'''Verbalize this SQL query as instructions for an LLM: {sql_query} to natural language without any syntax. Write those instructions in an ordered way.''')
+    instructions = ask_llm(f'''Verbalize this SQL query as instructions for an LLM: {sql_query} to natural language without any syntax. Write those instructions in an ordered way.''')
 
     print(f"The instructions are {instructions}")
-    output=ask_gemini(f"Perform the following instructions: {instructions} on the content {content}. Finally, answer the query: {query}. In each step write an explanation which information you used and whay you concluded like a great teacher.")
+    output=ask_llm(f"Perform the following instructions: {instructions} on the content {content}. Finally, answer the query: {query}. In each step write an explanation which information you used and whay you concluded like a great teacher.")
     print(f"The output is {output}")
 
     

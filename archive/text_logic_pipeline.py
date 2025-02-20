@@ -2,9 +2,9 @@ import psycopg2
 from archive.gemini import post_gemini
 import re
 import os
-from database import query_database
+from Utilities.database import query_database
 
-from other_gemini import ask_gemini
+from Utilities.llm import ask_llm
 
 
     
@@ -62,7 +62,7 @@ def write_tables_text( tables):
             #print(f"Rows: {rws}")
             
             # Convert cond and rws into descriptive text
-            content_text = ask_gemini(f'''Convert database information: {str(cond)} {rws}
+            content_text = ask_llm(f'''Convert database information: {str(cond)} {rws}
             Make it into a descriptive text only if the actual data. If input is Unique: [('owner_id', 'NO', 'integer', 'PRIMARY KEY'), ('animalname', 'YES', 'text', None), ('category', 'YES', 'text', None)]
 Rows: [(1, 'bill', 'dog'), (2, 'diego', 'cat')]". The output should be: The animal with the owner_id 1 has the animalname "bill" and is a dog. The animal with the owner_id 2 has the animalname "diego" and is a cat. ''')
             
@@ -83,7 +83,7 @@ Rows: [(1, 'bill', 'dog'), (2, 'diego', 'cat')]". The output should be: The anim
     print("--------------------")
     
     # Final combination of descriptive texts, with inter-table relationships
-    '''final_text = ask_gemini(
+    '''final_text = ask_llm(
         f"Combine and describe the relationships between the following tables if necessary. {combined_text}"
     )'''
     final_text = combined_text
@@ -96,19 +96,19 @@ def text_logic_pipeline(query, tables):
     print(f"The context is {context}")
 
     #Logic for updating the query
-    #response = ask_gemini(f"What could be erroneous about this question? {query}. Is it logical and does it exclude certain cases.  Enclose the updated question, not the procedure, in natural language in §-+ and §-+ .")
+    #response = ask_llm(f"What could be erroneous about this question? {query}. Is it logical and does it exclude certain cases.  Enclose the updated question, not the procedure, in natural language in §-+ and §-+ .")
     print(f"The query is {query}")
-    response=ask_gemini(f"Change this query to the following format. Input:'What is Peter's height'? Output: Peter's height is [number].This is the query is transform {query}.")
+    response=ask_llm(f"Change this query to the following format. Input:'What is Peter's height'? Output: Peter's height is [number].This is the query is transform {query}.")
     # Extract the refined query or handle if reattempting is needed
     query=response
     #query = extract(response, query)
     print(f"The new query is: {query}")
 
     # Generate an initial answer based on the context
-    answer = ask_gemini(f" {context} Assume reasonable linkages {query}")
+    answer = ask_llm(f" {context} Assume reasonable linkages {query}")
 
 
-    #answer = ask_gemini(f"{query}. Give me the answer in descriptive text {context}. Assume reasonable linkages between the tables. If the input is: Person with id 1 with name Peter has the dog with id 1. Dog wiht id 1 has four legs. Who are the owners of animals with fours legs. Then output should be: Peter. Don't provide procedures, provide an answer.")
+    #answer = ask_llm(f"{query}. Give me the answer in descriptive text {context}. Assume reasonable linkages between the tables. If the input is: Person with id 1 with name Peter has the dog with id 1. Dog wiht id 1 has four legs. Who are the owners of animals with fours legs. Then output should be: Peter. Don't provide procedures, provide an answer.")
     print(f"The answer is {answer}")
  
     # # Interactive loop to continue or finish
@@ -124,7 +124,7 @@ def text_logic_pipeline(query, tables):
     #         additional_query = input("Please provide additional directions: ")
             
     #         # Use the initial answer and context with new directions
-    #         answer = ask_gemini(f"{additional_query}. Current context: {context}. Current answer {answer}. Give me the answer in descriptive text. Only give the answer in descriptive text. Keep it very brief.")
+    #         answer = ask_llm(f"{additional_query}. Current context: {context}. Current answer {answer}. Give me the answer in descriptive text. Only give the answer in descriptive text. Keep it very brief.")
     #         print(f"Updated answer based on additional directions: {answer}")
     #     else:
     #         print("Invalid input. Please type 'finished' or 'not'.")
@@ -143,7 +143,7 @@ def extract(response, query,start_marker="§-+",end_marker="§-+"):
     else:
         print("Could not extract an updated query. Reattempting to obtain a more accurate query...")
         # Re-attempt to obtain a refined query
-        reattempted_response = ask_gemini(f"Can you provide a more accurate version of the query? {query}. Please enclose the updated query in natural language in {start_marker} and {end_marker}.")
+        reattempted_response = ask_llm(f"Can you provide a more accurate version of the query? {query}. Please enclose the updated query in natural language in {start_marker} and {end_marker}.")
         # Attempt extraction again with reattempted response
         start_index = reattempted_response.find(start_marker)
         end_index = reattempted_response.find(end_marker, start_index + len(start_marker))

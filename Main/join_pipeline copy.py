@@ -1,9 +1,9 @@
 import sqlparse
 import re
-from row_calculus_pipeline import execute_queries_on_conditions,  get_context, get_relevant_tables
-from other_gemini import ask_gemini, gemini_json, add_metadata, RessourceError
-from database import query_database, QueryExecutionError
-from extractor import extract
+from Main.row_calculus_pipeline import execute_queries_on_conditions,  get_context, get_relevant_tables
+from Utilities.llm import ask_llm, llm_json, add_metadata, RessourceError
+from Utilities.database import query_database, QueryExecutionError
+from Utilities.extractor import extract
 import copy
 import time
 
@@ -63,7 +63,7 @@ def extract_join_conditions_sqlparse(sql_query: str):
 
 def compare_semantics_in_list(input_list,order):
     """
-    Compares each unique item from the first list in each sublist against every element in the second list to find semantically equivalent expressions using gemini_json.
+    Compares each unique item from the first list in each sublist against every element in the second list to find semantically equivalent expressions using llm_json.
 
     Args:
         input_list (list of lists):  Each sublist contains [left_list, condition, right_list, original_expression].
@@ -96,13 +96,13 @@ def compare_semantics_in_list(input_list,order):
                     An example would be if the types were different or the formats (e.g., '18 January 2012' and '18.01.2012'), if elements had the same meaning in different languages (e.g., 'bridge' and 'brücke') or if numbers would be written as text.
                     Considering the provided lists represent what they represent, one in {type(temp_list1[0][0])} format and the other in {type(temp_list2[0][0])} format, does a case where different types represent the same semantic meaning occur in the list? If the types are different, always answer 'true'.True or False.'''
                     #Check if it is necessary to rewrite the JOIN condition
-                    necessary, temp_meta=gemini_json(prompt, response_type=bool, return_metadata=True)
+                    necessary, temp_meta=llm_json(prompt, response_type=bool, return_metadata=True)
                     _=add_metadata(temp_meta, usage_metadata_join)
             if necessary:
                 condition = outer_list[1]
                 original_expression = outer_list[2]  # Access the original expression
 
-                # goal = ask_gemini(f"""Write out the goal for this clause in natural language. Focus on the
+                # goal = ask_llm(f"""Write out the goal for this clause in natural language. Focus on the
                 #                 semantic meaning. {original_expression}. Be brief.
                 #                 Input: 'WHERE person.id <> 2'
                 #                 Output: Retrieve instances where the id of the person is not 2
@@ -111,7 +111,7 @@ def compare_semantics_in_list(input_list,order):
                 #                 """)
                 # print(f"The goal is: {goal}")
 
-                phrase, temp_meta = ask_gemini(f"""Write the output in natural language and ignore possible numbers.
+                phrase, temp_meta = ask_llm(f"""Write the output in natural language and ignore possible numbers.
                                 Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
                                 Output: is smaller than
                                 Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
@@ -149,7 +149,7 @@ def compare_semantics_in_list(input_list,order):
                     json_success=False
                     while not json_success:
                         try:
-                            response, temp_meta = gemini_json(total_prompt, response_type=list[bool], return_metadata=True)
+                            response, temp_meta = llm_json(total_prompt, response_type=list[bool], return_metadata=True)
                             json_success=True
                         except RessourceError:
                             print(f"Resource Error occured in Join Pipeline JSON")
@@ -195,10 +195,10 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
 
 
     # #Used for relational calculus
-    # #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
+    # #response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
 
     # #Used for predicate calculus, selecting all rows
-    # response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
+    # response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
     # #Update the metadata
     # add_metadata(temp_meta)
 
@@ -303,7 +303,7 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
     while retries_left>0:
         print(f"The final prompt is \n {final_prompt}")
         # Try to modify the query with our chosen binding
-        response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
+        response,temp_meta = ask_llm(final_prompt,True, max_token=1000)
         _ = add_metadata(temp_meta, usage_metadata_join)
         #Update the metadata
         #add_metadata(temp_meta)

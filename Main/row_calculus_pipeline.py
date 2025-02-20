@@ -1,12 +1,12 @@
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
+from Utilities.database import query_database
+from Utilities.extractor import extract
+from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
 import sqlparse
 import re
-from database import query_database
-from other_gemini import gemini_json,ask_gemini, RessourceError,  add_metadata
-from extractor import extract
+from Utilities.database import query_database
+from Utilities.llm import llm_json,ask_llm, RessourceError,  add_metadata
+from Utilities.extractor import extract
 import copy
 import time
 
@@ -62,7 +62,7 @@ def get_relevant_tables(calculus, return_metadata=False):
             while attemps>0:
                 #Extracting relevant tables by asking LLM boolean calls
                 try:
-                    categories, temp_meta = gemini_json(prompt=input_prompt, response_type=list[bool], return_metadata=True)
+                    categories, temp_meta = llm_json(prompt=input_prompt, response_type=list[bool], return_metadata=True)
                 except RessourceError as e:
                         print(f"Exhaustion Error. Sleeping for {retry_delay} seconds")
                         time.sleep(retry_delay)
@@ -102,7 +102,8 @@ def get_context(tables):
         The function expects files named "<table_name>_context.txt" in a subdirectory "saved_info" in the same directory as the script.  It will save context information to these files if the files do not exist.
     """
     # Get the directory of the current script
-    current_directory = os.path.dirname(os.path.abspath(__file__))
+    #current_directory = os.path.dirname(os.path.abspath(__file__))
+    current_directory = "/home/vlapan/Documents/Masterarbeit/Relational"
     combined_context = ""
 
     for t in tables:
@@ -311,7 +312,7 @@ def execute_queries_on_conditions(conditions_list):
 def compare_semantics_in_list(input_list):
     """
     Compare each pair of expressions in a sublist to determine if they have the same semantic meaning
-    using the gemini_json function. 
+    using the llm_json function. 
 
     Args:
     - input_list (list of lists): The input list of expressions and comparisons.
@@ -343,7 +344,7 @@ def compare_semantics_in_list(input_list):
             condition=outer_list[1]
             
             #Let LLM generate a goal to make sure LLM takes right decision
-            # goal,temp_meta=ask_gemini(f'''Write out the goal for this clause in natural language. Focus on the
+            # goal,temp_meta=ask_llm(f'''Write out the goal for this clause in natural language. Focus on the
             #                 semantic meaning. {outer_list[-2]}. Be brief.
             #                 Input: 'WHERE person.id <> 2'
             #                 Output: Retrieve instances where the id of the person is not 2
@@ -353,7 +354,7 @@ def compare_semantics_in_list(input_list):
             # print(f"The goal is {goal}")
             #add_metadata(temp_meta)
             #Ask LLM to generate a phrase for the comparison
-            phrase,temp_meta=ask_gemini(f'''Write the output out in natural languge and ignore possible numbers
+            phrase,temp_meta=ask_llm(f'''Write the output out in natural languge and ignore possible numbers
                               Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
                               Output: is smaller than
                               Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
@@ -372,7 +373,7 @@ def compare_semantics_in_list(input_list):
             print(f"temp_string: {temp_string}")
             print(f"temp_list: {temp_list}")
 
-            # Compare the string with the items in the list using gemini_json
+            # Compare the string with the items in the list using llm_json
             soft_binding_list = []
             #
 
@@ -399,11 +400,11 @@ def compare_semantics_in_list(input_list):
                 total_prompt+=prompt
 
             #Figure out the binding by giving out a list of lists    
-            # response = gemini_json(total_prompt, response_type=list[bool])
+            # response = llm_json(total_prompt, response_type=list[bool])
 
-            answer,temp_meta=ask_gemini(total_prompt,return_metadata=True)
+            answer,temp_meta=ask_llm(total_prompt,return_metadata=True)
             _=add_metadata(temp_meta,usage_metadata_row)
-            response, temp_meta = gemini_json(f"For this question \n{total_prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], return_metadata=True)  # Expect a list of booleans back
+            response, temp_meta = llm_json(f"For this question \n{total_prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], return_metadata=True)  # Expect a list of booleans back
             _=add_metadata(temp_meta,usage_metadata_row)
             #Check if response has same length
             if len(response)!=len(temp_list):
@@ -428,7 +429,7 @@ def compare_semantics_in_list(input_list):
 
 #Designed for intial query
 def initial_query(query,context):
-        response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, meaning try to use only one 'SELECT' command, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '. Only use tables explicitly mentioned in the query, each table has the structure 'table(attr1, atrr2, attr3)'  The structure of the database is the following: {context}.", True,max_token=1000)
+        response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, meaning try to use only one 'SELECT' command, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '. Only use tables explicitly mentioned in the query, each table has the structure 'table(attr1, atrr2, attr3)'  The structure of the database is the following: {context}.", True,max_token=1000)
         return response, temp_meta
 
 
@@ -461,7 +462,7 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
     # print(f"The query is {query}")
 
     # #Used for relational calculus
-    # #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
+    # #response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
 
     # #Used for predicate calculus, selecting all rows
     
@@ -501,7 +502,7 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
     print(f"The final prompt is {final_prompt}")
 
     # Try to modify the query with our chosen binding
-    response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
+    response,temp_meta = ask_llm(final_prompt,True, max_token=1000)
     #Update the metadata
     _ = add_metadata(temp_meta,usage_metadata_row)
 

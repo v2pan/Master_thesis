@@ -1,16 +1,16 @@
-from row_calculus_pipeline import get_relevant_tables, get_context, extract_where_conditions_sqlparse, execute_queries_on_conditions, compare_semantics_in_list, initial_query, update_metadata
+from Main.row_calculus_pipeline import get_relevant_tables, get_context, extract_where_conditions_sqlparse, execute_queries_on_conditions, compare_semantics_in_list, initial_query, update_metadata
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
+from Utilities.database import query_database
+from Utilities.extractor import extract
+from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
 import sqlparse
 import re
-from database import query_database, QueryExecutionError
-from other_gemini import gemini_json,ask_gemini
-from extractor import extract
+from Utilities.database import query_database, QueryExecutionError
+from Utilities.llm import llm_json,ask_llm
+from Utilities.extractor import extract
 import copy
 import json
-from other_gemini import RessourceError
+from Utilities.llm import RessourceError
 import time
 import os
 import json
@@ -53,7 +53,7 @@ def test_creation_pipeline(queries):
             print(f"The query is {query}")
 
             #Used for relational calculus
-            #response, temp_meta = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
+            #response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
 
             #Used for predicate calculus, selecting all rows
             
@@ -95,7 +95,7 @@ def test_creation_pipeline(queries):
             print(f"The final prompt is {final_prompt}")
 
             # Try to modify the query with our chosen binding
-            response,temp_meta = ask_gemini(final_prompt,True, max_token=1000)
+            response,temp_meta = ask_llm(final_prompt,True, max_token=1000)
             #Update the metadata
             update_metadata(temp_meta)
 

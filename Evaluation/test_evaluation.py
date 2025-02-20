@@ -1,28 +1,28 @@
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
-from database import query_database, QueryExecutionError
-from other_gemini import gemini_json,ask_gemini, add_metadata
-from extractor import extract
+import sys
+sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+from Utilities.database import query_database
+from Utilities.extractor import extract
+print(os.getcwd())
+from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
+from Utilities.database import query_database, QueryExecutionError
+from Utilities.llm import llm_json,ask_llm, add_metadata
+from Utilities.extractor import extract
 import json
-from other_gemini import RessourceError
+from Utilities.llm import RessourceError
 import time
 import os
 import json
 from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
-from combined_pipeline import combined_pipeline
-from evaluation import test_cases, evaluate_results, write_all_metrics_to_file, append_metrics_to_file, append_metadata_to_file, append_time_to_file
+from Main.combined_pipeline import combined_pipeline
+from Evaluation.evaluation import test_cases, evaluate_results, write_all_metrics_to_file, append_metrics_to_file, append_metadata_to_file, append_time_to_file
 import seaborn as sns
 import pandas as pd
 import re
 from matplotlib import ticker
-from test_creation import append_to_json, append_to_json_dic
-
-
-
+from Utilities.test_creation import append_to_json, append_to_json_dic
 
 
 
@@ -400,9 +400,9 @@ def evaluation_pipeline(queries):
 # queries=new_queries
 
 #How many runs per expression, Done everything
-RUNS=1
+RUNS=3
 queries= [i for i, _ in test_cases]
-evaluation_pipeline(queries)
+# evaluation_pipeline(queries)
 
 
 

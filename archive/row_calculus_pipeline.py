@@ -1,12 +1,12 @@
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
+from Utilities.database import query_database
+from Utilities.extractor import extract
+from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
 import sqlparse
 import re
-from database import query_database
-from other_gemini import gemini_json,ask_gemini
-from extractor import extract
+from Utilities.database import query_database
+from Utilities.llm import llm_json,ask_llm
+from Utilities.extractor import extract
 import copy
 
 #SOTA 26/11/2024
@@ -89,7 +89,7 @@ def get_context(tables):
     print("--------------------")
     
     # Final combination of descriptive texts, with inter-table relationships
-    '''final_text = ask_gemini(
+    '''final_text = ask_llm(
         f"Combine and describe the relationships between the following tables if necessary. {combined_text}"
     )'''
 
@@ -199,7 +199,7 @@ def execute_queries_on_conditions(conditions_list):
 def compare_semantics_in_list(input_list):
     """
     Compare each pair of expressions in a sublist to determine if they have the same semantic meaning
-    using the gemini_json function. 
+    using the llm_json function. 
 
     Args:
     - input_list (list of lists): The input list of expressions and comparisons.
@@ -227,7 +227,7 @@ def compare_semantics_in_list(input_list):
             print(f"temp_string: {temp_string}")
             print(f"temp_list: {temp_list}")
             condition= outer_list[1]
-            # Compare the string with the items in the list using gemini_json
+            # Compare the string with the items in the list using llm_json
             same_meaning_list = []
             seen_items = set()  # To track items we've already added
             
@@ -239,7 +239,7 @@ def compare_semantics_in_list(input_list):
                 
                 #Actual logic, this is where the semantic binding occurs
                 prompt = f"Does '{temp_string}' and '{item}' have the same semantic meaning?"
-                response = gemini_json(prompt, response_type=bool)
+                response = llm_json(prompt, response_type=bool)
 
                 # If the response is True, add the item to the list
                 if response:
@@ -265,7 +265,7 @@ def row_calculus_pipeline(query, tables):
     print(f"The context is {context}")
     print(f"The query is {query}")
 
-    response = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. The structure of the database is the following: {context}.")
+    response = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. The structure of the database is the following: {context}.")
     #print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
@@ -280,7 +280,7 @@ def row_calculus_pipeline(query, tables):
     semantic_rows = ''.join(f"{i}\n" for i in semantic_list)
 
     # Use the result in the f-string
-    response = ask_gemini(
+    response = ask_llm(
         f"Modify the SQL query {sql_query} based on the assumption that the following expressions in each row have the same meaning:\n{semantic_rows}"
     )
 

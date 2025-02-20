@@ -1,1 +1,1 @@
-Error_total and Queries list results are obtained by ask gemini (gemini-1.5-flash) and gemini_json (gemini-1.5-flash-8b)
+Error_total and Queries list results are obtained by ask gemini (gemini-1.5-flash) and llm_json (gemini-1.5-flash-8b)

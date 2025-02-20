@@ -1,6 +1,6 @@
-from other_gemini import ask_gemini, gemini_json, RessourceError
+from Utilities.llm import ask_llm, llm_json, RessourceError
 import time
-from evaluation import evaluate_results
+from Evaluation.evaluation import evaluate_results
 import numpy as np
 import matplotlib.pyplot as plt
 import json
@@ -121,17 +121,17 @@ def create_boolean():
                 results[comparison][reason][model] = []
                 metrics[comparison][reason][model] = []
                 for i in range(num_tries):
-                    #response = gemini_json(prompt, response_type=list[bool])
+                    #response = llm_json(prompt, response_type=list[bool])
                     try:
                         response=[]
                         if reason=="CoT":
                             while len(response)!=len(true_response):
-                                answer=ask_gemini(prompt, model=model)
-                                response = gemini_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
+                                answer=ask_llm(prompt, model=model)
+                                response = llm_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
 
                         elif reason=="direct":
                             while len(response)!=len(true_response):
-                                response = gemini_json(f"For this question \n{prompt} \n  Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
+                                response = llm_json(f"For this question \n{prompt} \n  Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
                         
                         results[comparison][reason][model].append(response)
 

@@ -1,9 +1,9 @@
-from join_pipeline import join_pipeline
-from row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, get_context, initial_query
-from extractor import extract
+from Main.join_pipeline import join_pipeline
+from Main.row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, get_context, initial_query
+from Utilities.extractor import extract
 import sqlparse
-from database import query_database, QueryExecutionError
-from other_gemini import RessourceError, add_metadata
+from Utilities.database import query_database, QueryExecutionError
+from Utilities.llm import RessourceError, add_metadata
 import time
 
 retry_delay = 60

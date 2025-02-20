@@ -1,18 +1,18 @@
-from row_calculus_pipeline import get_relevant_tables, get_context, extract_where_conditions_sqlparse, execute_queries_on_conditions, compare_semantics_in_list, initial_query
+from Main.row_calculus_pipeline import get_relevant_tables, get_context, extract_where_conditions_sqlparse, execute_queries_on_conditions, compare_semantics_in_list, initial_query
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
-from database import query_database, QueryExecutionError
-from other_gemini import gemini_json,ask_gemini
-from extractor import extract
+from Utilities.database import query_database
+from Utilities.extractor import extract
+from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
+from Utilities.database import query_database, QueryExecutionError
+from Utilities.llm import llm_json,ask_llm
+from Utilities.extractor import extract
 import json
-from other_gemini import RessourceError
+from Utilities.llm import RessourceError
 import time
 import os
 import json
-from combined_pipeline import combined_pipeline
-from evaluation import evaluate_results, test_cases
+from Main.combined_pipeline import combined_pipeline
+from Evaluation.evaluation import evaluate_results, test_cases
 
 max_retries = 30
 retry_delay = 60

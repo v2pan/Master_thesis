@@ -1,9 +1,9 @@
 import time
-from row_calculus_pipeline import row_calculus_pipeline
-from join_pipeline import join_pipeline
-from combined_pipeline import combined_pipeline
-from other_gemini import RessourceError
-from database import QueryExecutionError
+from Main.row_calculus_pipeline import row_calculus_pipeline
+from Main.join_pipeline import join_pipeline
+from Main.combined_pipeline import combined_pipeline
+from Utilities.llm import RessourceError
+from Utilities.database import QueryExecutionError
 import re
 import statistics
 import pandas as pd

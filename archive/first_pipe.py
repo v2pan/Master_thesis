@@ -2,7 +2,7 @@ import psycopg2
 from archive.gemini import post_gemini
 import re
 
-from database import query_database
+from Utilities.database import query_database
 
 
 #query_database(post_gemini('''Convert to a SQL query:$\Pi_{shares}(\sigma_{name='Vlad'}(totalshares))$''', True))

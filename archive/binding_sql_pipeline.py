@@ -2,9 +2,9 @@
 import psycopg2
 import re
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, ask_gemini_boolean
+from Utilities.database import query_database
+from Utilities.extractor import extract
+from Utilities.llm import ask_llm, ask_llm_boolean
 
 def get_context(tables):
     # Get the directory of the current script
@@ -62,7 +62,7 @@ def get_context(tables):
     print("--------------------")
     
     # Final combination of descriptive texts, with inter-table relationships
-    '''final_text = ask_gemini(
+    '''final_text = ask_llm(
         f"Combine and describe the relationships between the following tables if necessary. {combined_text}"
     )'''
 
@@ -75,27 +75,27 @@ def binding_sql_pipeline(query, tables):
     print(f"The query is {query}")
 
     #Get response
-    response=ask_gemini(f"Write a new query in natural text, according to this. Input:'Find out what Peter's height is.' Output: 'Peter's height is [number]'. Input:'{query}'. Output:")
+    response=ask_llm(f"Write a new query in natural text, according to this. Input:'Find out what Peter's height is.' Output: 'Peter's height is [number]'. Input:'{query}'. Output:")
     print(f"The new query is: {response}")
 
     print(f"The context is {context}")
     #Get SQL query
-    response = ask_gemini(f"Convert the following query to SQL: {query}. The strucutre of the database is the following: {context}.")
+    response = ask_llm(f"Convert the following query to SQL: {query}. The strucutre of the database is the following: {context}.")
     print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
 
-    nec_cols=ask_gemini(f"You are given this SQL query: {sql_query}. List all columns and tables  with their full name needed to execute this query in an enumerated way. Check again if these are all the columns needed to execute the query. Keep it short.")
+    nec_cols=ask_llm(f"You are given this SQL query: {sql_query}. List all columns and tables  with their full name needed to execute this query in an enumerated way. Check again if these are all the columns needed to execute the query. Keep it short.")
     print(f"The necessary columns are: {nec_cols}")
 
-    distinct_sql_text=ask_gemini(f"For each of those mentioned columns, write a SQL query to retrieve all distinct values. Return as many queries as there are columns. {nec_cols}")
+    distinct_sql_text=ask_llm(f"For each of those mentioned columns, write a SQL query to retrieve all distinct values. Return as many queries as there are columns. {nec_cols}")
     distinct_sql_text = extract(distinct_sql_text, start_marker="SELECT",end_marker=";",multiple=True, inclusive=True)
     print(f"The distinct SQL queries are: {distinct_sql_text}")
 
     final_query=sql_query
     for i in distinct_sql_text:
         dist_values=query_database(i,printing= True)
-        response=ask_gemini(f"For the following query {i} the distinct values are: {dist_values} the following. The goal of the final query is that {response}. If you think it is necessary modfiy the query, to achieve the mentioned goal do it.The query is {sql_query}. Do you need to modify the query? If yes, provide the modified query.")
+        response=ask_llm(f"For the following query {i} the distinct values are: {dist_values} the following. The goal of the final query is that {response}. If you think it is necessary modfiy the query, to achieve the mentioned goal do it.The query is {sql_query}. Do you need to modify the query? If yes, provide the modified query.")
         extracted=extract(response, start_marker="```sql",end_marker="```" )
         if extracted==None:
             print("No query was extracted")
@@ -106,7 +106,7 @@ def binding_sql_pipeline(query, tables):
     #print(f"SQL answer is: {query_database(sql_query, True)}")
 
     # #Convert SQL to human language, don't use query execution plam
-    # instructions = ask_gemini(f'''Verbalize this SQL query as instructions for an LLM: {sql_query} to natural language without any syntax. Write those instructions in an enumerated way. Only mention if there is a selection, projection, or join.''')
+    # instructions = ask_llm(f'''Verbalize this SQL query as instructions for an LLM: {sql_query} to natural language without any syntax. Write those instructions in an enumerated way. Only mention if there is a selection, projection, or join.''')
 
     # print(f"The instructions are: \n {instructions}")
     # # Find the first occurrence of a number followed by a dot
@@ -124,7 +124,7 @@ def binding_sql_pipeline(query, tables):
 
     # individual_queries=[]
     # for i in individual_instructions:
-    #     response = ask_gemini(f"Write a SQL query to retrieve all distinct values for each column from all tables mentioned in  {i}")
+    #     response = ask_llm(f"Write a SQL query to retrieve all distinct values for each column from all tables mentioned in  {i}")
     #     query = extract(response, start_marker="```sql",end_marker="```" )
     #     dist_values = query_database(query, False)
     #     print(f"The distinct values are {dist_values}")
@@ -139,12 +139,12 @@ def binding_sql_pipeline(query, tables):
     # execution_plan = query_database(explain_query, False)
     # #print(f"The execution plan is: {execution_plan}")
 
-    # #print(ask_gemini(f"Give me the order of execution for this SQL query: {sql_query}"))
-    # order=ask_gemini(f"Identify the order of operations, exclusively mention selection-projection-join: {execution_plan} \n {sql_query}, Keep it short.")
+    # #print(ask_llm(f"Give me the order of execution for this SQL query: {sql_query}"))
+    # order=ask_llm(f"Identify the order of operations, exclusively mention selection-projection-join: {execution_plan} \n {sql_query}, Keep it short.")
     # #print(f"The order is {order}")
 
     # #Output with the SQL queries 
-    # sql_queries=ask_gemini(f"Write a series of SQL queries to execute the following operations: {order}.")
+    # sql_queries=ask_llm(f"Write a series of SQL queries to execute the following operations: {order}.")
     # print(f"The SQL queries are: {sql_queries}")
 
     # iso_queries=extract(sql_queries, start_marker="SELECT",end_marker=";", multiple=True, inclusive=True)
@@ -155,9 +155,9 @@ def binding_sql_pipeline(query, tables):
     # intent_queries=[]
     # print("The iso_query is: ", iso_queries[0])
     # for i in iso_queries:
-    #     intent = ask_gemini(f"Write the intent of this query in natural language in a short sentence. {i}")
+    #     intent = ask_llm(f"Write the intent of this query in natural language in a short sentence. {i}")
     #     intent_queries.append(f"{i}\n -- {intent}")
-    # #intent=ask_gemini(f"Identify the intent of each query in natural language: {sql_queries}. Keep it short.")
+    # #intent=ask_llm(f"Identify the intent of each query in natural language: {sql_queries}. Keep it short.")
     # #print(f"The intent is {intent}")
     # print(f"The intent queries are: {intent_queries}")
 

@@ -1,7 +1,7 @@
 import os
-from database import query_database
-from extractor import extract
-from other_gemini import ask_gemini, gemini_json, QUERY, CATEGORY
+from Utilities.database import query_database
+from Utilities.extractor import extract
+from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
 
 
 
@@ -62,7 +62,7 @@ def get_context(tables):
     print("--------------------")
     
     # Final combination of descriptive texts, with inter-table relationships
-    '''final_text = ask_gemini(
+    '''final_text = ask_llm(
         f"Combine and describe the relationships between the following tables if necessary. {combined_text}"
     )'''
 
@@ -75,17 +75,17 @@ def logic_sql_pipeline(query, tables):
     print(f"The query is {query}")
 
     #Get response
-    response=ask_gemini(f"Write a new query in natural text, according to this. Input:'FInd out what Peter's heighr is.' Output: 'Peter's height is [number]'. Input:'{query}'. Output:")
+    response=ask_llm(f"Write a new query in natural text, according to this. Input:'FInd out what Peter's heighr is.' Output: 'Peter's height is [number]'. Input:'{query}'. Output:")
     print(f"The new query is: {response}")
 
     #print(f"The context is {context}")
     #Get SQL query
-    response = ask_gemini(f"Convert the following query to SQL. Write this query without using the AS: : {query}. The structure of the database is the following: {context}. ")
+    response = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. The structure of the database is the following: {context}. ")
     #print(f"The response query is:\n {response}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
 
-    response=ask_gemini(f"If there exists the keyword 'AS' in that query, remove it and all the aliases. The query is: {sql_query}")
+    response=ask_llm(f"If there exists the keyword 'AS' in that query, remove it and all the aliases. The query is: {sql_query}")
     sql_query = extract(response, start_marker="```sql",end_marker="```" )
     print(f"The SQL query is: {sql_query}")
 # Example usage

@@ -1,5 +1,5 @@
 import time
-from row_calculus_pipeline import row_calculus_pipeline
+from Main.row_calculus_pipeline import row_calculus_pipeline
 
 def evaluate_results(expected, actual):
     """Calculates accuracy, precision, recall, and F1-score."""
