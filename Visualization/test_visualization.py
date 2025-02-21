@@ -219,4 +219,4 @@ def visualize_errors_category(query_error_dic, categorization):
     print("The total counter is: ", control_counter)
 
 
-visualize_errors_category(query_error_dic, categorization)
+# visualize_errors_category(query_error_dic, categorization)

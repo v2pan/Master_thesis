@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
 from Utilities.llm import ask_llm, llm_json, RessourceError
 import time
 from Evaluation.evaluation import evaluate_results
@@ -6,8 +8,7 @@ import matplotlib.pyplot as plt
 import json
 import math
 
-models = ["gemini-2.0-flash", "gemini-1.5-flash"]
-reasons = ["direct", "CoT"]
+
 
 def calculate_metrics(actual, predicted):
     """
@@ -91,17 +92,9 @@ def write_boolean_metrics(metrics, filename = "metrics/boolean_metrics.txt"):
     else:
         print("No metrics to write to file.")
 
-def create_boolean():
+def create_boolean(prompts, true_responses, comparisons, write=True):
     #Influencers
-    prompts=["Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '1000 thousand'  is greater than '500' \n '50'  is greater than '500' \n '1 million'  is greater than '500' \n 'one thousand'  is greater than '500' \n",
-            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n",
-            #"Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '12.00 per dozen'  is smaller than '55' \n '10.00 per dozen'  is smaller than '55' \n '12.00 per dozen'   is smaller than '55' \n '15.00 per dozen'  is smaller than '55' ",
-            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '5 dozen'  is greater than '90' \n '8 dozen'  is greater than '90' \n '7 dozen'  is greater than '90' \n '3 dozen'  is greater than '90' \n",
-            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '180 °C' \n '400 °F'  is greater than '180 °C' \n '350 °F'  is greater than '180 °C' \n '200 °F'  is greater than '180 °C' \n"
-            ]
-    true_responses=[[True, False, True, True], [False, True, False, False], [False, True, False, False], [False, True, False, False]]
-
-    comparisons=[" > 500", " > 200 °C", " > 90", " > 180 °C"]
+    
 
 
 
@@ -142,11 +135,13 @@ def create_boolean():
                     except RessourceError as e:
                         print(f"Error: {e}")
                         time.sleep(60)
-    
-    with open("saved_json/boolean_metrics.json", "w") as f:
-        json.dump(metrics, f, indent=4)
-    
-    write_boolean_metrics(metrics)
+    if write == True:
+        with open("saved_json/boolean_metrics_ollama.json", "w") as f:
+            json.dump(metrics, f, indent=4)
+        
+        write_boolean_metrics(metrics)
+    else:
+        return metrics
 
 # def visualize_boolean_metrics():
     
@@ -174,10 +169,11 @@ def create_boolean():
 #         plt.tight_layout()  # Adjust subplot parameters for better spacing
 #         plt.show()
 
-def visualize_boolean_metrics():
+def visualize_boolean_metrics(metrics=None):
     
-    with open("saved_json/boolean_metrics.json", "r") as f:
-        metrics=json.load(f)
+    if metrics is None:
+        with open("saved_json/boolean_metrics_ollama.json", "r") as f:
+            metrics=json.load(f)
     
     x_axis_count=0
     for com in metrics.keys():
@@ -224,8 +220,8 @@ def visualize_boolean_metrics():
             plt.tight_layout()      
 
         # plt.tight_layout()  # Adjust subplot parameters for better spacing
-    
-    fig.savefig("saved_plots/boolean_metrics.png", dpi=300, bbox_inches='tight')
+    if metrics is None:
+        fig.savefig("saved_plots/boolean_metrics.png", dpi=300, bbox_inches='tight')
     plt.show()   
 
     for reason in   kpi_reason.keys():
@@ -243,4 +239,18 @@ def visualize_boolean_metrics():
 
 
 if __name__=="__main__":
+    #models = [ "gemini-1.5-flash","gemini-2.0-flash" ]
+    models = [ "deepseek-r1:1.5b","llama3.2","gemini-2.0-flash" ]
+    reasons = ["direct", "CoT"]
+    prompts=["Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '1000 thousand'  is greater than '500' \n '50'  is greater than '500' \n '1 million'  is greater than '500' \n 'one thousand'  is greater than '500' \n",
+            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n",
+            #"Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '12.00 per dozen'  is smaller than '55' \n '10.00 per dozen'  is smaller than '55' \n '12.00 per dozen'   is smaller than '55' \n '15.00 per dozen'  is smaller than '55' ",
+            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '5 dozen'  is greater than '90' \n '8 dozen'  is greater than '90' \n '7 dozen'  is greater than '90' \n '3 dozen'  is greater than '90' \n",
+            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '180 °C' \n '400 °F'  is greater than '180 °C' \n '350 °F'  is greater than '180 °C' \n '200 °F'  is greater than '180 °C' \n"
+            ]
+    true_responses=[[True, False, True, True], [False, True, False, False], [False, True, False, False], [False, True, False, False]]
+
+    comparisons=[" > 500", " > 200 °C", " > 90", " > 180 °C"]
+    create_boolean(prompts, true_responses, comparisons)
     visualize_boolean_metrics()
+    pass

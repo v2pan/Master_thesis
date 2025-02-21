@@ -1,8 +1,15 @@
 import matplotlib.pyplot as plt
 from Evaluation.evaluation import calculate_average_metrics
 
-def visualize_results(results):
+def visualize_results(acc, prec, rec, f1):
     """Visualizes the results in a bar plot."""
+
+    results = {
+    "Average Accuracy": acc,
+    "Average Precision": prec,
+    "Average Recall": rec,
+    "Average F1-score": f1
+    }
 
     # Extract data
     metrics = list(results.keys())
@@ -39,14 +46,11 @@ def visualize_results(results):
 
 
 # Example usage (replace with your results)
-results = {
-    "Average Accuracy": 0.45,
-    "Average Precision": 0.54,
-    "Average Recall": 0.46,
-    "Average F1-score": 0.48
 
-}
+# acc=
+# prec=
+# rec=
+# f1=
 
 
-
-visualize_results(results)
+#visualize_results(acc, prec, rec, f1)
