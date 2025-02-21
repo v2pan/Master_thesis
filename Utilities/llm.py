@@ -239,4 +239,4 @@ def extract_boolean_values(response_string):
     
 
 
-print(llm_json("Is Berlin the capital of Germany?", response_type=bool))
+# print(llm_json("Is Berlin the capital of Germany?", response_type=bool))

@@ -65,34 +65,35 @@ def write_boolean_metrics(metrics, filename = "metrics/boolean_metrics.txt"):
             with open(filename, "w") as f:
                 for reason in metrics.keys():
                     for model in metrics[reason].keys():
-                        f.write(f"--- Average Metrics for {reason} and {model} ---\n")
-                        for i,m in enumerate(metrics[reason][model]):
-                            accuracy, precision, recall, f1,= m
-                            f.write(f"Run {i+1}:\n")
-                            f.write(f"  Accuracy: {accuracy:.4f}\n")
-                            f.write(f"  Precision: {precision:.4f}\n")
-                            f.write(f"  Recall: {recall:.4f}\n")
-                            f.write(f"  F1-score: {f1:.4f}\n")
+                        for llm in metrics[reason][model].keys():
+                            f.write(f"--- Average Metrics for {reason} and {model} ---\n")
+                            for i,m in enumerate(metrics[reason][model][llm]):
+                                accuracy, precision, recall, f1,= m
+                                f.write(f"Run {i+1}:\n")
+                                f.write(f"  Accuracy: {accuracy:.4f}\n")
+                                f.write(f"  Precision: {precision:.4f}\n")
+                                f.write(f"  Recall: {recall:.4f}\n")
+                                f.write(f"  F1-score: {f1:.4f}\n")
+                                f.write("\n")
+                            f.write("\n--- Overall Metrics ---\n")
+                            accuracy_mean = np.mean(metrics[reason][model][llm], axis=0)[0]
+                            precision_mean = np.mean(metrics[reason][model][llm], axis=0)[1]
+                            recall_mean = np.mean(metrics[reason][model][llm], axis=0)[2]
+                            f1_score_mean = np.mean(metrics[reason][model][llm], axis=0)[3]
+                            f.write(f"Mean Accuracy: {accuracy_mean:.4f}\n")
+                            f.write(f"Mean Precision: {precision_mean:.4f}\n")
+                            f.write(f"Mean Recall: {recall_mean:.4f}\n")
+                            f.write(f"Mean F1-score: {f1_score_mean:.4f}\n")
                             f.write("\n")
-                        f.write("\n--- Overall Metrics ---\n")
-                        accuracy_mean = np.mean(metrics[reason][model], axis=0)[0]
-                        precision_mean = np.mean(metrics[reason][model], axis=0)[1]
-                        recall_mean = np.mean(metrics[reason][model], axis=0)[2]
-                        f1_score_mean = np.mean(metrics[reason][model], axis=0)[3]
-                        f.write(f"Mean Accuracy: {accuracy_mean:.4f}\n")
-                        f.write(f"Mean Precision: {precision_mean:.4f}\n")
-                        f.write(f"Mean Recall: {recall_mean:.4f}\n")
-                        f.write(f"Mean F1-score: {f1_score_mean:.4f}\n")
-                        f.write("\n")
-                        f.write("-----------------------------\n")
-                        f.write("\n")
+                            f.write("-----------------------------\n")
+                            f.write("\n")
                     print(f"Metrics written to '{filename}'")
         except OSError as e:
             print(f"Error writing metrics to file: {e}")
     else:
         print("No metrics to write to file.")
 
-def create_boolean(prompts, true_responses, comparisons, write=True):
+def create_boolean(prompts, true_responses, comparisons, models, reasons, write=True, split=False):
     #Influencers
     
 
@@ -117,15 +118,27 @@ def create_boolean(prompts, true_responses, comparisons, write=True):
                     #response = llm_json(prompt, response_type=list[bool])
                     try:
                         response=[]
-                        if reason=="CoT":
-                            while len(response)!=len(true_response):
-                                answer=ask_llm(prompt, model=model)
-                                response = llm_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
+                        if split==False:
+                            if reason=="CoT":
+                                while len(response)!=len(true_response):
+                                    answer=ask_llm(prompt+ "Keep the answer very brief please", model=model)
+                                    response = llm_json(f"For this question \n{prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
 
-                        elif reason=="direct":
-                            while len(response)!=len(true_response):
-                                response = llm_json(f"For this question \n{prompt} \n  Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
-                        
+                            elif reason=="direct":
+                                while len(response)!=len(true_response):
+                                    response = llm_json(f"For this question \n{prompt} \n  Return the necessary answer whether this question is true or False", response_type=list[bool], model=model)  # Expect a list of booleans back
+                        else:
+                            response=[]
+                            for p in prompt:
+                                p=p[0]
+                                response_tmp=None
+                                while response_tmp !=True and response_tmp !=False:
+                                    if reason=="CoT":
+                                        answer=ask_llm(p + "Keep the answer short please", model=model)
+                                        response_tmp = llm_json(f"For this question \n{p} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=bool, model=model)
+                                    elif reason=="direct":
+                                        response_tmp = llm_json(f"For this question \n{p} \n  Return the necessary answer whether this question is true or False", response_type=bool, model=model)
+                                response.append(response_tmp)
                         results[comparison][reason][model].append(response)
 
                         accuracy, precision, recall, f1 = calculate_metrics(true_response, response)
@@ -136,43 +149,18 @@ def create_boolean(prompts, true_responses, comparisons, write=True):
                         print(f"Error: {e}")
                         time.sleep(60)
     if write == True:
-        with open("saved_json/boolean_metrics_ollama.json", "w") as f:
+        with open("saved_json/boolean_metrics_ollama_cot.json", "w") as f:
             json.dump(metrics, f, indent=4)
         
-        write_boolean_metrics(metrics)
+        #write_boolean_metrics(metrics)
     else:
         return metrics
 
-# def visualize_boolean_metrics():
-    
-#     with open("saved_json/boolean_metrics.json", "r") as f:
-#         metrics=json.load(f)
-    
-
-#     for com in metrics.keys():
-#         reasons=list(metrics[com].keys())
-#         models=list(metrics[com][reasons[0]].keys())
-#         fig, axes = plt.subplots(len(reasons), len(models), figsize=(10, 5 * len(models)))  # Adjust figure size
-#         for l, reason in enumerate(reasons):
-#             for i, model in enumerate(models):
-#                     mean_scores = np.mean(metrics[com][reason][model], axis=0)
-#                     ax = axes[l][i]
-
-#                     ax.bar(["Accuracy", "Precision", "Recall", "F1-score"], mean_scores)
-#                     ax.set_ylabel("Mean Score")
-#                     ax.set_title(f"{model} + {reason}")
-#                     ax.set_ylim(0, 1)  # Ensure scores are within 0-1 range
-#                     ax.set_xticks(range(len(mean_scores)))
-#                     ax.set_xticklabels(["Accuracy", "Precision", "Recall", "F1-score"], rotation=45, ha="right")  #X-Axis Labels
-
-#         fig.suptitle(f"Mean Metrics for {com}", fontsize=16)
-#         plt.tight_layout()  # Adjust subplot parameters for better spacing
-#         plt.show()
 
 def visualize_boolean_metrics(metrics=None):
     
     if metrics is None:
-        with open("saved_json/boolean_metrics_ollama.json", "r") as f:
+        with open("saved_json/boolean_metrics_ollama_complete.json", "r") as f:
             metrics=json.load(f)
     
     x_axis_count=0
@@ -183,6 +171,8 @@ def visualize_boolean_metrics(metrics=None):
                 x_axis_count+=1
     
     fig, axes = plt.subplots(len(metrics.keys()), x_axis_count, figsize=(10, 2 * x_axis_count), constrained_layout=True) 
+    #fig, axes = plt.subplots( x_axis_count, len(metrics.keys()), figsize=(10, 2 * x_axis_count), constrained_layout=True) 
+
 
     kpi_reason={}
     kpi_model={}
@@ -201,6 +191,7 @@ def visualize_boolean_metrics(metrics=None):
                     
                     mean_scores = np.mean(metrics[com][reason][model], axis=0)
                     ax = axes[c][count]
+                    #ax = axes[count][c]
 
                     ax.bar(["Acc", "Precision", "Recall", "F1-score"], mean_scores)
                     ax.set_ylabel("Mean Score")
@@ -220,8 +211,8 @@ def visualize_boolean_metrics(metrics=None):
             plt.tight_layout()      
 
         # plt.tight_layout()  # Adjust subplot parameters for better spacing
-    if metrics is None:
-        fig.savefig("saved_plots/boolean_metrics.png", dpi=300, bbox_inches='tight')
+    #fig.savefig("saved_plots/boolean_metrics_ollama_complete.png", dpi=300, bbox_inches='tight')
+    write_boolean_metrics(metrics)
     plt.show()   
 
     for reason in   kpi_reason.keys():
@@ -240,17 +231,25 @@ def visualize_boolean_metrics(metrics=None):
 
 if __name__=="__main__":
     #models = [ "gemini-1.5-flash","gemini-2.0-flash" ]
-    models = [ "deepseek-r1:1.5b","llama3.2","gemini-2.0-flash" ]
-    reasons = ["direct", "CoT"]
-    prompts=["Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '1000 thousand'  is greater than '500' \n '50'  is greater than '500' \n '1 million'  is greater than '500' \n 'one thousand'  is greater than '500' \n",
-            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n",
-            #"Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '12.00 per dozen'  is smaller than '55' \n '10.00 per dozen'  is smaller than '55' \n '12.00 per dozen'   is smaller than '55' \n '15.00 per dozen'  is smaller than '55' ",
-            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '5 dozen'  is greater than '90' \n '8 dozen'  is greater than '90' \n '7 dozen'  is greater than '90' \n '3 dozen'  is greater than '90' \n",
-            "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '180 °C' \n '400 °F'  is greater than '180 °C' \n '350 °F'  is greater than '180 °C' \n '200 °F'  is greater than '180 °C' \n"
+    # models = [ "deepseek-r1:1.5b","llama3.2","gemini-2.0-flash" ]
+    models = [ "deepseek-r1:1.5b","llama3.2" ]
+    #reasons = ["direct", "CoT"]
+    reasons = ["CoT"]
+    # prompts=["Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '1000 thousand'  is greater than '500' \n '50'  is greater than '500' \n '1 million'  is greater than '500' \n 'one thousand'  is greater than '500' \n",
+    #         "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '200 °C' \n '400 °F'  is greater than '200 °C' \n '350 °F'  is greater than '200 °C' \n '200 °F'  is greater than '200 °C' \n",
+    #         #"Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '12.00 per dozen'  is smaller than '55' \n '10.00 per dozen'  is smaller than '55' \n '12.00 per dozen'   is smaller than '55' \n '15.00 per dozen'  is smaller than '55' ",
+    #         "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '5 dozen'  is greater than '90' \n '8 dozen'  is greater than '90' \n '7 dozen'  is greater than '90' \n '3 dozen'  is greater than '90' \n",
+    #         "Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n '200 °F'  is greater than '180 °C' \n '400 °F'  is greater than '180 °C' \n '350 °F'  is greater than '180 °C' \n '200 °F'  is greater than '180 °C' \n"
+    #         ]
+    prompts=[[["'1000 thousand'  is greater than '500' "],["'50'  is greater than '500'"] ,[" '1 million'  is greater than '500'"] , [" 'one thousand'  is greater than '500' "]],
+            [[" '200 °F'  is greater than '200 °C' "], [" '400 °F'  is greater than '200 °C'"] ,[" '350 °F'  is greater than '200 °C' "],[" '200 °F'  is greater than '200 °C' \n"]],
+            #  \n '12.00 per dozen'  is smaller than '55' \n '10.00 per dozen'  is smaller than '55' \n '12.00 per dozen'   is smaller than '55' \n '15.00 per dozen'  is smaller than '55' "],
+            [  [" '5 dozen'  is greater than '90'"] ,[" '8 dozen'  is greater than '90'"] ,[" '7 dozen'  is greater than '90' "],[" '3 dozen'  is greater than '90' "]],
+            [[" '200 °F'  is greater than '180 °C'"] ,[" '400 °F'  is greater than '180 °C'"] ,[" '350 °F'  is greater than '180 °C' "],[" '200 °F'  is greater than '180 °C' "]]
             ]
     true_responses=[[True, False, True, True], [False, True, False, False], [False, True, False, False], [False, True, False, False]]
 
     comparisons=[" > 500", " > 200 °C", " > 90", " > 180 °C"]
-    create_boolean(prompts, true_responses, comparisons)
+    #create_boolean(prompts, true_responses, comparisons, models, reasons, split=True)
     visualize_boolean_metrics()
     pass
