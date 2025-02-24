@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
 from Utilities.database import query_database
 from Utilities.extractor import extract
 from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
