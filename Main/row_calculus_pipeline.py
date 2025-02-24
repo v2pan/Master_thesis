@@ -321,6 +321,9 @@ def compare_semantics_in_list(input_list):
     - semantic_list (list of lists): A list of lists where each sublist contains expressions with the same semantic meaning.
     """
     semantic_list = []  # Store the results
+
+    #For duplicate elimination
+    from Main.combined_pipeline import TOTAL_DIC
     
     # Iterate over each sublist in the input list
     for outer_list in input_list:
@@ -419,6 +422,14 @@ def compare_semantics_in_list(input_list):
             for i in relevant_items:
                 soft_binding_list.append(i)
 
+            #Add to List for duplicate elimination
+            #For duplicate elimination
+            if relevant_items is not None:
+                TOTAL_DIC[temp_string]=[]
+                for i in relevant_items:
+                    i=i[0]
+                    if i!=temp_string:
+                        TOTAL_DIC[temp_string].append(i)
             #Add the where clause
             soft_binding_list.append(outer_list[-2]) 
             # If there are any items that have the same meaning, add temp_string and the matching items to the result list

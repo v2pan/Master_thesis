@@ -9,6 +9,7 @@ import time
 
 
 
+
 #Metadata to keep track of use for the JOIN pipeline
 usage_metadata_join = {
             "prompt_token_count": 0,
@@ -71,6 +72,10 @@ def compare_semantics_in_list(input_list,order):
     Returns:
         result_list (list of lists): A list where each sublist contains semantically equivalent expressions.
     """
+    #Total DIC for duplicate scan
+    from Main.combined_pipeline import TOTAL_DIC
+
+
     dict_list = []
     #Iteration over all JOINs
     counter=0
@@ -159,7 +164,14 @@ def compare_semantics_in_list(input_list,order):
                     relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
                     #Add relevant semantic equivalents to the list
                     dict[item_str] = relevant_items
-                    
+
+                    #Add duplicate elimination
+                    if relevant_items is not None:
+                        TOTAL_DIC[item_str]=[]
+                        for item in relevant_items:
+                            item=item[0]
+                            if item!=item_str:
+                                TOTAL_DIC[item_str].append(item)
 
                 print(f"The key belongs to {order[counter][0]}")
                 print(f"The value belongs to {order[counter][1]}")     
@@ -174,7 +186,8 @@ def compare_semantics_in_list(input_list,order):
 
 def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False):
 
-
+    
+   
     # #Get the relevant tables
     # retries=4
     # count=0

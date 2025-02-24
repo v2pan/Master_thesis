@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
 from Main.join_pipeline import join_pipeline
 from Main.row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, get_context, initial_query
 from Utilities.extractor import extract
@@ -5,6 +7,7 @@ import sqlparse
 from Utilities.database import query_database, QueryExecutionError
 from Utilities.llm import RessourceError, add_metadata
 import time
+from Utilities.remove_duplicate_rows import remove_duplicate_rows
 
 retry_delay = 60
 #Analyze whether JOIN or WHERE clause appear, retrieve the relevant ones
@@ -41,12 +44,14 @@ def analyze_sql_query(sql_query):
     return  where_conditions, join_conditions
 
 
-
+TOTAL_DIC = {}
 
 #Combination of both pipeline, adjustment was necessary
 def combined_pipeline(query, evaluation=False):
 
     #Metadata to keep track of use 
+    global TOTAL_DIC  # Declare it as global to modify it
+    TOTAL_DIC.clear()
 
     global usage_metadata_total
     usage_metadata_total = {
@@ -142,7 +147,7 @@ def combined_pipeline(query, evaluation=False):
         
         print(f"The output is {output}")
         print(f"The metadata is {usage_metadata_total}")
-        return output, usage_metadata_total
+        return remove_duplicate_rows(output,TOTAL_DIC), usage_metadata_total
     
     else:
         #Initialize with None values
@@ -191,7 +196,7 @@ def combined_pipeline(query, evaluation=False):
         
         print(f"The modified query is {output_query}")
         print(f"The metadata is {usage_metadata_total}")
-        return initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output, usage_metadata_total
+        return initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, remove_duplicate_rows(output,TOTAL_DIC), usage_metadata_total
 
 
 def hard_pipeline(query):
@@ -251,6 +256,5 @@ def hard_pipeline(query):
         return initial_query_result, temp_meta
 
 
-# answer=combined_pipeline('∃s state_capitol_short(name, _) ∧ states_short(name, _)')
-# print(answer)
+
 
