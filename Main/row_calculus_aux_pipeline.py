@@ -13,23 +13,62 @@ import copy
 import time
 from Main.row_calculus_pipeline import extract_where_conditions_sqlparse, execute_queries_on_conditions
 
+retry_delay=60
+
+#Metadata to keep track of use 
+usage_metadata_row = {
+            "prompt_token_count": 0,
+            "candidates_token_count": 0,
+            "total_token_count": 0,
+            "total_calls": 0
+        }
+
+
+
 def create_and_populate_translation_table(TOTAL_DIC, comparison):
     try:
+        comparison = re.sub(r"[\s'.;=]", "", comparison)
+
+        delete_table_prompt = f"DROP TABLE IF EXISTS {comparison}_table CASCADE;"
+        query_database(delete_table_prompt)  # Execute the table deletion query
+
+        # Get the type of the first key
+        type_word = type(list(TOTAL_DIC.keys())[0])
+
+        # Check if the type is str or int
+        if type_word == str:
+            type_word = "TEXT"
+        elif type_word == int:
+            type_word = "INTEGER"
+        else:
+            raise TypeError(f"Unexpected type: {type_word}, expected str or int.")
+        
+        type_synonym = type(TOTAL_DIC[list(TOTAL_DIC.keys())[0]][0])
+        if type_synonym == str:
+            type_synonym = "TEXT"
+        elif type_synonym == int:
+            type_synonym = "INTEGER"
+        else:
+            raise TypeError(f"Unexpected type: {type_synonym}, expected str or int.")
+
+
         # Create the translation table if it doesn't exist
         create_table_prompt = f'''CREATE TABLE IF NOT EXISTS {comparison}_table(
-            word TEXT NOT NULL,
-            synonym TEXT NOT NULL
+            word {type_word} NOT NULL,
+            synonym {type_synonym} NOT NULL
         );'''
         query_database(create_table_prompt)  # Execute the table creation query
+
+        print(f"The table with the name {comparison}_table was created.")
         
         # Prepare the INSERT query to populate the table
-        population_prompt = "INSERT INTO {comparison}_table (word, synonym) VALUES "
+        population_prompt = f"INSERT INTO {comparison}_table (word, synonym) VALUES "
         values = []
         
         # Loop through the dictionary and create the values part of the query
         for key, synonyms in TOTAL_DIC.items():
             for synonym in synonyms:
-                values.append(f"('{key}', '{synonym}')")
+                    values.append(f"('{key}', '{synonym}')")
         
         if values:
             population_prompt += ', '.join(values) + ';'
@@ -43,15 +82,6 @@ def create_and_populate_translation_table(TOTAL_DIC, comparison):
         print(f"An error occurred: {e}")
 
 
-retry_delay=60
-
-#Metadata to keep track of use 
-usage_metadata_row = {
-            "prompt_token_count": 0,
-            "candidates_token_count": 0,
-            "total_token_count": 0,
-            "total_calls": 0
-        }
 
 def list_semantics_aux(input_list):
     """
@@ -201,8 +231,84 @@ def row_calculus_pipeline_aux(initial_sql_query, evaluation=False, return_metada
     #INNER LOGIC: Analyze SQL query, retrieve necessary items to retrieve, compare them using the LLM
     conditions = extract_where_conditions_sqlparse(initial_sql_query)
     query_results = execute_queries_on_conditions(conditions)
-    semantic_list=list_semantics_aux(query_results)
-    print(f"The semantics list is {semantic_list}")
+    semantic_dic=list_semantics_aux(query_results)
+    print(f"The semantics list is {semantic_dic}")
+
+    #Create and populate the translation table
+    semantic_rows=[]
+    for key in semantic_dic.keys():
+        create_and_populate_translation_table(semantic_dic[key], key)
+        semantic_rows.append(key)
+
 
     
-print("Test")
+    #Prompt asking LLM to integrate binding
+    final_prompt=f'''Write an updated SQL query like this. Incorporate the additional tables as an intermediate output please.
+        Input: sql:SELECT * FROM vehicles INNER JOIN owners ON vehicles.owner_id = owners.id WHERE vehicles.color = 'red'; semantic_rows = [wherevehiclescolorred_table]
+        Output: SELECT * FROM vehicles 
+        INNER JOIN owners ON vehicles.owner_id = owners.id 
+        INNER JOIN wherevehiclescolorred_table ON wherevehiclescolorred_table.synonym = vehicles.color 
+        WHERE wherevehiclescolorred_table.word = 'red';
+        Input: sql: SELECT * FROM employees INNER JOIN departments ON employees.dept_id = departments.id WHERE employees.job_title = 'engineer'; semantic_rows = [whereemployeesjobtitleengineer_table]
+        Output: SELECT * FROM employees 
+        INNER JOIN departments ON employees.dept_id = departments.id 
+        INNER JOIN whereemployeesjobtitleengineer_table ON whereemployeesjobtitleengineer_table.synonym = employees.job_title 
+        WHERE whereemployeesjobtitleengineer_table.word = 'engineer';
+        Input: sql:{initial_sql_query}; semantic_rows: {semantic_rows}
+        Output:'''
+    print(f"The final prompt is {final_prompt}")
+
+   # Try to modify the query with our chosen binding
+    response,temp_meta = ask_llm(final_prompt,True, max_token=1000)
+    #Update the metadata
+    _ = add_metadata(temp_meta,usage_metadata_row)
+
+    print(f"The response is {response}")
+
+    #Extract the SQL query from the response
+    try:
+        sql_query = extract(response, start_marker="```sql",end_marker="```" )
+        if sql_query is None:
+            sql_query = extract(response, start_marker="SELECT",end_marker=";",inclusive=True )
+    except:
+        pass
+    if sql_query is None:
+        print("No SQL query found in response.")
+    else:
+        try:
+            result=query_database(sql_query)
+        except:
+            result=None
+    #Clean the result
+    if result is not None:
+        cleaned_result = []
+        for i in semantic_dic.keys():
+            for word in semantic_dic[i].keys():
+                for row in result:
+                    found = False
+                    new_row = []
+                    for item in row:
+                        # Check if word is equal to current item and if we haven't found it yet
+                        if item == word and not found:
+                            found = True  # Set the flag to True so we don't remove further occurrences
+                        else:
+                            new_row.append(item)  # Add to new row if it's not the first occurrence of the word
+                    cleaned_result.append(tuple(new_row))  # Add the modified row (as a tuple)
+
+        result = cleaned_result
+    #print(usage_metadata_total)
+    #Return result
+    print(usage_metadata_row)
+    if not return_metadata:
+        if evaluation:
+            return initial_sql_query, semantic_dic, result
+        else:
+            return result
+    if return_metadata:
+        if evaluation:
+            return initial_sql_query, semantic_dic, result, usage_metadata_row
+        else:
+            return result, usage_metadata_row
+
+
+    

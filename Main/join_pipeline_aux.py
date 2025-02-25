@@ -1,11 +1,14 @@
 import sqlparse
 import re
 from Main.row_calculus_pipeline import execute_queries_on_conditions,  get_context, get_relevant_tables
+from Main.join_pipeline import extract_join_conditions_sqlparse
+from Main.row_calculus_aux_pipeline import create_and_populate_translation_table
 from Utilities.llm import ask_llm, llm_json, add_metadata, RessourceError
 from Utilities.database import query_database, QueryExecutionError
 from Utilities.extractor import extract
 import copy
 import time
+import re
 
 
 
@@ -18,47 +21,7 @@ usage_metadata_join = {
         }
 
 
-#Trying out to implement the Join WHERE multiple things are linked
-#Creation of a dictionary to store the semantic pairs
-
-def extract_join_conditions_sqlparse(sql_query: str):
-    """
-    Extracts JOIN conditions (equality joins only) using sqlparse.
-    """
-    try:
-        parsed = sqlparse.parse(sql_query)[0]
-        join_conditions = []
-        order_list=[]
-        for token in parsed.tokens:
-            if isinstance(token, sqlparse.sql.Comparison):
-
-                # Extract join condition (assuming equality join only)
-                left = str(token.left).strip()
-                right = str(token.right).strip()
-                operator = str(token.token_next(0)).strip() # Get the operator token
-                comp=str(token.normalized).strip()
-                #Order to keep track of what is on the left and right side of the join
-                order = [copy.deepcopy(left), copy.deepcopy(right)]
-
-                # Process operands to get SQL queries:
-                left_is_column = re.fullmatch(r'\w+\.\w+', left)
-                if left_is_column:
-                    table_name, column_name = left.split('.')
-                    left = f"SELECT {column_name} FROM {table_name};"
-
-                right_is_column = re.fullmatch(r'\w+\.\w+', right)
-                if right_is_column:
-                    table_name, column_name = right.split('.')
-                    right = f"SELECT {column_name} FROM {table_name};"
-                else:
-                    right = right.replace("'", "")  # Remove quotes from literals
-
-                join_conditions.append([left, operator, comp,  right])
-                order_list.append(order)
-        return join_conditions, order_list
-    except (IndexError, sqlparse.exceptions.ParseException) as e:
-        print(f"Error parsing SQL query: {e}")
-        return []
+#
     
 
 def compare_semantics_in_list(input_list,order):
@@ -71,12 +34,12 @@ def compare_semantics_in_list(input_list,order):
     Returns:
         result_list (list of lists): A list where each sublist contains semantically equivalent expressions.
     """
-    dict_list = []
+    total_dic= {}
     #Iteration over all JOINs
     counter=0
     for outer_list in input_list:
         if isinstance(outer_list[0], list) and isinstance(outer_list[-1], list):
-            dict={}
+            soft_binding_dic ={}
             temp_list1 = outer_list[0]
             temp_list2 = outer_list[-1]
 
@@ -158,52 +121,28 @@ def compare_semantics_in_list(input_list,order):
 
                     relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
                     #Add relevant semantic equivalents to the list
-                    dict[item_str] = relevant_items
+                    if relevant_items is not None:
+                        soft_binding_dic[item_str] =[] 
+                        for i in relevant_items:
+                            soft_binding_dic[item_str].append(i)
                     
 
                 print(f"The key belongs to {order[counter][0]}")
-                print(f"The value belongs to {order[counter][1]}")     
-                dict_list.append(dict)
+                print(f"The value belongs to {order[counter][1]}")
+                expression=re.sub(r"[\s'.;=]", "", outer_list[-2])
+                total_dic[expression]= soft_binding_dic
                 #Increase counter
                 counter+=1
             else:
-                dict_list.append(dict)
+                expression=re.sub(r"[\s'.;=]", "", outer_list[-2])
+                total_dic[expression]= soft_binding_dic
          
 
-    return dict_list, order
+    return total_dic, order
 
-def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False):
-
-
-    # #Get the relevant tables
-    # retries=4
-    # count=0
-    # while count<retries:
-    #     tables = get_relevant_tables(query)
-        
-    #     if tables is not None:
-    #         break
-    #     else:
-    #         count+=1
-    # if tables is None:
-    #     re
-    # print(f"The relevant tables are {tables}")
-    # context = get_context(tables)
-
-    # #Gets context by reading JSON files
-    # #context= get_context_json(tables)
+def join_pipeline_aux(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False):
 
 
-    # #Used for relational calculus
-    # #response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
-
-    # #Used for predicate calculus, selecting all rows
-    # response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. Select all rows by starting with 'SELECT * '  The structure of the database is the following: {context}.", True,max_token=1000)
-    # #Update the metadata
-    # add_metadata(temp_meta)
-
-    # initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
-    # print(f"The SQL query is: {initial_sql_query}")
 
     #Set global metadata to 0
     for i in usage_metadata_join.keys():
@@ -247,56 +186,45 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
                 else:
                     return initial_sql_query, usage_metadata_join
 
+    semantic_rows = []
+    for key in semantic_dic.keys():
+        create_and_populate_translation_table(semantic_dic[key], key)
+        semantic_rows.append(key+"_table")
+
+
     #Create the binding string for, necessary for multiple JOINs
     binding_str = ""
-    for i in range(len(semantic_dic)):
-        binding_str += f"binding {i}: {semantic_dic[i]}. The key belongs to {order[i][0]}, The values belong to {order[i][1]}\n"
+    # for i in range(len(semantic_dic)):
+    #     binding_str += f"binding {i}: {semantic_dic[i]}. The key belongs to {order[i][0]}, The values belong to {order[i][1]}\n"
     #Final prompt for modification of the query
     if len(semantic_dic)<2:
-        final_prompt=f''' First reason on what value the CASE statement is necessary, if it is to be applied. Then write  an updated SQL query, if needed. Update the Join conditions using the CASE statement if necessary. The dictionary tells us which parts have the same meaning semantically and therefore should be treated equally when executed on a join.  Always end with a ';'. The key belongs to {order[0][0]}. The value belongs to {order[0][1]}.  Make sure to use the CASE statement on the KEY value and convert them to the corresponding value. Alway put the CASE statement after the ON statement. Make sure the tables and the attributes on which the JOIN is performed are not changed, instead if necessary add CASE statements.
-            Input sql: SELECT suppliers.name, products.value FROM suppliers JOIN products ON suppliers.id = products.supplier_id; binding: {{'uno': ['one'], 'dos': ['two'], 'tres': ['three']}}; order: The key belongs to products.supplier_id, The values belong to suppliers.id.
-            Output: SELECT suppliers.name, products.value FROM suppliers JOIN products ON suppliers.id = CASE products.supplier_id
-            WHEN 'uno' THEN 'one'
-            WHEN 'dos' THEN 'two'
-            WHEN 'tres' THEN 'three'
-            END;
+        final_prompt=f''' Extend the SQL query by the following translation table. 
+            Input sql: SELECT * FROM employees INNER JOIN departments ON employees.department_id = departments.id; binding: employeesidepartmentsid_table
+            Output: SELECT * FROM employees 
+            INNER JOIN employeesidepartmentsid_table ON employees.department_id = employeesidepartmentsid_table.word
+            INNER JOIN departments ON employeesidepartmentsid_table.synonym = departments.id;
             Input sql: SELECT employees.fullname, departments.dept_name FROM departments JOIN employees ON departments.id  = employees.department_id; binding: {{'Acme Corp': ['Acme Corp'], 'Sales Dep': ['Sales Department'], 'Engeneering': ['Engineering']}}; order: The key belongs to departments.id, The values belong to employees.department_id.
-            Output: SELECT employees.fullname, departments.dept_name FROM employees JOIN departments ON employees.department_id = CASE departments.id
-            WHEN 'Acme Corp' THEN 'Acme Corp'
-            WHEN 'Sales Dep' THemployees.department_idEN 'Sales Department'
-            WHEN 'Engeneering' THEN 'Engineering'
-            END;
-            Input: sql:{initial_sql_query}; binding: {semantic_dic[0]}; order: The key belongs to {order[0][0]}, The values belong to {order[0][1]};
+            Input: SELECT * FROM students INNER JOIN classes ON students.class_id = classes.id;binding: studentsiclassid_table
+            Output: SELECT * FROM students 
+            INNER JOIN studentsiclassid_table ON students.class_id = studentsiclassid_table.word
+            INNER JOIN classes ON studentsiclassid_table.synonym = classes.id;
+            Input: sql:{initial_sql_query}; binding: {semantic_rows};
             Output:'''
     
     #If multiple JOINs are present, the prompt is different, different problem as important what is substituted by what
     else:
-        final_prompt=f''' Reason about in what position the CASE statement for modifying the JOIN would make sense. Then write an updated SQL query, if needed. The dictionary tells us which parts have the same meaning semantically and therefore should be treated equally when executed on a join.  Always end with a ';'.  Foe each non-empty dictionary add the CASE statement only to the corresponding JOIN. Think aboout how you could place the CASE statement such that it doesn't have to be applied multiple times, when applying once cleverly would be enough. Alway put the CASE statement after the ON statement. Think about whether it makes sense to substitute the key by the value or the value by the key.Dont JOIN the same attribute with itself please, always join two different attributes.  Make sure the tables and the attributes on which the JOIN is performed are not changed, instead if necessary add CASE statements. 
-                Input: SELECT students.name, courses.title 
-                FROM students 
-                JOIN enrollments ON students.id = enrollments.student_id 
-                JOIN courses ON enrollments.course_id = courses.id;
-                binding 1: {{'CS101': ['Introduction to Computer Science'], 'MATH201': ['Calculus II']}}; The key belongs to courses.id, The values belong to enrollments.course_id.
-                binding 2: {{}}. The key belongs to enrollments.student_id. The value belongs to student_id.
-                Output: SELECT students.name, courses.title FROM students JOIN enrollments ON students.id = enrollments.student_id JOIN courses ON enrollments.course_id = CASE courses.id WHEN 'CS101' THEN 'Introduction to Computer Science' WHEN 'MATH201' THEN 'Calculus II' END;
-                Input: SELECT *
-                FROM widgets
-                INNER JOIN gizmos ON widgets.part_id = gizmos.id
-                INNER JOIN sprockets ON widgets.part_id = sprockets.id;
-                binding1: {{1: ['Gear A'], 2: ['Gear B'], 3: ['Gear C']}}; The key belongs to widgets.part_id, The values belong to gizmos.id.
-                binding 2: {{}}; The key belongs to widgets.sprocket_id, The values belong to sprockets.id.
-                Output: SELECT * 
-                FROM widgets 
-                INNER JOIN gizmos ON widgets.part_id = CASE gizmos.id 
-                                                        WHEN 'Gear A' THEN 1 
-                                                        WHEN 'Gear B' THEN 2 
-                                                        WHEN 'Gear C' THEN 3 
-                                                        ELSE NULL  -- Add NULL in else clause
-                                                    END
-                INNER JOIN sprockets ON widgets.sprocket_id = sprockets.id;
-                Input: sql:{initial_sql_query}; 
-                binding: {binding_str};
-                Output:'''
+        final_prompt=final_prompt=f''' Extend the SQL query by the following translation table. 
+            Input sql: SELECT * FROM employees INNER JOIN departments ON employees.department_id = departments.id; binding: employeesidepartmentsid_table
+            Output: SELECT * FROM employees 
+            INNER JOIN employeesidepartmentsid_table ON employees.department_id = employeesidepartmentsid_table.word
+            INNER JOIN departments ON employeesidepartmentsid_table.synonym = departments.id;
+            Input sql: SELECT employees.fullname, departments.dept_name FROM departments JOIN employees ON departments.id  = employees.department_id; binding: {{'Acme Corp': ['Acme Corp'], 'Sales Dep': ['Sales Department'], 'Engeneering': ['Engineering']}}; order: The key belongs to departments.id, The values belong to employees.department_id.
+            Input: SELECT * FROM students INNER JOIN classes ON students.class_id = classes.id;binding: studentsiclassid_table
+            Output: SELECT * FROM students 
+            INNER JOIN studentsiclassid_table ON students.class_id = studentsiclassid_table.word
+            INNER JOIN classes ON studentsiclassid_table.synonym = classes.id;
+            Input: sql:{initial_sql_query}; binding: {semantic_rows};
+            Output:'''
     
 
     retries_left=3

@@ -9,6 +9,7 @@ from Utilities.llm import RessourceError, add_metadata
 import time
 from Utilities.remove_duplicate_rows import remove_duplicate_rows
 from Main.row_calculus_aux_pipeline import row_calculus_pipeline_aux
+from Main.join_pipeline_aux import join_pipeline_aux
 
 retry_delay = 60
 #Analyze whether JOIN or WHERE clause appear, retrieve the relevant ones
@@ -129,8 +130,8 @@ def combined_pipeline(query, evaluation=False):
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
             output_query, temp_meta=join_pipeline(initial_sql_query, forward=True, return_metadata=True)
             add_metadata(temp_meta, usage_metadata_total)
-            #Changed, Important to keep in mind
-            output, temp_meta=row_calculus_pipeline_aux(output_query, return_metadata=True)
+            #!!!Changed, Important to keep in mind
+            output, temp_meta=row_calculus_pipeline(output_query, return_metadata=True)
             add_metadata(temp_meta, usage_metadata_total)
 
         #Then WHERE clause
@@ -141,7 +142,8 @@ def combined_pipeline(query, evaluation=False):
         
         elif join_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-            output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
+            # output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
+            output, temp_meta=join_pipeline_aux(initial_sql_query, return_metadata=True)
             add_metadata(temp_meta, usage_metadata_total)
         else:
             print(f"The \n{initial_sql_query}\n has no WHERE or JOIN clause.")

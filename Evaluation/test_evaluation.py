@@ -354,7 +354,7 @@ def error_logic(loaded_dictionary, queries):
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
 
-        modelname= "gemini-1.5-flash"
+        modelname= "gemini-2.0-flash"
         append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_" + modelname + ".txt")
 
         #Work with metadata
