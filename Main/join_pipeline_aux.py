@@ -197,8 +197,9 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
 
     semantic_rows = []
     for key in  new_dic.keys():
-        create_and_populate_translation_table(semantic_dic[key], key)
-        semantic_rows.append(key+"_table")
+        key_new = re.sub(r"[\s'.;=<>!]", "", key)+"_table"
+        create_and_populate_translation_table(new_dic[key], key_new)
+        semantic_rows.append(key_new)
 
 
     #Create the binding string for, necessary for multiple JOINs
@@ -288,18 +289,3 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
                         return sql_query, usage_metadata_join
                     else:
                         return result, usage_metadata_join
-
-
-# sql_query = '''SELECT 
-#     children_table.id, 
-#     children_table.children, 
-#     fathers.name
-# FROM 
-#     children_table
-# INNER JOIN 
-#     fathers ON fathers.id = children_table.id;'''
-
-#calculus='''∃id (children_table(id, _) ∧ fathers(id, _))'''
-#calculus='''∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) )'''
-# calculus='''∃d (weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits)'''
-# print(join_pipeline(calculus))

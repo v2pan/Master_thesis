@@ -209,6 +209,12 @@ def combined_pipeline(query, evaluation=False, aux=False):
         
         print(f"The modified query is {output_query}")
         print(f"The metadata is {usage_metadata_total}")
+        
+        #Correct this for this analysis please
+        if result_where is not None:
+            result_where = remove_duplicate_rows(result_where,TOTAL_DIC)
+        if result_join is not None:
+            result_join = remove_duplicate_rows(result_join,TOTAL_DIC)
         return initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, remove_duplicate_rows(output,TOTAL_DIC), usage_metadata_total
 
 

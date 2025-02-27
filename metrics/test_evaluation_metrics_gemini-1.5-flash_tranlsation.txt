@@ -1,0 +1,38 @@
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog')):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+prompt_token_count AVERAGE: 3230.0
+candidates_token_count AVERAGE: 432.3333333333333
+total_token_count AVERAGE: 3662.3333333333335
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 1.7105
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog')):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+prompt_token_count AVERAGE: 3106.6666666666665
+candidates_token_count AVERAGE: 289.0
+total_token_count AVERAGE: 3395.6666666666665
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 0.6593
+
+
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
+  Accuracy: 0.3333
+  Precision: 0.3333
+  Recall: 0.6667
+  F1-score: 0.4444
+prompt_token_count AVERAGE: 3457.3333333333335
+candidates_token_count AVERAGE: 478.0
+total_token_count AVERAGE: 3935.3333333333335
+total_calls AVERAGE: 6.0
+ AVERAGE Time: 1.1895

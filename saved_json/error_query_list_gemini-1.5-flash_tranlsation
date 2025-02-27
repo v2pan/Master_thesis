@@ -1,0 +1,29 @@
+{
+    "∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog'))": {
+        "initial_sql_query_join": 0,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 3
+    },
+    "∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog'))": {
+        "initial_sql_query_join": 0,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 3
+    },
+    "∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog'))": {
+        "initial_sql_query_join": 1,
+        "semantic_list_join": 0,
+        "result_join": 2,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 0,
+        "result_where": 0,
+        "correct_results": 0
+    }
+}

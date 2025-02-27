@@ -28,7 +28,7 @@ genai.configure(api_key=api_key)
 # 1 million TPM
 # 1,500 RPD
 
-MODEL="gemini-2.0-flash"
+MODEL="gemini-1.5-flash"
 # "gemini-1.5-flash"
 # "gemini-2.0-flash"
 #"deepseek-r1:1.5b"

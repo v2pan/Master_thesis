@@ -3,7 +3,6 @@ import sys
 sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
 from Utilities.database import query_database
 from Utilities.extractor import extract
-print(os.getcwd())
 from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
 from Utilities.database import query_database, QueryExecutionError
 from Utilities.llm import llm_json,ask_llm, add_metadata
@@ -231,20 +230,22 @@ def comparison_logic(result_dic, target_instance):
 
     #No add the data to the error counter, identify location of the error
     #If result is the same, then the result is correct and nothing more is investigated
-    if compare_lists_of_lists(target_instance["output"], data["output"]):
+    target_output = [tuple(i) for i in target_instance["output"]]
+    if evaluate_results(target_output, data["output"], boolean=True):
         error_cnt["correct_results"]+=1
     else:
         if target_initial_query_result_join!=initial_query_result_join:
             error_cnt["initial_sql_query_join"]+=1
         elif not compare_semantic_join(target_instance["semantic_list_join"], data["semantic_list_join"]):
             error_cnt["semantic_list_join"]+=1
-        elif result_join_data!=result_join_target and semantic_list_join[0] is not None:
+        elif evaluate_results( [tuple(i) for i in result_join_target],result_join_data, boolean=True) and semantic_list_join[0] is not None:
             error_cnt["result_join"]+=1
         elif target_initial_query_result_where!=initial_query_result_where:
             error_cnt["initial_sql_query_where"]+=1
         elif not compare_lists_of_lists(process_list_where(target_instance["semantic_list_where"]), process_list_where(data["semantic_list_where"])):
             error_cnt["semantic_list_where"]+=1
-        elif not compare_lists_of_lists(target_instance["result_where"], data["result_where"]):
+        elif not evaluate_results([tuple(i) for i in target_instance["result_where"]], data["result_where"], boolean=True):
+            
             error_cnt["result_where"]+=1
     
         print(f"The error count is {error_cnt}")
@@ -340,7 +341,7 @@ def error_logic(loaded_dictionary, queries):
             target_output=list_output
 
             #KPI calculation
-            accuracy, precision, recall, f1_score = evaluate_results(output, target_output)
+            accuracy, precision, recall, f1_score = evaluate_results( target_output, output)
             metrics.append([accuracy, precision, recall, f1_score])
             metadata = add_metadata(tmp_metadata, metadata)
             end=time.process_time()
@@ -354,7 +355,7 @@ def error_logic(loaded_dictionary, queries):
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
 
-        modelname= "gemini-2.0-flash_tranlsation"
+        modelname= "gemini-1.5-flash_tranlsation"
         append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_" + modelname + ".txt")
 
         #Work with metadata
@@ -393,16 +394,20 @@ def evaluation_pipeline(queries):
     
     
 
-# index=[16,17]
-# new_queries=[]
-# for i in index:
-#     new_queries.append(queries[i])
-# queries=new_queries
+
 
 #How many runs per expression, Done everything
 RUNS=3
 queries= [i for i, _ in test_cases]
-# evaluation_pipeline(queries)
+
+#3 DONE, #2 DONE
+index=[4]
+new_queries=[]
+for i in index:
+    new_queries.append(queries[i])
+queries=new_queries
+
+evaluation_pipeline(queries)
 
 
 

@@ -19,7 +19,7 @@ def remove_duplicate_rows(output, total_dic):
                         modified_versions.add(frozenset(temp_row))
 
             # Check if the row or any of its modified versions is already seen
-            if any(variant in seen_rows for variant in modified_versions) or frozenset(row) in seen_rows:
+            if any(variant in seen_rows for variant in modified_versions) or frozenset(row) in seen_rows or row in seen_rows:
                 continue  # Skip this row if a duplicate exists
 
             # Otherwise, add the row and its variants to seen_rows

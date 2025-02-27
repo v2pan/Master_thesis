@@ -9,7 +9,7 @@ import statistics
 import pandas as pd
 import numpy as np
 
-def evaluate_results(expected, actual):
+def evaluate_results(expected, actual,boolean=False):
     """Calculates accuracy, precision, recall, and F1-score, handling tuples."""
     
     if expected is None:
@@ -32,7 +32,10 @@ def evaluate_results(expected, actual):
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0  # Avoid division by zero
     f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0  # Avoid division by zero
 
-    return accuracy, precision, recall, f1_score
+    if not boolean:
+        return accuracy, precision, recall, f1_score
+    if boolean:
+        return f1_score==1
 
 def write_all_metrics_to_file(metrics, filename = "all_metrics.txt"):
     """Writes all individual metrics to a text file."""

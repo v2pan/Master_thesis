@@ -27,9 +27,9 @@ usage_metadata_row = {
 
 def create_and_populate_translation_table(TOTAL_DIC, comparison):
     try:
-        comparison = re.sub(r"[\s'.;=]", "", comparison)
+        #comparison = re.sub(r"[\s'.;=]", "", comparison)
 
-        delete_table_prompt = f"DROP TABLE IF EXISTS {comparison}_table CASCADE;"
+        delete_table_prompt = f"DROP TABLE IF EXISTS {comparison} CASCADE;"
         query_database(delete_table_prompt)  # Execute the table deletion query
 
         # Get the type of the first key
@@ -53,16 +53,16 @@ def create_and_populate_translation_table(TOTAL_DIC, comparison):
 
 
         # Create the translation table if it doesn't exist
-        create_table_prompt = f'''CREATE TABLE IF NOT EXISTS {comparison}_table(
+        create_table_prompt = f'''CREATE TABLE IF NOT EXISTS {comparison}(
             word {type_word} NOT NULL,
             synonym {type_synonym} NOT NULL
         );'''
         query_database(create_table_prompt)  # Execute the table creation query
 
-        print(f"The table with the name {comparison}_table was created.")
+        print(f"The table with the name {comparison} was created.")
         
         # Prepare the INSERT query to populate the table
-        population_prompt = f"INSERT INTO {comparison}_table (word, synonym) VALUES "
+        population_prompt = f"INSERT INTO {comparison} (word, synonym) VALUES "
         values = []
         
         # Loop through the dictionary and create the values part of the query
@@ -162,6 +162,10 @@ def list_semantics_aux(input_list):
             for item in temp_list:
                 item=item[0]
 
+
+                #FOR TESTING Purposes:
+                #phrase=" has the same meaning as (also in antoher language) or is the same as"
+
                 #Deletes unnecessary "\n"
                 if type(item)!=int:
                     item=item.replace("\n", "")
@@ -248,13 +252,14 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
     #Create and populate the translation table
     semantic_rows=[]
     for key in semantic_dic.keys():
-        create_and_populate_translation_table(semantic_dic[key], key)
-        semantic_rows.append(key)
+        key_new = re.sub(r"[\s'.;=<>!]", "", key) + "_table"
+        create_and_populate_translation_table(semantic_dic[key], key_new)
+        semantic_rows.append(key_new)
 
 
     
     #Prompt asking LLM to integrate binding
-    final_prompt=f'''Write an updated SQL query like this. Incorporate the additional tables as an intermediate output please.
+    final_prompt=f'''Write an updated SQL query like this. Incorporate the additional tables as an intermediate output please. For negations change the != or <> to a = condtion.
         Input: sql:SELECT * FROM vehicles INNER JOIN owners ON vehicles.owner_id = owners.id WHERE vehicles.color = 'red'; semantic_rows = [wherevehiclescolorred_table]
         Output: SELECT * FROM vehicles 
         INNER JOIN owners ON vehicles.owner_id = owners.id 
@@ -265,9 +270,20 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
         INNER JOIN departments ON employees.dept_id = departments.id 
         INNER JOIN whereemployeesjobtitleengineer_table ON whereemployeesjobtitleengineer_table.synonym = employees.job_title 
         WHERE whereemployeesjobtitleengineer_table.word = 'engineer';
+        Input: sql: SELECT * FROM students INNER JOIN classes ON students.class_id = classes.id WHERE students.grade != 'A'; semantic_rows = [wherestudentsgradeA_table]  
+        Output: SELECT * FROM students  
+        INNER JOIN classes ON students.class_id = classes.id  
+        INNER JOIN wherestudentsgradeA_table ON wherestudentsgradeA_table.synonym = students.grade  
+        WHERE wherestudentsgradeA_table.word = 'A';  
         Input: sql:{initial_sql_query}; semantic_rows: {semantic_rows}
         Output:'''
     print(f"The final prompt is {final_prompt}")
+
+    # Input: sql: SELECT * FROM students INNER JOIN classes ON students.class_id = classes.id WHERE students.grade != 'A'; semantic_rows = [wherestudentsgradeA_table]  
+    # Output: SELECT * FROM students  
+    # INNER JOIN classes ON students.class_id = classes.id  
+    # INNER JOIN wherestudentsgradeA_table ON wherestudentsgradeA_table.synonym = students.grade  
+    # WHERE wherestudentsgradeA_table.word != 'A';  
 
    # Try to modify the query with our chosen binding
     response,temp_meta = ask_llm(final_prompt,True, max_token=1000)
