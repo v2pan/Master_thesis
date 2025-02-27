@@ -32,8 +32,14 @@ def create_and_populate_translation_table(TOTAL_DIC, comparison):
         delete_table_prompt = f"DROP TABLE IF EXISTS {comparison} CASCADE;"
         query_database(delete_table_prompt)  # Execute the table deletion query
 
-        # Get the type of the first key
-        type_word = type(list(TOTAL_DIC.keys())[0])
+        # Get the first key that is not None
+        valid_keys = [key for key in TOTAL_DIC.keys() if key is not None]
+
+        if not valid_keys:
+            raise ValueError("No valid keys found in TOTAL_DIC.")
+
+        # Get the type of the first valid key
+        type_word = type(valid_keys[0])
 
         # Check if the type is str or int
         if type_word == str:
@@ -42,14 +48,23 @@ def create_and_populate_translation_table(TOTAL_DIC, comparison):
             type_word = "INTEGER"
         else:
             raise TypeError(f"Unexpected type: {type_word}, expected str or int.")
-        
-        type_synonym = type(TOTAL_DIC[list(TOTAL_DIC.keys())[0]][0])
+
+        # Get the first key where the value is not None and has at least one element
+        valid_value_keys = [key for key in TOTAL_DIC if TOTAL_DIC[key] and TOTAL_DIC[key][0] is not None]
+
+        if not valid_value_keys:
+            raise ValueError("No valid value keys found in TOTAL_DIC with non-None values.")
+
+        # Extract the first valid key's first value to determine type
+        type_synonym = type(TOTAL_DIC[valid_value_keys[0]][0])
+
         if type_synonym == str:
             type_synonym = "TEXT"
         elif type_synonym == int:
             type_synonym = "INTEGER"
         else:
             raise TypeError(f"Unexpected type: {type_synonym}, expected str or int.")
+
 
 
         # Create the translation table if it doesn't exist
@@ -184,17 +199,28 @@ def list_semantics_aux(input_list):
             #Figure out the binding by giving out a list of lists    
             # response = llm_json(total_prompt, response_type=list[bool])
 
-            answer,temp_meta=ask_llm(total_prompt,return_metadata=True)
-            _=add_metadata(temp_meta,usage_metadata_row)
-            response, temp_meta = llm_json(f"For this question \n{total_prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], return_metadata=True)  # Expect a list of booleans back
-            _=add_metadata(temp_meta,usage_metadata_row)
-            #Check if response has same length
-            if len(response)!=len(temp_list):
+            while True:
+                answer, temp_meta = ask_llm(total_prompt, return_metadata=True)
+                _ = add_metadata(temp_meta, usage_metadata_row)
+
+                response, temp_meta = llm_json(
+                    f"For this question \n{total_prompt} \n The following answer was given {answer}. Return the necessary answer whether this question is true or False",
+                    response_type=list[bool],
+                    return_metadata=True
+                )  # Expect a list of booleans back
+                
+                _ = add_metadata(temp_meta, usage_metadata_row)
+
+                # Check if response has the same length as temp_list
+                if len(response) == len(temp_list):
+                    break  # Exit loop if lengths match
+
+                # If lengths do not match, print error and retry
                 print("Error")
                 print("The response and the temp_list have different lengths")
                 print(f"The response is {response}")
                 print(f"The temp_list is {temp_list}")
-                break
+
 
             #Retrieve the relevant items
             relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
@@ -216,7 +242,7 @@ def list_semantics_aux(input_list):
 
             
             #Appen to final dictionary please:
-            semantic_dic[outer_list[-2]] = soft_binding_dic
+            semantic_dic[outer_list[-2]+ "_comparison_"+outer_list[-1]] = soft_binding_dic
 
             #Adding for List:
             for i in relevant_items:
@@ -252,7 +278,7 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
     #Create and populate the translation table
     semantic_rows=[]
     for key in semantic_dic.keys():
-        key_new = re.sub(r"[\s'.;=<>!]", "", key) + "_table"
+        key_new = re.sub(r"[\s'.;=<>!%]", "", key) + "_table"
         create_and_populate_translation_table(semantic_dic[key], key_new)
         semantic_rows.append(key_new)
 

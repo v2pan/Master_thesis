@@ -87,7 +87,7 @@ def process_list_where(input_list):
                 for item in lists:
                     sublist.append(item)
                 processed_list.append(sublist)
-            return 
+             
         
     else:
         raise ValueError("Input must be a list of lists or tuples")
@@ -238,15 +238,15 @@ def comparison_logic(result_dic, target_instance):
             error_cnt["initial_sql_query_join"]+=1
         elif not compare_semantic_join(target_instance["semantic_list_join"], data["semantic_list_join"]):
             error_cnt["semantic_list_join"]+=1
-        elif evaluate_results( [tuple(i) for i in result_join_target],result_join_data, boolean=True) and semantic_list_join[0] is not None:
+        elif result_join_target is not None and  evaluate_results( [tuple(i) for i in result_join_target],result_join_data, boolean=True) and semantic_list_join[0] is not None:
             error_cnt["result_join"]+=1
         elif target_initial_query_result_where!=initial_query_result_where:
             error_cnt["initial_sql_query_where"]+=1
         elif not compare_lists_of_lists(process_list_where(target_instance["semantic_list_where"]), process_list_where(data["semantic_list_where"])):
             error_cnt["semantic_list_where"]+=1
-        elif not evaluate_results([tuple(i) for i in target_instance["result_where"]], data["result_where"], boolean=True):
-            
-            error_cnt["result_where"]+=1
+        elif target_instance["result_where"] is not None:
+            if not evaluate_results([tuple(i) for i in target_instance["result_where"]], data["result_where"], boolean=True):
+                error_cnt["result_where"]+=1
     
         print(f"The error count is {error_cnt}")
 
@@ -396,12 +396,13 @@ def evaluation_pipeline(queries):
 
 
 
-#How many runs per expression, Done everything
+# How many runs per expression, Done everything
 RUNS=3
 queries= [i for i, _ in test_cases]
 
-#3 DONE, #2 DONE
-index=[4]
+#0 Done, #1 Done ,#2 DONE,#3 DONE, #4 Done, #5 Done, #6 Done, #7 Done, #8 DONE,#9 Done, #10 DONE, #11 Done, #12 Done, #13 DONE, #15 DONE, #16 DONE, #17 DONE, #18 DONE
+
+index=[8]
 new_queries=[]
 for i in index:
     new_queries.append(queries[i])

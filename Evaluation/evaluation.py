@@ -23,9 +23,14 @@ def evaluate_results(expected, actual,boolean=False):
     expected_frozensets = {frozenset(t) for t in expected}
     actual_frozensets = {frozenset(t) for t in actual}
 
-    tp = len(expected_frozensets.intersection(actual_frozensets))  # True positives
-    fp = len(actual_frozensets - expected_frozensets)  # False positives
-    fn = len(expected_frozensets - actual_frozensets)  # False negatives
+    # tp = len(expected_frozensets.intersection(actual_frozensets))  # True positives
+    # fp = len(actual_frozensets - expected_frozensets)  # False positives
+    # fn = len(expected_frozensets - actual_frozensets)  # False negatives
+    #Adjusted for supersets
+    tp = sum(any(actual >= expected for actual in actual_frozensets) for expected in expected_frozensets)  # True positives
+    fp = len([actual for actual in actual_frozensets if not any(actual >= expected for expected in expected_frozensets)])  # False positives
+    fn = len(expected_frozensets - {expected for expected in expected_frozensets if any(actual >= expected for actual in actual_frozensets)})  # False negatives
+
 
     accuracy = (tp) / (tp + fp + fn) if (tp + fp + fn) > 0 else 0  # Avoid division by zero
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0  # Avoid division by zero

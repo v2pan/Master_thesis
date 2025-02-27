@@ -196,10 +196,13 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
                     return initial_sql_query, usage_metadata_join
 
     semantic_rows = []
+    tmp_count=0
     for key in  new_dic.keys():
-        key_new = re.sub(r"[\s'.;=<>!]", "", key)+"_table"
+        key_new = re.sub(r"[\s'.;=<>!%]", "", key)+"_table"
         create_and_populate_translation_table(new_dic[key], key_new)
-        semantic_rows.append(key_new)
+        if semantic_dic[tmp_count]!={}:
+            semantic_rows.append(key_new)
+        tmp_count+=1
 
 
     #Create the binding string for, necessary for multiple JOINs
@@ -218,6 +221,10 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
             Output: SELECT * FROM students 
             INNER JOIN studentsiclassid_table ON students.class_id = studentsiclassid_table.word
             INNER JOIN classes ON studentsiclassid_table.synonym = classes.id;
+            Input: sql: SELECT * FROM students_table INNER JOIN teachers ON students_table.id = teachers.id INNER JOIN courses ON students_table.id = courses.id; binding: ['students_tableidteachersid_table']  
+            Output:  SELECT *  FROM students_table  INNER JOIN students_tableidteachersid_table ON students_table.id = students_tableidteachersid_table.word  
+            INNER JOIN teachers ON students_tableidteachersid_table.synonym = teachers.id  
+            INNER JOIN courses ON students_table.id = courses.id;  
             Input: sql:{initial_sql_query}; binding: {semantic_rows};
             Output:'''
     
@@ -228,11 +235,10 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
             Output: SELECT * FROM employees 
             INNER JOIN employeesidepartmentsid_table ON employees.department_id = employeesidepartmentsid_table.word
             INNER JOIN departments ON employeesidepartmentsid_table.synonym = departments.id;
-            Input sql: SELECT employees.fullname, departments.dept_name FROM departments JOIN employees ON departments.id  = employees.department_id; binding: {{'Acme Corp': ['Acme Corp'], 'Sales Dep': ['Sales Department'], 'Engeneering': ['Engineering']}}; order: The key belongs to departments.id, The values belong to employees.department_id.
-            Input: SELECT * FROM students INNER JOIN classes ON students.class_id = classes.id;binding: studentsiclassid_table
-            Output: SELECT * FROM students 
-            INNER JOIN studentsiclassid_table ON students.class_id = studentsiclassid_table.word
-            INNER JOIN classes ON studentsiclassid_table.synonym = classes.id;
+            Input: sql: SELECT * FROM students_table INNER JOIN teachers ON students_table.id = teachers.id INNER JOIN courses ON students_table.id = courses.id; binding: ['students_tableidteachersid_table']  
+            Output:  SELECT *  FROM students_table  INNER JOIN students_tableidteachersid_table ON students_table.id = students_tableidteachersid_table.word  
+            INNER JOIN teachers ON students_tableidteachersid_table.synonym = teachers.id  
+            INNER JOIN courses ON students_table.id = courses.id;  
             Input: sql:{initial_sql_query}; binding: {semantic_rows};
             Output:'''
     

@@ -1,10 +1,7 @@
-from Main.combined_pipeline import combined_pipeline
-from Utilities.database import query_database
-from Evaluation.evaluation import test_cases, evaluate_results
+from Evaluation.test_evaluation import compare_lists_of_lists, process_list_where
 
-# combined_pipeline('''∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z))''')
-data=[(1, 'Pierre', 20, 1, 'bill', 'chien', 'chien'), (3, 'Diego', 15, 3, 'chris', 'dog', 'dog'), (4, 'Marcel', 11, 4, 'juan', 'perro', 'perro')]
-target=[[3, 'Diego', 15, 3, 'chris', 'dog'], [4, 'Marcel', 11, 4, 'juan', 'perro'], [1, 'Pierre', 20, 1, 'bill', 'chien']]
-
-#[tuple(i) for i in target_instance["output"]]
-print(evaluate_results([tuple(i) for i in target], data,boolean=True))
+target = [[('Peter',), "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"],[('ten',), ('11',), "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"] ]
+data = [[('Peter',), "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"],[ ('ten',), ('11',), "WHERE doctors.name = 'Peter' AND doctors.patients_pd < 12;"] ]
+target_list=process_list_where(target)
+data_list=process_list_where(data)
+print(compare_lists_of_lists(target_list, data_list))
