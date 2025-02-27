@@ -35,11 +35,13 @@ def compare_semantics_in_list(input_list,order):
         result_list (list of lists): A list where each sublist contains semantically equivalent expressions.
     """
     total_dic= {}
+    dict_list = []
     #Iteration over all JOINs
     counter=0
     for outer_list in input_list:
         if isinstance(outer_list[0], list) and isinstance(outer_list[-1], list):
             soft_binding_dic ={}
+            dict={}
             temp_list1 = outer_list[0]
             temp_list2 = outer_list[-1]
 
@@ -125,6 +127,9 @@ def compare_semantics_in_list(input_list,order):
                         soft_binding_dic[item_str] =[] 
                         for i in relevant_items:
                             soft_binding_dic[item_str].append(i)
+
+                    #Add to semantic list for comparison
+                    dict[item_str] = relevant_items
                     
 
                 print(f"The key belongs to {order[counter][0]}")
@@ -133,14 +138,18 @@ def compare_semantics_in_list(input_list,order):
                 total_dic[expression]= soft_binding_dic
                 #Increase counter
                 counter+=1
+
+                #Semantic list
+                dict_list.append(dict)
             else:
                 expression=re.sub(r"[\s'.;=]", "", outer_list[-2])
                 total_dic[expression]= soft_binding_dic
+                dict_list.append(dict)
          
 
-    return total_dic, order
+    return dict_list, order, total_dic
 
-def join_pipeline_aux(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False):
+def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False):
 
 
 
@@ -155,8 +164,8 @@ def join_pipeline_aux(initial_sql_query, return_query=False, evaluation=False, f
     new_list = execute_queries_on_conditions(join_conditions)
     print(new_list)
     #TODO: Multiple dictinoaries for multiple JOINs
-    semantic_dic, order= compare_semantics_in_list(new_list, order)
-    print(semantic_dic)
+    semantic_dic, order, new_dic= compare_semantics_in_list(new_list, order)
+    print( new_dic)
     print(order)
 
     #If no element are present, no need to rewrite the JOIN condition, return as it was
@@ -187,7 +196,7 @@ def join_pipeline_aux(initial_sql_query, return_query=False, evaluation=False, f
                     return initial_sql_query, usage_metadata_join
 
     semantic_rows = []
-    for key in semantic_dic.keys():
+    for key in  new_dic.keys():
         create_and_populate_translation_table(semantic_dic[key], key)
         semantic_rows.append(key+"_table")
 
@@ -213,7 +222,7 @@ def join_pipeline_aux(initial_sql_query, return_query=False, evaluation=False, f
     
     #If multiple JOINs are present, the prompt is different, different problem as important what is substituted by what
     else:
-        final_prompt=final_prompt=f''' Extend the SQL query by the following translation table. 
+        final_prompt=f''' Extend the SQL query by the following translation table. 
             Input sql: SELECT * FROM employees INNER JOIN departments ON employees.department_id = departments.id; binding: employeesidepartmentsid_table
             Output: SELECT * FROM employees 
             INNER JOIN employeesidepartmentsid_table ON employees.department_id = employeesidepartmentsid_table.word

@@ -294,7 +294,7 @@ def error_logic(loaded_dictionary, queries):
                         
             #GET results from the 
             try:
-                initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output, tmp_metadata =combined_pipeline(query=query, evaluation=True)
+                initial_sql_query_join, semantic_list_join, result_join, initial_sql_query_where, semantic_list_where, result_where, output, tmp_metadata =combined_pipeline(query=query, evaluation=True, aux=True)
             except QueryExecutionError as e:
                 print("Exception has occured, when executing on database")
                 continue
@@ -354,7 +354,7 @@ def error_logic(loaded_dictionary, queries):
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
 
-        modelname= "gemini-2.0-flash"
+        modelname= "gemini-2.0-flash_tranlsation"
         append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_" + modelname + ".txt")
 
         #Work with metadata

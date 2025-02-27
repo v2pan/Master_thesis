@@ -17,7 +17,7 @@ from Evaluation.evaluation import evaluate_results, test_cases
 max_retries = 30
 retry_delay = 60
 
-path= os.path.join(os.getcwd(),"temporary", "total_test")
+path= os.path.join(os.getcwd(),"temporary", "total_test_transl")
 
 #Appending to JSON file 
 def append_to_json(output, filepath):

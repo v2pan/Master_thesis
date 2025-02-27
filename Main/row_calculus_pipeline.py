@@ -448,45 +448,6 @@ def initial_query(query,context):
 
 #MAIN FUNCTION
 def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=False):
-    
-    # #Get context
-    # retries=4
-    # count=0
-    # while count<retries:
-    #     tables = get_relevant_tables(query)
-        
-    #     if tables is not None:
-    #         break
-    #     else:
-    #         count+=1
-
-    # if tables is None:
-    #     return None
-    
-
-    # print(f"The relevant tables are {tables}")
-    # context = get_context(tables)
-
-    # #Optional, if were to use JSON files
-    # #Gets context by reading JSON files
-    # #context= get_context_json(tables)
-
-    # print(f"The context is {context}")
-    # print(f"The query is {query}")
-
-    # #Used for relational calculus
-    # #response, temp_meta = ask_llm(f"Convert the following query to SQL. Write this query without using the AS: : {query}. Do not use subqueries, but instead use INNER JOINS. Don't rename any of the tables in the query. For every colum reference the respective table. Do not use the Keyword CAST. The structure of the database is the following: {context}.", True,max_token=1000)
-
-    # #Used for predicate calculus, selecting all rows
-    
-    # response, temp_meta = initial_query(query,context)
-    
-    # #Update the metadata
-    # add_metadata(temp_meta)
-
-    # #Extract the SQL query from the response
-    # initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
-    # print(f"The SQL query is: {initial_sql_query}")
 
 
     #Metadata to keep track of use set so 0

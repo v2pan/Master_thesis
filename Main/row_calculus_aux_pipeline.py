@@ -95,7 +95,7 @@ def list_semantics_aux(input_list):
     - semantic_list (list of lists): A list of lists where each sublist contains expressions with the same semantic meaning.
     """
     semantic_dic = {}  # Store the results
-
+    semantic_list = []
     #For duplicate elimination
     from Main.combined_pipeline import TOTAL_DIC
     
@@ -152,7 +152,8 @@ def list_semantics_aux(input_list):
 
             # Compare the string with the items in the list using llm_json
             soft_binding_dic = {}
-            #
+            # Compare the string with the items in the list using llm_json
+            soft_binding_list = []
 
             #Final prompt with list
             #total_prompt="Answer the following questions with True or False." # Change in connection with bakery Fahrenheit/Celcius example
@@ -212,15 +213,25 @@ def list_semantics_aux(input_list):
             
             #Appen to final dictionary please:
             semantic_dic[outer_list[-2]] = soft_binding_dic
+
+            #Adding for List:
+            for i in relevant_items:
+                soft_binding_list.append(i)
+
+            #Add the where clause
+            soft_binding_list.append(outer_list[-2]) 
+            # If there are any items that have the same meaning, add temp_string and the matching items to the result list
+            if soft_binding_list:
+                semantic_list.append(soft_binding_list)
     
-    return semantic_dic
+    return semantic_dic, semantic_list
 
 
 
 
 
 #MAIN FUNCTION
-def row_calculus_pipeline_aux(initial_sql_query, evaluation=False, return_metadata=False):
+def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=False):
     
   
 
@@ -231,8 +242,8 @@ def row_calculus_pipeline_aux(initial_sql_query, evaluation=False, return_metada
     #INNER LOGIC: Analyze SQL query, retrieve necessary items to retrieve, compare them using the LLM
     conditions = extract_where_conditions_sqlparse(initial_sql_query)
     query_results = execute_queries_on_conditions(conditions)
-    semantic_dic=list_semantics_aux(query_results)
-    print(f"The semantics list is {semantic_dic}")
+    semantic_dic, semantic_list=list_semantics_aux(query_results)
+    print(f"The semantics dic is {semantic_dic}")
 
     #Create and populate the translation table
     semantic_rows=[]
@@ -301,12 +312,12 @@ def row_calculus_pipeline_aux(initial_sql_query, evaluation=False, return_metada
     print(usage_metadata_row)
     if not return_metadata:
         if evaluation:
-            return initial_sql_query, semantic_dic, result
+            return initial_sql_query, semantic_list, result
         else:
             return result
     if return_metadata:
         if evaluation:
-            return initial_sql_query, semantic_dic, result, usage_metadata_row
+            return initial_sql_query, semantic_list, result, usage_metadata_row
         else:
             return result, usage_metadata_row
 

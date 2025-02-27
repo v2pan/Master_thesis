@@ -8,8 +8,8 @@ from Utilities.database import query_database, QueryExecutionError
 from Utilities.llm import RessourceError, add_metadata
 import time
 from Utilities.remove_duplicate_rows import remove_duplicate_rows
-from Main.row_calculus_aux_pipeline import row_calculus_pipeline_aux
-from Main.join_pipeline_aux import join_pipeline_aux
+from Main.row_calculus_aux_pipeline import row_calculus_pipeline
+from Main.join_pipeline_aux import join_pipeline
 
 retry_delay = 60
 #Analyze whether JOIN or WHERE clause appear, retrieve the relevant ones
@@ -49,7 +49,17 @@ def analyze_sql_query(sql_query):
 TOTAL_DIC = {}
 
 #Combination of both pipeline, adjustment was necessary
-def combined_pipeline(query, evaluation=False):
+def combined_pipeline(query, evaluation=False, aux=False):
+
+    import sys
+    sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+    if aux==False:
+        from Main.join_pipeline import join_pipeline
+        from Main.row_calculus_pipeline import row_calculus_pipeline
+    elif aux==True:
+        from Main.join_pipeline_aux import join_pipeline
+        from Main.row_calculus_aux_pipeline import row_calculus_pipeline
+        
 
     #Metadata to keep track of use 
     global TOTAL_DIC  # Declare it as global to modify it
@@ -130,7 +140,6 @@ def combined_pipeline(query, evaluation=False):
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
             output_query, temp_meta=join_pipeline(initial_sql_query, forward=True, return_metadata=True)
             add_metadata(temp_meta, usage_metadata_total)
-            #!!!Changed, Important to keep in mind
             output, temp_meta=row_calculus_pipeline(output_query, return_metadata=True)
             add_metadata(temp_meta, usage_metadata_total)
 
@@ -143,7 +152,7 @@ def combined_pipeline(query, evaluation=False):
         elif join_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
             # output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
-            output, temp_meta=join_pipeline_aux(initial_sql_query, return_metadata=True)
+            output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
             add_metadata(temp_meta, usage_metadata_total)
         else:
             print(f"The \n{initial_sql_query}\n has no WHERE or JOIN clause.")
