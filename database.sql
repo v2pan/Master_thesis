@@ -76,6 +76,41 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: airport; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.airport (
+    airportname text,
+    city text
+);
+
+
+ALTER TABLE public.airport OWNER TO postgres;
+
+--
+-- Name: airport_abrev; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.airport_abrev (
+    name text
+);
+
+
+ALTER TABLE public.airport_abrev OWNER TO postgres;
+
+--
+-- Name: airport_transl; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.airport_transl (
+    fullname text,
+    shortname text
+);
+
+
+ALTER TABLE public.airport_transl OWNER TO postgres;
+
+--
 -- Name: albums; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -142,6 +177,53 @@ CREATE TABLE public.bakery_sales (
 ALTER TABLE public.bakery_sales OWNER TO postgres;
 
 --
+-- Name: bakery_salesitemoven_temperatureitem_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.bakery_salesitemoven_temperatureitem_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.bakery_salesitemoven_temperatureitem_table OWNER TO postgres;
+
+--
+-- Name: chemical; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.chemical (
+    name text NOT NULL,
+    melting_point real
+);
+
+
+ALTER TABLE public.chemical OWNER TO postgres;
+
+--
+-- Name: chemical_abrev; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.chemical_abrev (
+    name_abrev text
+);
+
+
+ALTER TABLE public.chemical_abrev OWNER TO postgres;
+
+--
+-- Name: chemical_translations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.chemical_translations (
+    full_name text,
+    short_name text
+);
+
+
+ALTER TABLE public.chemical_translations OWNER TO postgres;
+
+--
 -- Name: children_table; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -152,6 +234,18 @@ CREATE TABLE public.children_table (
 
 
 ALTER TABLE public.children_table OWNER TO postgres;
+
+--
+-- Name: children_tableidfathersid_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.children_tableidfathersid_table (
+    word integer NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.children_tableidfathersid_table OWNER TO postgres;
 
 --
 -- Name: doctors; Type: TABLE; Schema: public; Owner: postgres
@@ -196,7 +290,7 @@ ALTER TABLE public.fathers OWNER TO postgres;
 
 CREATE TABLE public.followers (
     id integer,
-    following text,
+    media_name text,
     adult boolean
 );
 
@@ -214,6 +308,30 @@ CREATE TABLE public.influencers (
 
 
 ALTER TABLE public.influencers OWNER TO postgres;
+
+--
+-- Name: influencersclickspublication_clicksclicks_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.influencersclickspublication_clicksclicks_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.influencersclickspublication_clicksclicks_table OWNER TO postgres;
+
+--
+-- Name: influencersmedia_namefollowersmedia_name_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.influencersmedia_namefollowersmedia_name_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.influencersmedia_namefollowersmedia_name_table OWNER TO postgres;
 
 --
 -- Name: mothers; Type: TABLE; Schema: public; Owner: postgres
@@ -251,6 +369,18 @@ CREATE TABLE public.movies_personal (
 
 
 ALTER TABLE public.movies_personal OWNER TO postgres;
+
+--
+-- Name: moviesmoviemovies_personalmovie_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.moviesmoviemovies_personalmovie_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.moviesmoviemovies_personalmovie_table OWNER TO postgres;
 
 --
 -- Name: oven_temperature; Type: TABLE; Schema: public; Owner: postgres
@@ -330,6 +460,78 @@ CREATE TABLE public.songs (
 ALTER TABLE public.songs OWNER TO postgres;
 
 --
+-- Name: state_capitol; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.state_capitol (
+    name text,
+    capitol text
+);
+
+
+ALTER TABLE public.state_capitol OWNER TO postgres;
+
+--
+-- Name: state_capitol_short; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.state_capitol_short (
+    name text,
+    capitol text
+);
+
+
+ALTER TABLE public.state_capitol_short OWNER TO postgres;
+
+--
+-- Name: state_trans; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.state_trans (
+    state_abrev text,
+    state text
+);
+
+
+ALTER TABLE public.state_trans OWNER TO postgres;
+
+--
+-- Name: state_trans_short; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.state_trans_short (
+    state_abrev text,
+    state text
+);
+
+
+ALTER TABLE public.state_trans_short OWNER TO postgres;
+
+--
+-- Name: states; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.states (
+    name text,
+    population integer
+);
+
+
+ALTER TABLE public.states OWNER TO postgres;
+
+--
+-- Name: states_short; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.states_short (
+    name text,
+    population text
+);
+
+
+ALTER TABLE public.states_short OWNER TO postgres;
+
+--
 -- Name: tennis_players; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -380,6 +582,18 @@ CREATE TABLE public.tournaments (
 ALTER TABLE public.tournaments OWNER TO postgres;
 
 --
+-- Name: translation_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.translation_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.translation_table OWNER TO postgres;
+
+--
 -- Name: weather; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -394,6 +608,18 @@ CREATE TABLE public.weather (
 ALTER TABLE public.weather OWNER TO postgres;
 
 --
+-- Name: weatherdatewebsite_visitsdate_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.weatherdatewebsite_visitsdate_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.weatherdatewebsite_visitsdate_table OWNER TO postgres;
+
+--
 -- Name: website_visits; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -405,6 +631,336 @@ CREATE TABLE public.website_visits (
 
 
 ALTER TABLE public.website_visits OWNER TO postgres;
+
+--
+-- Name: whereanimalownercategorydog_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.whereanimalownercategorydog_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.whereanimalownercategorydog_table OWNER TO postgres;
+
+--
+-- Name: whereanimalownercategorydogoranimalownercategoryisnull_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.whereanimalownercategorydogoranimalownercategoryisnull_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.whereanimalownercategorydogoranimalownercategoryisnull_table OWNER TO postgres;
+
+--
+-- Name: whereanimalownercategoryisnulloranimalownercategorydog_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.whereanimalownercategoryisnulloranimalownercategorydog_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.whereanimalownercategoryisnulloranimalownercategorydog_table OWNER TO postgres;
+
+--
+-- Name: wherebakery_salesquantity55_comparison_55_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.wherebakery_salesquantity55_comparison_55_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.wherebakery_salesquantity55_comparison_55_table OWNER TO postgres;
+
+--
+-- Name: wherechildren_tablechildren1_comparison_1_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.wherechildren_tablechildren1_comparison_1_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.wherechildren_tablechildren1_comparison_1_table OWNER TO postgres;
+
+--
+-- Name: wheredoctorsnamepeteranddoctorspatients_pd12_comparison_12_tabl; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.wheredoctorsnamepeteranddoctorspatients_pd12_comparison_12_tabl (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.wheredoctorsnamepeteranddoctorspatients_pd12_comparison_12_tabl OWNER TO postgres;
+
+--
+-- Name: wheredoctorsnamepeteranddoctorspatients_pd12_comparison_peter_t; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.wheredoctorsnamepeteranddoctorspatients_pd12_comparison_peter_t (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.wheredoctorsnamepeteranddoctorspatients_pd12_comparison_peter_t OWNER TO postgres;
+
+--
+-- Name: wheredoctorsnamepeteranddoctorspatients_pd12_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.wheredoctorsnamepeteranddoctorspatients_pd12_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.wheredoctorsnamepeteranddoctorspatients_pd12_table OWNER TO postgres;
+
+--
+-- Name: wheredoctorspatients_pd12_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.wheredoctorspatients_pd12_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.wheredoctorspatients_pd12_table OWNER TO postgres;
+
+--
+-- Name: whereinfluencersclicks500_comparison_500_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.whereinfluencersclicks500_comparison_500_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.whereinfluencersclicks500_comparison_500_table OWNER TO postgres;
+
+--
+-- Name: wheremovies_personalpersonal_rating70_comparison_70_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.wheremovies_personalpersonal_rating70_comparison_70_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.wheremovies_personalpersonal_rating70_comparison_70_table OWNER TO postgres;
+
+--
+-- Name: whereoven_temperaturetemperature200°c_comparison_200°c_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."whereoven_temperaturetemperature200°c_comparison_200°c_table" (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public."whereoven_temperaturetemperature200°c_comparison_200°c_table" OWNER TO postgres;
+
+--
+-- Name: wheretennis_playersbornjanuary_comparison_january_table; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.wheretennis_playersbornjanuary_comparison_january_table (
+    word text NOT NULL,
+    synonym text NOT NULL
+);
+
+
+ALTER TABLE public.wheretennis_playersbornjanuary_comparison_january_table OWNER TO postgres;
+
+--
+-- Data for Name: airport; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.airport (airportname, city) FROM stdin;
+Denver International Airport	Denver
+Leonardo da Vinci Airport	Rome
+Barcelona Airport	Barcelona
+O'Hare International Airport	Chicago
+Munich Airport	Munich
+Phoenix Sky Harbor International Airport	Phoenix
+John F. Kennedy International Airport	New York
+Minneapolis-Saint Paul International Airport	Minneapolis
+Atatürkü International Airport	Istanbul
+Dubai International Airport	Dubai
+Los Angeles International Airport	Los Angeles
+London Gatwick Airport	London
+Toronto Pearson International Airport	Toronto
+Paris Charles de Gaulle Airport	Paris
+Shanghai Pudong International Airport	Shanghai
+Singapore Changi Airport	Singapore
+Seoul Incheon International Airport	Seoul
+London Heathrow Airport	London
+Paris-Orly Airport	Paris
+Frankfurt Airport	Frankfurt
+Newark Liberty International Airport	Newark
+Charlotte Douglas International Airport	Charlotte
+Dublin Airport	Dublin
+McCarran International Airport	Las Vegas
+Dallas-Fort Worth International Airport	Dallas
+Mexico City International Airport	Mexico City
+Narita International Airport	Tokyo
+Indira Gandhi International Airport	New Delhi
+Tokyo International Airport	Tokyo
+Madrid-Barajas Airport	Madrid
+Chhatrapati Shivaji International Airport	Mumbai
+Hartsfield-Jackson Atlanta International Airport	Atlanta
+Washington Dulles International Airport	Washington D.C.
+Suvarnabhumi Airport	Bangkok
+Soekarno-Hatta International Airport	Jakarta
+Sydney Airport	Sydney
+Logan International Airport	Boston
+Detroit Metropolitan Wayne County Airport	Detroit
+Orlando International Airport	Orlando
+Kuala Lumpur International Airport	Kuala Lumpur
+George Bush Intercontinental Airport	Houston
+Melbourne Airport	Melbourne
+Guangzhou Baiyun International Airport	Guangzhou
+Hong Kong International Airport	Hong Kong
+Beijing Capital International Airport	Beijing
+Miami International Airport	Miami
+San Francisco International Airport	San Francisco
+Seattle-Tacoma International Airport	Seattle
+Philadelphia International Airport	Philadelphia
+Amsterdam Airport Schiphol	Amsterdam
+\.
+
+
+--
+-- Data for Name: airport_abrev; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.airport_abrev (name) FROM stdin;
+PVG
+LAX
+CDG
+CLT
+JFK
+NRT
+DFW
+MUC
+SYD
+BOM
+BKK
+KUL
+MIA
+HKG
+AMS
+BOS
+BCN
+IAD
+SEA
+DXB
+MAD
+IAH
+CAN
+FCO
+MEL
+SIN
+YYZ
+LGW
+ORD
+MEX
+DTW
+DUB
+PHL
+LHR
+ORY
+SFO
+PHX
+EWR
+CGK
+DEL
+MSP
+IST
+DEN
+FRA
+ICN
+PEK
+MCO
+ATL
+HND
+LAS
+\.
+
+
+--
+-- Data for Name: airport_transl; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.airport_transl (fullname, shortname) FROM stdin;
+Hartsfield-Jackson Atlanta International Airport	ATL
+O'Hare International Airport	ORD
+London Heathrow Airport	LHR
+Tokyo International Airport	HND
+Paris Charles de Gaulle Airport	CDG
+Los Angeles International Airport	LAX
+Dallas-Fort Worth International Airport	DFW
+Beijing Capital International Airport	PEK
+Frankfurt Airport	FRA
+Denver International Airport	DEN
+Madrid-Barajas Airport	MAD
+Hong Kong International Airport	HKG
+John F. Kennedy International Airport	JFK
+Amsterdam Airport Schiphol	AMS
+McCarran International Airport	LAS
+George Bush Intercontinental Airport	IAH
+Phoenix Sky Harbor International Airport	PHX
+Suvarnabhumi Airport	BKK
+Singapore Changi Airport	SIN
+Dubai International Airport	DXB
+San Francisco International Airport	SFO
+Orlando International Airport	MCO
+Newark Liberty International Airport	EWR
+Detroit Metropolitan Wayne County Airport	DTW
+Leonardo da Vinci Airport	FCO
+Charlotte Douglas International Airport	CLT
+Munich Airport	MUC
+London Gatwick Airport	LGW
+Miami International Airport	MIA
+Minneapolis-Saint Paul International Airport	MSP
+Narita International Airport	NRT
+Guangzhou Baiyun International Airport	CAN
+Sydney Airport	SYD
+Toronto Pearson International Airport	YYZ
+Seattle-Tacoma International Airport	SEA
+Soekarno-Hatta International Airport	CGK
+Philadelphia International Airport	PHL
+Barcelona Airport	BCN
+Seoul Incheon International Airport	ICN
+Shanghai Pudong International Airport	PVG
+Kuala Lumpur International Airport	KUL
+AtatÃ¼rk International Airport	IST
+Mexico City International Airport	MEX
+Paris-Orly Airport	ORY
+Logan International Airport	BOS
+Melbourne Airport	MEL
+Chhatrapati Shivaji International Airport	BOM
+Washington Dulles International Airport	IAD
+Dublin Airport	DUB
+Indira Gandhi International Airport	DEL
+\.
+
 
 --
 -- Data for Name: albums; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -460,6 +1016,644 @@ Pain au Chocolat	3 dozen	15.00 per dozen
 
 
 --
+-- Data for Name: bakery_salesitemoven_temperatureitem_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.bakery_salesitemoven_temperatureitem_table (word, synonym) FROM stdin;
+Croissants	Croissants
+Baguettes	Baguettes
+Macarons	Macarons
+Pain au Chocolat	Pain au Chocolat
+\.
+
+
+--
+-- Data for Name: chemical; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.chemical (name, melting_point) FROM stdin;
+Methane	-182.5
+Water	0
+Lead (IV) Bromide	380
+Copper (II) Nitrate	565
+Zince Sulfide	1180
+Iron (II) Sulfide	1190
+Ammonium Sulfide	-80
+Copper (II) sulfate	1100
+Silver Chromate	765
+Magnesium Chromate	1000
+Carbon monoxide	-205
+Silver Hydroxide	220
+Ammonium Bromide	-93
+Iron (II) Acetate	260
+Mercury (I) Acetate	200
+Potassium Carbonate	890
+Calcium Sulfate	1450
+Iron (II) Sulfate	870
+Potassium Iodide	681
+Zinc Chloride	778
+Barium Hydroxide	730
+Calcium Carbonate	825
+Iron (III) Phosphate	1250
+Lead (II) Nitrate	243
+Zinc Acetate	310
+Mercury (II) Nitrate	470
+Mercury (I) Chromate	380
+Ammonium Acetate	118
+Sodium Nitrate	308
+Calcium Sulfide	2550
+Lead (IV) Iodide	410
+Lead (IV) Sulfate	800
+Aluminum Hydroxide	1300
+Mercury (I) Sulfide	600
+Iron (III) Iodide	575
+Potassium Nitrate	334
+Hydrogen sulfide	-85.5
+Mercury (II) Chromate	460
+Zinc Bromide	762
+Zinc Sulfate	1123
+Oxygen	-218.4
+Potassium Phosphate	600
+Barium Sulfate	1370
+Lead (IV) Sulfide	900
+Copper (II) Chromate	770
+Sodium Chromate	800
+Copper (II) Chloride	417
+Sodium Iodide	661
+Barium Sulfide	1800
+Lead (II) Hydroxide	280
+Aluminum Sulfide	1550
+Iron (II) Carbonate	850
+Mercury (II) Iodide	315
+Ammonium Phosphate	160
+Copper (II) Carbonate	400
+Lead (IV) Chromate	610
+Lead (IV) Hydroxide	300
+Iron (III) Nitrate	160
+Aluminum Chromate	1000
+Iron (III) Hydroxide	300
+Barium Nitrate	590
+Silver Sulfate	1000
+Silver Sulfide	1650
+Ammonium Carbonate	120
+Lead (II) Iodide	405
+Magnesium Acetate	115
+Aluminum Sulfate	650
+Lead (II) Chromate	870
+Lead (II) Chloride	501
+Sodium Phosphate	300
+Iron (II) Phosphate	785
+Calcium Acetate	330
+Sulfur dioxide	-75.5
+Magnesium Hydroxide	350
+Copper (II) Sulfide	1100
+Sodium Sulfide	890
+Iron (II) Chromate	640
+Copper (II) Phosphate	960
+Mercury (I) Phosphate	480
+Hydrogen fluoride	-83
+Iron (II) Chloride	677
+Calcium Bromide	772
+Calcium Chloride	772
+Silver Nitrate	212
+Chlorine	-101
+Mercury (I) Carbonate	320
+Calcium Chromate	800
+Nitrogen	-210
+Ammonia	-77.7
+Merucry (II) Chloride	270
+Iron (II) Nitrate	118
+Mercury (I) Iodide	320
+Iron (II) Bromide	650
+Copper (II) Sulfate	1100
+Aluminum Nitrate	205
+Sodium Sulfate	884
+Aluminum Carbonate	2200
+Aluminum Iodide	1200
+Lead (II) oxide	880
+Zinc Hydroxide	525
+Potassium Sulfate	1069
+Hydrogen iodide	-50.8
+Carbon dioxide	-78.5
+Sodium Carbonate	851
+Lead (II) Sulfide	1100
+Aluminum Phosphate	1280
+Mercury (I) Nitrate	170
+Calcium Hydroxide	580
+Copper (II) Bromide	430
+Barium Chromate	970
+Ethyne (acetylene)	-80.8
+Magnesium Phosphate	1250
+Silver Carbonate	230
+Ammonium Chloride	338
+Aluminun oxide	2072
+Merucry (I) Chloride	270
+Lead (IV) Nitrate	225
+Aluminum Chloride	193
+Ammonium Nitrate	169
+Sodium Bromide	755
+Lead (II) Carbonate	840
+Lead (IV) Phosphate	980
+Copper (II) Acetate	370
+Zinc Nitrate	250
+Barium Phosphate	980
+Potassium Chloride	770
+Potassium Sulfide	1100
+Potassium chloride	770
+Iron (II) Iodide	500
+Mercury (II) Bromide	285
+Potassium Acetate	302
+Lead (II) Acetate	290
+Iron (III) Chloride	315
+Iron (III) Chromate	615
+Potassium Chromate	398
+Hydrogen chloride	-114.2
+Silver Acetate	330
+Silver Phosphate	1700
+Potassium Hydroxide	360
+Sodium Acetate	325
+Copper (II) Iodide	420
+Merucry (I) Hydroxide	320
+Magnesium Bromide	710
+Sodium Chloride	801
+Calcium Nitrate	561
+Silver Bromide	432
+Aluminum Acetate	130
+Sodium chloride	801
+Lead (II) Phosphate	825
+Iodine chloride	27.2
+Aluminum Bromide	97.5
+Barium Carbonate	1360
+Iron (III) Acetate	160
+Mercury (II) Hydroxide	300
+Calcium Iodide	772
+Silver Chloride	455
+Magnesium Sulfate	1124
+Merucry (II) Sulfate	500
+Barium Acetate	300
+Barium Chloride	960
+Magnesium Chloride	712
+Zinc Chromate	930
+Mercury (II) Phosphate	490
+Iron (III) Bromide	200
+Nitrogen (IV) oxide	21.1
+Barium Bromide	690
+Magnesium Sulfide	2000
+Magnesium oxide	2852
+Barium Iodide	900
+Copper (II) Hydroxide	80
+Ethene (ethylene)	-169
+Ammonium Iodide	171
+Merucry (II) Acetate	420
+Zinc Phosphate	1000
+Calcium hydroxide	580
+Nitrogen (II) oxide	-90.8
+Hydrogen	-259.1
+Silver Iodide	652
+Mercury (II) Carbonate	390
+Mercury (I) Sulfate	500
+Zinc Iodide	419
+Iron (III) Sulfide	1100
+Magnesium Nitrate	255
+Iron (III) Sulfate	980
+Lead (II) Bromide	420
+Magnesium Carbonate	840
+Potassium Bromide	730
+Magnesium Iodide	630
+Ammonium Chromate	170
+Ammonium Sulfate	280
+Mercury (II) Sulfide	589
+Ethane	-88.6
+Lead (II) Sulfate	818
+Mercury (I) Bromide	200
+Lead (IV) Acetate	300
+Iron (III) Carbonate	1000
+Iron (II) Hydroxide	580
+Ammonium Hydroxide	-77.7
+Sodium Hydroxide	318
+Calcium Phosphate	1500
+Zinc Carbonate	1900
+\.
+
+
+--
+-- Data for Name: chemical_abrev; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.chemical_abrev (name_abrev) FROM stdin;
+CuS
+FeCO3
+Hg3PO4
+Pb(C2H3O2)2
+Al2S3
+Pb(C2H3O2)4
+FeI3
+FeI2
+FeSO4
+KCl
+CuBr2
+CaI2
+Fe(C2H3O2)2
+ZnCrO4
+Mg(OH)2
+AlPO4
+Fe2(SO4)3
+Fe3(PO4)2
+Pb3(PO4)2
+Pb3(PO4)4
+Fe(C2H3O2)3
+Mg(NO3)2
+KNO3
+HgI2
+ZnCO3
+CaCl2
+Ag2CrO4
+AlBr3
+CuSO4
+KC2H3O2
+HgBr2
+MgI2
+CO
+Ca3(PO4)2
+CH4
+(NH4)3PO4
+PbO
+MgCrO4
+AgOH
+PbS
+AgC2H3O2
+K2CrO4
+K2SO4
+AlI3
+FeBr2
+FeBr3
+Pb(CO3)2
+Al2O3
+NO2
+Al(C2H3O2)3
+ICl
+CuCO3
+PbSO4
+Pb(SO4)2
+K2CO3
+Al(OH)3
+HgCrO4
+Na2CO3
+MgCl2
+ZnSO4
+H2O
+Zn(C2H3O2)2
+H2S
+Fe(NO3)3
+Fe(NO3)2
+Cu(C2H3O2)2
+Zn(NO3)2
+Na2SO4
+PbI4
+Fe2S3
+PbI2
+AgI
+CuCrO4
+Cl2
+NaOH
+Ba(NO3)2
+ZnBr2
+Fe(OH)3
+BaBr2
+Fe(OH)2
+HCl
+Ba(OH)2
+FeCrO4
+NaI
+NH4C2H3O2
+FePO4
+PbBr2
+Ag3PO4
+PbBr4
+Zn(OH)2
+H2
+Cu(NO3)2
+Al2(CO3)3
+HF
+HI
+Ca(C2H3O2)2
+HgI
+Ca(OH)2
+(NH4)2CrO4
+(NH4)2CO3
+CuCl2
+Mg3(PO4)2
+HgS
+HgOH
+(NH4)2SO4
+MgCO3
+Zn2(PO4)2
+Hg2SO4
+Ba3(PO4)2
+AgBr
+Al2(SO4)3
+MgSO4
+HgNO3
+Ag2S
+CuI2
+CO2
+BaCO3
+Hg3(PO4)2
+AgNO3
+AgCl
+Na2S
+FeS
+BaSO4
+SO2
+AlCl3
+CaBr2
+(NH4)2S
+Hg(NO3)2
+KI
+NaC2H3O2
+Na2CrO4
+PbCO3
+C2H6
+Hg2CrO4
+C2H4
+BaCrO4
+KOH
+C2H2
+HgCl2
+ZnI2
+Ba(C2H3O2)2
+ZnS
+NH4OH
+FeCl3
+Ag2SO4
+FeCl2
+Al2(CrO4)3
+Cu3(PO4)2
+CaS
+Pb(NO3)4
+Pb(NO3)2
+Fe2(CrO4)3
+Pb(OH)4
+Pb(OH)2
+N2
+MgBr2
+NaBr
+NaNO3
+PbCrO4
+NH4Cl
+NH4NO3
+HgC2H3O2
+Ag2CO3
+BaI2
+NH3
+NaCl
+NO
+O2
+BaCl2
+NH4Br
+CaSO4
+Hg(C2H3O2)2
+HgCl
+Ca(NO3)2
+ZnCl2
+MgO
+CaCO3
+Hg2CO3
+BaS
+MgS
+CaCrO4
+Cu(OH)2
+Na3PO4
+Al(NO3)3
+Hg2S
+PbCl2
+Fe2(CO3)3
+Mg(C2H3O2)2
+NH4I
+HgBr
+K2S
+HgCO3
+K3PO4
+PbS2
+Hg(OH)2
+KBr
+HgSO4
+\.
+
+
+--
+-- Data for Name: chemical_translations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.chemical_translations (full_name, short_name) FROM stdin;
+Ammonia	NH3
+Carbon dioxide	CO2
+Carbon monoxide	CO
+Chlorine	Cl2
+Hydrogen chloride	HCl
+Hydrogen	H2
+Hydrogen sulfide	H2S
+Methane	CH4
+Nitrogen	N2
+Nitrogen (II) oxide	NO
+Oxygen	O2
+Sulfur dioxide	SO2
+Aluminum oxide	Al2O3
+Barium Sulfate	BaSO4
+Calcium hydroxide	Ca(OH)2
+Copper (II) sulfate	CuSO4
+Ethane	C2H6
+Ethene (ethylene)	C2H4
+Ethyne (acetylene)	C2H2
+Hydrogen fluoride	HF
+Hydrogen iodide	HI
+Iodine chloride	ICl
+Lead (II) oxide	PbO
+Magnesium oxide	MgO
+Nitrogen (II) oxide	NO
+Nitrogen (IV) oxide	NO2
+Potassium chloride	KCl
+Sodium chloride	NaCl
+Sulfur dioxide	SO2
+Water	H2O
+Aluminum Bromide	AlBr3
+Aluminum Carbonate	Al2(CO3)3
+Aluminum Chloride	AlCl3
+Aluminum Chromate	Al2(CrO4)3
+Aluminum Hydroxide	Al(OH)3
+Aluminum Iodide	AlI3
+Aluminum Nitrate	Al(NO3)3
+Aluminum Phosphate	AlPO4
+Aluminum Sulfate	Al2(SO4)3
+Aluminum Sulfide	Al2S3
+Ammonium Acetate	NH4C2H3O2
+Ammonium Bromide	NH4Br
+Ammonium Carbonate	(NH4)2CO3
+Ammonium Chloride	NH4Cl
+Ammonium Chromate	(NH4)2CrO4
+Ammonium Hydroxide	NH4OH
+Ammonium Iodide	NH4I
+Ammonium Nitrate	NH4NO3
+Ammonium Phosphate	(NH4)3PO4
+Ammonium Sulfate	(NH4)2SO4
+Ammonium Sulfide	(NH4)2S
+Barium Acetate	Ba(C2H3O2)2
+Barium Bromide	BaBr2
+Barium Carbonate	BaCO3
+Barium Chloride	BaCl2
+Barium Chromate	BaCrO4
+Barium Hydroxide	Ba(OH)2
+Barium Iodide	BaI2
+Barium Nitrate	Ba(NO3)2
+Barium Phosphate	Ba3(PO4)2
+Barium Sulfate	BaSO4
+Barium Sulfide	BaS
+Calcium Acetate	Ca(C2H3O2)2
+Calcium Bromide	CaBr2
+Calcium Carbonate	CaCO3
+Calcium Chloride	CaCl2
+Calcium Chromate	CaCrO4
+Calcium Hydroxide	Ca(OH)2
+Calcium Iodide	CaI2
+Calcium Nitrate	Ca(NO3)2
+Calcium Phosphate	Ca3(PO4)2
+Calcium Sulfate	CaSO4
+Calcium Sulfide	CaS
+Copper (II) Acetate	Cu(C2H3O2)2
+Copper (II) Bromide	CuBr2
+Copper (II) Carbonate	CuCO3
+Copper (II) Chloride	CuCl2
+Copper (II) Chromate	CuCrO4
+Copper (II) Hydroxide	Cu(OH)2
+Copper (II) Iodide	CuI2
+Copper (II) Nitrate	Cu(NO3)2
+Copper (II) Phosphate	Cu3(PO4)2
+Copper (II) Sulfate	CuSO4
+Copper (II) Sulfide	CuS
+Iron (II) Acetate	Fe(C2H3O2)2
+Iron (II) Bromide	FeBr2
+Iron (II) Carbonate	FeCO3
+Iron (II) Chloride	FeCl2
+Iron (II) Chromate	FeCrO4
+Iron (II) Hydroxide	Fe(OH)2
+Iron (II) Iodide	FeI2
+Iron (II) Nitrate	Fe(NO3)2
+Iron (II) Phosphate	Fe3(PO4)2
+Iron (II) Sulfate	FeSO4
+Iron (II) Sulfide	FeS
+Iron (III) Acetate	Fe(C2H3O2)3
+Iron (III) Bromide	FeBr3
+Iron (III) Carbonate	Fe2(CO3)3
+Iron (III) Chloride	FeCl3
+Iron (III) Chromate	Fe2(CrO4)3
+Iron (III) Hydroxide	Fe(OH)3
+Iron (III) Iodide	FeI3
+Iron (III) Nitrate	Fe(NO3)3
+Iron (III) Phosphate	FePO4
+Iron (III) Sulfate	Fe2(SO4)3
+Iron (III) Sulfide	Fe2S3
+Magnesium Acetate	Mg(C2H3O2)2
+Magnesium Bromide	MgBr2
+Magnesium Carbonate	MgCO3
+Magnesium Chloride	MgCl2
+Magnesium Chromate	MgCrO4
+Magnesium Hydroxide	Mg(OH)2
+Magnesium Iodide	MgI2
+Magnesium Nitrate	Mg(NO3)2
+Magnesium Phosphate	Mg3(PO4)2
+Magnesium Sulfate	MgSO4
+Magnesium Sulfide	MgS
+Mercury (I) Acetate	HgC2H3O2
+Mercury (I) Bromide	Hg2Br2
+Mercury (I) Carbonate	Hg2CO3
+Mercury (I) Chloride	Hg2Cl2
+Mercury (I) Chromate	Hg2CrO4
+Mercury (I) Hydroxide	Hg2(OH)2
+Mercury (I) Iodide	Hg2I2
+Mercury (I) Nitrate	Hg2(NO3)2
+Mercury (I) Phosphate	Hg3(PO4)2
+Mercury (I) Sulfate	Hg2SO4
+Mercury (I) Sulfide	Hg2S
+Mercury (II) Acetate	Hg(C2H3O2)2
+Mercury (II) Bromide	HgBr2
+Mercury (II) Carbonate	HgCO3
+Mercury (II) Chloride	HgCl2
+Mercury (II) Chromate	HgCrO4
+Mercury (II) Hydroxide	Hg(OH)2
+Mercury (II) Iodide	HgI2
+Mercury (II) Nitrate	Hg(NO3)2
+Mercury (II) Phosphate	Hg3(PO4)2
+Mercury (II) Sulfate	HgSO4
+Mercury (II) Sulfide	HgS
+Potassium Acetate	KC2H3O2
+Potassium Bromide	KBr
+Potassium Carbonate	K2CO3
+Potassium Chloride	KCl
+Potassium Chromate	K2CrO4
+Potassium Hydroxide	KOH
+Potassium Iodide	KI
+Potassium Nitrate	KNO3
+Potassium Phosphate	K3PO4
+Potassium Sulfate	K2SO4
+Potassium Sulfide	K2S
+Silver Acetate	AgC2H3O2
+Silver Bromide	AgBr
+Silver Carbonate	Ag2CO3
+Silver Chloride	AgCl
+Silver Chromate	Ag2CrO4
+Silver Hydroxide	AgOH
+Silver Iodide	AgI
+Silver Nitrate	AgNO3
+Silver Phosphate	Ag3PO4
+Silver Sulfate	Ag2SO4
+Silver Sulfide	Ag2S
+Sodium Acetate	NaC2H3O2
+Sodium Bromide	NaBr
+Sodium Carbonate	Na2CO3
+Sodium Chloride	NaCl
+Sodium Chromate	Na2CrO4
+Sodium Hydroxide	NaOH
+Sodium Iodide	NaI
+Sodium Nitrate	NaNO3
+Sodium Phosphate	Na3PO4
+Sodium Sulfate	Na2SO4
+Sodium Sulfide	Na2S
+Zinc Acetate	Zn(C2H3O2)2
+Zinc Bromide	ZnBr2
+Zinc Carbonate	ZnCO3
+Zinc Chloride	ZnCl2
+Zinc Chromate	ZnCrO4
+Zinc Hydroxide	Zn(OH)2
+Zinc Iodide	ZnI2
+Zinc Nitrate	Zn(NO3)2
+Zinc Phosphate	Zn3(PO4)2
+Zinc Sulfate	ZnSO4
+Zinc Sulfide	ZnS
+Lead (II) Acetate	Pb(C2H3O2)2
+Lead (II) Bromide	PbBr2
+Lead (II) Carbonate	PbCO3
+Lead (II) Chloride	PbCl2
+Lead (II) Chromate	PbCrO4
+Lead (II) Hydroxide	Pb(OH)2
+Lead (II) Iodide	PbI2
+Lead (II) Nitrate	Pb(NO3)2
+Lead (II) Phosphate	Pb3(PO4)2
+Lead (II) Sulfate	PbSO4
+Lead (II) Sulfide	PbS
+Lead (IV) Acetate	Pb(C2H3O2)4
+Lead (IV) Bromide	PbBr4
+Lead (IV) Chromate	PbCrO4
+Lead (IV) Hydroxide	Pb(OH)4
+Lead (IV) Iodide	PbI4
+Lead (IV) Nitrate	Pb(NO3)4
+Lead (IV) Phosphate	Pb3(PO4)4
+Lead (IV) Sulfate	Pb(SO4)2
+Lead (IV) Sulfide	PbS2
+Aluminum Acetate	Al(C2H3O2)3
+\.
+
+
+--
 -- Data for Name: children_table; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -468,6 +1662,17 @@ COPY public.children_table (id, children) FROM stdin;
 1	1
 2	many
 3	2
+\.
+
+
+--
+-- Data for Name: children_tableidfathersid_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.children_tableidfathersid_table (word, synonym) FROM stdin;
+0	zero
+1	one
+2	two
 \.
 
 
@@ -512,7 +1717,7 @@ two	Dieter
 -- Data for Name: followers; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.followers (id, following, adult) FROM stdin;
+COPY public.followers (id, media_name, adult) FROM stdin;
 1	surviver1000	t
 3	makeuptutorial	f
 2	surviver1000	t
@@ -529,6 +1734,31 @@ makeuptutorial	1000 thousand
 outsideguy	50
 surviver1000	1 million
 princess	one thousand
+\.
+
+
+--
+-- Data for Name: influencersclickspublication_clicksclicks_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.influencersclickspublication_clicksclicks_table (word, synonym) FROM stdin;
+1000 thousand	1000000
+1000 thousand	10^6
+1 million	1000000
+1 million	10^6
+one thousand	1000
+\.
+
+
+--
+-- Data for Name: influencersmedia_namefollowersmedia_name_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.influencersmedia_namefollowersmedia_name_table (word, synonym) FROM stdin;
+makeuptutorial	makeuptutorial
+surviver1000	surviver1000
+surviver1000	surviver1000
+princess	princess
 \.
 
 
@@ -565,6 +1795,17 @@ Die Flucht aus Shawshank	3/5
 Der Himmel über Berlin	5/5
 Die fabelhafte Welt der Amélie	4/5
 Lola rennt	2/5
+\.
+
+
+--
+-- Data for Name: moviesmoviemovies_personalmovie_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.moviesmoviemovies_personalmovie_table (word, synonym) FROM stdin;
+The Shawshank Redemption	Die Flucht aus Shawshank
+Wings of Desire	Der Himmel über Berlin
+Amélie	Die fabelhafte Welt der Amélie
 \.
 
 
@@ -636,6 +1877,234 @@ COPY public.songs (id, album_id, song_name, duration) FROM stdin;
 
 
 --
+-- Data for Name: state_capitol; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.state_capitol (name, capitol) FROM stdin;
+DE	Dover
+HI	Honolulu
+TX	Austin
+MA	Boston
+MD	Annapolis
+IA	Des Moines
+ME	Augusta
+ID	Boise
+MI	Lansing
+UT	Salt Lake City
+MN	Saint Paul
+MO	Jefferson City
+IL	Springfield
+IN	Indianapolis
+MS	Jackson
+MT	Helena
+AK	Juneau
+AL	Montgomery
+VA	Richmond
+AR	Little Rock
+NC	Raleigh
+ND	Bismarck
+NE	Lincoln
+RI	Providence
+AZ	Phoenix
+NH	Concord
+NJ	Trenton
+VT	Montpelier
+NM	Santa Fe
+FL	Tallahassee
+NV	Carson City
+WA	Olympia
+NY	Albany
+SC	Columbia
+SD	Pierre
+WI	Madison
+OH	Columbus
+GA	Atlanta
+OK	Oklahoma City
+CA	Sacramento
+WV	Charleston
+WY	Cheyenne
+OR	Salem
+KS	Topeka
+CO	Denver
+KY	Frankfort
+CT	Hartford
+PA	Harrisburg
+LA	Baton Rouge
+TN	Nashville
+\.
+
+
+--
+-- Data for Name: state_capitol_short; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.state_capitol_short (name, capitol) FROM stdin;
+DE	Dover
+AK	Juneau
+AL	Montgomery
+AR	Little Rock
+AZ	Phoenix
+FL	Tallahassee
+GA	Atlanta
+CA	Sacramento
+CO	Denver
+CT	Hartford
+\.
+
+
+--
+-- Data for Name: state_trans; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.state_trans (state_abrev, state) FROM stdin;
+AL	Alabama
+AK	Alaska
+AZ	Arizona
+AR	Arkansas
+CA	California
+CO	Colorado
+CT	Connecticut
+DE	Delaware
+FL	Florida
+GA	Georgia
+HI	Hawaii
+ID	Idaho
+IL	Illinois
+IN	Indiana
+IA	Iowa
+KS	Kansas
+KY	Kentucky
+LA	Louisiana
+ME	Maine
+MD	Maryland
+MA	Massachusetts
+MI	Michigan
+MN	Minnesota
+MS	Mississippi
+MO	Missouri
+MT	Montana
+NE	Nebraska
+NV	Nevada
+NH	New Hampshire
+NJ	New Jersey
+NM	New Mexico
+NY	New York
+NC	North Carolina
+ND	North Dakota
+OH	Ohio
+OK	Oklahoma
+OR	Oregon
+PA	Pennsylvania
+RI	Rhode Island
+SC	South Carolina
+SD	South Dakota
+TN	Tennessee
+TX	Texas
+UT	Utah
+VT	Vermont
+VA	Virginia
+WA	Washington
+WV	West Virginia
+WI	Wisconsin
+WY	Wyoming
+\.
+
+
+--
+-- Data for Name: state_trans_short; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.state_trans_short (state_abrev, state) FROM stdin;
+AL	Alabama
+AK	Alaska
+AZ	Arizona
+AR	Arkansas
+CA	California
+CO	Colorado
+CT	Connecticut
+DE	Delaware
+FL	Florida
+GA	Georgia
+\.
+
+
+--
+-- Data for Name: states; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.states (name, population) FROM stdin;
+North Carolina	10488084
+Indiana	6732212
+Wyoming	578759
+Utah	3323971
+Arizona	7278717
+Montana	1103311
+Kentucky	4467673
+California	39512223
+Kansas	2913314
+Delaware	989948
+Florida	21478738
+Pennsylvania	12801989
+Iowa	3155070
+Mississippi	2961279
+Illinois	12671821
+Texas	29189580
+Connecticut	3565287
+Georgia	10617423
+Maryland	6045680
+Virginia	8600467
+Idaho	1881201
+Oregon	4237256
+Vermont	623989
+Maine	1344212
+Oklahoma	3923561
+Tennessee	6910818
+Alabama	4903185
+Arkansas	3017804
+South Carolina	5148714
+Washington	7701186
+Nebraska	1934408
+West Virginia	1792147
+Colorado	5758736
+Massachusetts	6949503
+Missouri	6154913
+Alaska	733391
+North Dakota	762062
+Wisconsin	5822434
+Nevada	3080156
+New York	19453561
+Rhode Island	1059361
+Hawaii	1415872
+South Dakota	884659
+Minnesota	5639615
+New Jersey	8882190
+Michigan	9986857
+New Mexico	2096829
+New Hampshire	1359711
+Louisiana	4648794
+Ohio	11689473
+\.
+
+
+--
+-- Data for Name: states_short; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.states_short (name, population) FROM stdin;
+Alabama	4903185
+Alaska	733391
+Arizona	7278717
+Arkansas	3017804
+California	39512223
+Colorado	5758736
+Connecticut	3565287
+Delaware	989948
+Florida	21478738
+Georgia	10617423
+\.
+
+
+--
 -- Data for Name: tennis_players; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -682,6 +2151,16 @@ COPY public.tournaments (winner_id, name, price_money_in_million) FROM stdin;
 
 
 --
+-- Data for Name: translation_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.translation_table (word, synonym) FROM stdin;
+dog	chien
+dog	perro
+\.
+
+
+--
 -- Data for Name: weather; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -694,6 +2173,18 @@ COPY public.weather (date, city, temperature, rainfall) FROM stdin;
 
 
 --
+-- Data for Name: weatherdatewebsite_visitsdate_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.weatherdatewebsite_visitsdate_table (word, synonym) FROM stdin;
+2023 10 26	2023 October 26
+2023 10 26	2023 October 26
+2023 10 27	2023 October 27
+2023 10 27	2023 October 27
+\.
+
+
+--
 -- Data for Name: website_visits; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -702,6 +2193,141 @@ COPY public.website_visits (date, page, visits) FROM stdin;
 2023 October 26	about	500
 2023 October 27	homepage	1200
 2023 October 27	contact	200
+\.
+
+
+--
+-- Data for Name: whereanimalownercategorydog_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.whereanimalownercategorydog_table (word, synonym) FROM stdin;
+dog	chien
+dog	chat
+\.
+
+
+--
+-- Data for Name: whereanimalownercategorydogoranimalownercategoryisnull_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.whereanimalownercategorydogoranimalownercategoryisnull_table (word, synonym) FROM stdin;
+dog	chien
+dog	chat
+\.
+
+
+--
+-- Data for Name: whereanimalownercategoryisnulloranimalownercategorydog_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.whereanimalownercategoryisnulloranimalownercategorydog_table (word, synonym) FROM stdin;
+dog	chien
+dog	chat
+\.
+
+
+--
+-- Data for Name: wherebakery_salesquantity55_comparison_55_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wherebakery_salesquantity55_comparison_55_table (word, synonym) FROM stdin;
+55	5 dozen
+\.
+
+
+--
+-- Data for Name: wherechildren_tablechildren1_comparison_1_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wherechildren_tablechildren1_comparison_1_table (word, synonym) FROM stdin;
+1	4
+1	many
+1	2
+\.
+
+
+--
+-- Data for Name: wheredoctorsnamepeteranddoctorspatients_pd12_comparison_12_tabl; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wheredoctorsnamepeteranddoctorspatients_pd12_comparison_12_tabl (word, synonym) FROM stdin;
+12	fourty
+12	44
+12	ten
+12	11
+\.
+
+
+--
+-- Data for Name: wheredoctorsnamepeteranddoctorspatients_pd12_comparison_peter_t; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wheredoctorsnamepeteranddoctorspatients_pd12_comparison_peter_t (word, synonym) FROM stdin;
+Peter	Hans
+Peter	Peter
+\.
+
+
+--
+-- Data for Name: wheredoctorsnamepeteranddoctorspatients_pd12_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wheredoctorsnamepeteranddoctorspatients_pd12_table (word, synonym) FROM stdin;
+12	fourty
+12	ten
+12	11
+\.
+
+
+--
+-- Data for Name: wheredoctorspatients_pd12_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wheredoctorspatients_pd12_table (word, synonym) FROM stdin;
+12	fourty
+12	ten
+12	11
+\.
+
+
+--
+-- Data for Name: whereinfluencersclicks500_comparison_500_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.whereinfluencersclicks500_comparison_500_table (word, synonym) FROM stdin;
+500	1000 thousand
+500	1 million
+500	one thousand
+\.
+
+
+--
+-- Data for Name: wheremovies_personalpersonal_rating70_comparison_70_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wheremovies_personalpersonal_rating70_comparison_70_table (word, synonym) FROM stdin;
+70%	3/5
+70%	5/5
+70%	4/5
+\.
+
+
+--
+-- Data for Name: whereoven_temperaturetemperature200°c_comparison_200°c_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."whereoven_temperaturetemperature200°c_comparison_200°c_table" (word, synonym) FROM stdin;
+200 °C	200 °F
+\.
+
+
+--
+-- Data for Name: wheretennis_playersbornjanuary_comparison_january_table; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wheretennis_playersbornjanuary_comparison_january_table (word, synonym) FROM stdin;
+January	January 1986
+January	18.01.1997
 \.
 
 
@@ -735,6 +2361,14 @@ ALTER TABLE ONLY public.animalowner
 
 ALTER TABLE ONLY public.artists
     ADD CONSTRAINT artists_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: chemical chemicals_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.chemical
+    ADD CONSTRAINT chemicals_pkey PRIMARY KEY (name);
 
 
 --

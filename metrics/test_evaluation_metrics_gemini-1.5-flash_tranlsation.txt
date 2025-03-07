@@ -217,3 +217,213 @@ candidates_token_count AVERAGE: 783.0
 total_token_count AVERAGE: 6535.0
 total_calls AVERAGE: 12.0
  AVERAGE Time: 1.6174
+
+  --- Individual Metrics ---
+Calculus ∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+prompt_token_count AVERAGE: 3200
+candidates_token_count AVERAGE: 351
+total_token_count AVERAGE: 3551
+total_calls AVERAGE: 12
+ AVERAGE Time: 0.8192
+
+
+
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16
+
+--- Average Metrics ---
+Average Accuracy: 0.49
+Average Precision: 0.49
+Average Recall: 0.58
+Average F1-score: 0.52
+
+--- Average Metrics ---
+Average prompt_token_count: 4010.39
+Average candidates_token_count: 529.19
+Average total_token_count: 4539.58
+Average total_calls: 8.88
+Average AVERAGE Time: 1.16

@@ -402,13 +402,13 @@ queries= [i for i, _ in test_cases]
 
 #0 Done, #1 Done ,#2 DONE,#3 DONE, #4 Done, #5 Done, #6 Done, #7 Done, #8 DONE,#9 Done, #10 DONE, #11 Done, #12 Done, #13 DONE, #15 DONE, #16 DONE, #17 DONE, #18 DONE
 
-index=[8]
+index=[14]
 new_queries=[]
 for i in index:
     new_queries.append(queries[i])
 queries=new_queries
 
-evaluation_pipeline(queries)
+# evaluation_pipeline(queries)
 
 
 

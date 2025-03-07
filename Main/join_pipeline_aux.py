@@ -224,7 +224,10 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
             Input: sql: SELECT * FROM students_table INNER JOIN teachers ON students_table.id = teachers.id INNER JOIN courses ON students_table.id = courses.id; binding: ['students_tableidteachersid_table']  
             Output:  SELECT *  FROM students_table  INNER JOIN students_tableidteachersid_table ON students_table.id = students_tableidteachersid_table.word  
             INNER JOIN teachers ON students_tableidteachersid_table.synonym = teachers.id  
-            INNER JOIN courses ON students_table.id = courses.id;  
+            INNER JOIN courses ON students_table.id = courses.id;
+            SELECT * FROM left_table JOIN right_table ON right_table.rtable_Song_Name=left_table.ltable_Song_Name;
+            Input:  SELECT * FROM right_table INNER JOIN left_table ON left_table.ltablesongname = right_table.rtablesongname;'binding:['left_tableltablesongnameright_tablertablesongname_table']
+            Output= SELECT * FROM left_table INNER JOIN right_tablertablesongnameleft_tableltablesongname_table ON left_table.ltablesongname = right_tablertablesongnameleft_tableltablesongname_table.synonym INNER JOIN right_table ON right_tablertablesongnameleft_tableltablesongname_table.word = right_table.rtablesongname;  
             Input: sql:{initial_sql_query}; binding: {semantic_rows};
             Output:'''
     

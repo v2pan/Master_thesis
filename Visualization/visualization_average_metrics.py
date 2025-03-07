@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import sys
+sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
 from Evaluation.evaluation import calculate_average_metrics
 
 def visualize_results(acc, prec, rec, f1):
@@ -34,7 +36,7 @@ def visualize_results(acc, prec, rec, f1):
 
     
 
-    save_path="saved_plots/average_metrics_gemini_1_5_soft.png"
+    save_path="saved_plots/average_metrics_gemini_1_5_translation.png"
     # Save the figure
     try:
         plt.savefig(save_path, dpi=300)  # Higher dpi for better quality
@@ -53,4 +55,4 @@ def visualize_results(acc, prec, rec, f1):
 # f1=
 
 
-#visualize_results(acc, prec, rec, f1)
+visualize_results(0.49, 0.49, 0.58, 0.52)

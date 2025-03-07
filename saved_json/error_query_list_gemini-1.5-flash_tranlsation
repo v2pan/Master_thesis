@@ -160,5 +160,15 @@
         "semantic_list_where": 0,
         "result_where": 0,
         "correct_results": 0
+    },
+    "∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C)":
+    {
+        "initial_sql_query_join": 1,
+        "semantic_list_join": 0,
+        "result_join": 0,
+        "initial_sql_query_where": 0,
+        "semantic_list_where": 2,
+        "result_where": 0,
+        "correct_results": 0
     }
 }

@@ -49,7 +49,7 @@ def analyze_sql_query(sql_query):
 TOTAL_DIC = {}
 
 #Combination of both pipeline, adjustment was necessary
-def combined_pipeline(query, evaluation=False, aux=False):
+def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None): 
 
     import sys
     sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
@@ -76,54 +76,59 @@ def combined_pipeline(query, evaluation=False, aux=False):
 
     total_count=0
     total_retries=4
+    
+    if initial_sql_query is None:
+        while total_count<total_retries:
+            #Get context
+            count=0
+            while count<total_retries:
+                tables, temp_meta = get_relevant_tables(query, return_metadata=True)
+                usage_metadata_total=add_metadata(temp_meta, usage_metadata_total)
+                if tables is not None:
+                    break
+                else:
+                    count+=1
 
-    while total_count<total_retries:
-        #Get context
-        count=0
-        while count<total_retries:
-            tables, temp_meta = get_relevant_tables(query, return_metadata=True)
-            usage_metadata_total=add_metadata(temp_meta, usage_metadata_total)
-            if tables is not None:
-                break
-            else:
-                count+=1
+            if tables is None:
+                return None
+            
+            print(f"The relevant tables are {tables}")
+            context = get_context(tables)
 
-        if tables is None:
-            return None
-        
-        print(f"The relevant tables are {tables}")
-        context = get_context(tables)
+            #Optional, if were to use JSON files
+            #Gets context by reading JSON files
+            #context= get_context_json(tables)
 
-        #Optional, if were to use JSON files
-        #Gets context by reading JSON files
-        #context= get_context_json(tables)
+            print(f"The context is {context}")
+            print(f"The query is {query}")
 
-        print(f"The context is {context}")
-        print(f"The query is {query}")
+            #Used for predicate calculus, selecting all rows
+            response, temp_meta = initial_query(query,context)
+            
+            #Update the metadata
+            add_metadata(temp_meta, usage_metadata_total)
 
-        #Used for predicate calculus, selecting all rows
-        response, temp_meta = initial_query(query,context)
-        
-        #Update the metadata
-        add_metadata(temp_meta, usage_metadata_total)
+            #Extract the SQL query from the response
+            initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
+            print(f"The SQL query is: {initial_sql_query}")
 
-        #Extract the SQL query from the response
-        initial_sql_query = extract(response, start_marker="```sql",end_marker="```" )
-        print(f"The SQL query is: {initial_sql_query}")
+            #Check whether the SQL query is invalid
+            try:
+                initial_query_result=query_database(initial_sql_query)
+            except QueryExecutionError as e:
+                initial_query_result=f"{e}"
+                initial_query_result=initial_query_result.split('\n')[0]
+                if "column" in initial_query_result.lower() and "not exists" in initial_query_result.lower():
+                    total_count+=1
+                else: 
+                    break
 
-        #Check whether the SQL query is invalid
+    else: 
         try:
-            initial_query_result=query_database(initial_query)
+            initial_query_result=query_database(initial_sql_query)
         except QueryExecutionError as e:
-            initial_query_result=f"{e}"
-            initial_query_result=initial_query_result.split('\n')[0]
-            if "column" in initial_query_result.lower() and "not exists" in initial_query_result.lower():
-                total_count+=1
-            else: 
-                break
-        
-    if total_count==total_retries:
-        return []
+            #raise Exception("The initial SQL query is invalid")
+            print("The initial SQL query is invalid")
 
 
     #Now analyze the SQL query for WHERE and JOIN conditions

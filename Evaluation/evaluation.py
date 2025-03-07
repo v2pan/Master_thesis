@@ -1,4 +1,6 @@
 import time
+import sys
+sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
 from Main.row_calculus_pipeline import row_calculus_pipeline
 from Main.join_pipeline import join_pipeline
 from Main.combined_pipeline import combined_pipeline
@@ -298,6 +300,6 @@ test_cases = [
     )
 
 ]
-
-# calculate_average_metrics("metrics/test_evaluation_metrics_1_5_soft.txt")
-# calculate_average_tokens("metrics/test_evaluation_metrics_1_5_soft.txt")
+path = "metrics/test_evaluation_metrics_gemini-1.5-flash_tranlsation.txt"
+calculate_average_metrics(path)
+calculate_average_tokens(path)
