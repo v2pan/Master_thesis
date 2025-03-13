@@ -49,7 +49,7 @@ def analyze_sql_query(sql_query):
 TOTAL_DIC = {}
 
 #Combination of both pipeline, adjustment was necessary
-def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None): 
+def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None, threshold=None, two_step=None): 
 
     import sys
     sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
@@ -157,7 +157,7 @@ def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None
         elif join_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
             # output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
-            output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
+            output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True, threshold= threshold, two_step=two_step)
             add_metadata(temp_meta, usage_metadata_total)
         else:
             print(f"The \n{initial_sql_query}\n has no WHERE or JOIN clause.")

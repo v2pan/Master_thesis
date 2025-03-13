@@ -27,7 +27,7 @@ usage_metadata_join = {
 #
     
 
-def compare_semantics_in_list(input_list,order, threshhold=0.9,both=False):
+def compare_semantics_in_list(input_list,order, threshold=0.9,two_step=True):
     """
     Compares each unique item from the first list in each sublist against every element in the second list to find semantically equivalent expressions using llm_json.
 
@@ -79,22 +79,36 @@ def compare_semantics_in_list(input_list,order, threshhold=0.9,both=False):
                 #                 """)
                 # print(f"The goal is: {goal}")
 
-                phrase, temp_meta = ask_llm(f"""Write the output in natural language and ignore possible numbers.
-                                Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
-                                Output: is smaller than
-                                Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
-                                Output: has a different meaning than
-                                Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
-                                Output: has a different meaning than
-                                Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
-                                Output: has the same meaning as (also in another language) or is the same as
-                                Input:{condition}.
-                                Output:""", True, max_token=100)
-                #Update the metadata
-                _=add_metadata(temp_meta, usage_metadata_join)
-                #add_metadata(temp_meta)
-                print(f"The phrase is: {phrase}")
+                # phrase, temp_meta = ask_llm(f"""Write the output in natural language and ignore possible numbers.
+                #                 Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
+                #                 Output: is smaller than
+                #                 Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
+                #                 Output: has a different meaning than
+                #                 Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
+                #                 Output: has a different meaning than
+                #                 Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
+                #                 Output: has the same meaning as (also in another language) or is the same as
+                #                 Input:{condition}.
+                #                 Output:""", True, max_token=100)
+                # #Update the metadata
+                # _=add_metadata(temp_meta, usage_metadata_join)
+                # #add_metadata(temp_meta)
+                # print(f"The phrase is: {phrase}")
+                comparison_mapping = {
+                "<": "is smaller than",
+                "!=": "has a different meaning than",
+                "<>": "has a different meaning than",
+                "=": "has the same meaning as (also in another language) or is the same as"
+                }
 
+                # Extract the comparison operator from the condition (assuming condition is in a similar format)
+                condition_str = str(condition)
+                operator = next((op for op in comparison_mapping if op in condition_str), None)
+
+                if operator:
+                    phrase = comparison_mapping[operator]
+                else:
+                    phrase = "Unknown comparison"
                 same_meaning_list = []
                 seen_items = set()  # Track unique items from temp_list1
                 
@@ -106,7 +120,7 @@ def compare_semantics_in_list(input_list,order, threshhold=0.9,both=False):
                     seen_items.add(item_str)
 
                     total_prompt = f"Answer the following questions with True or False.\n"
-                    if threshhold is None:
+                    if threshold is None:
                         #Iteation over all items from another list
                         for other_item in temp_list2:
                             other_item_str = other_item[0]
@@ -126,16 +140,26 @@ def compare_semantics_in_list(input_list,order, threshhold=0.9,both=False):
 
                         relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
 
-                    elif both==True:
+                        #Add relevant semantic equivalents to the list
+                        if relevant_items is not None:
+                            soft_binding_dic[item_str] =[] 
+                            for i in relevant_items:
+                                soft_binding_dic[item_str].append(i)
+
+                        #Add to semantic list for comparison
+                        dict[item_str] = relevant_items
+
+                    elif two_step==True:
+                        threshold_temp_list=[]
                         for other_item in temp_list2:
                             other_item_str = other_item[0]
                             emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
                             emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
-                            threshhold_temp_list=[]
-                            if cosine_similarity(emb1, emb2) > threshhold:
+                            
+                            if cosine_similarity(emb1, emb2) > threshold:
                                 prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
                                 total_prompt += prompt
-                                threshhold_temp_list.append(other_item_str)
+                                threshold_temp_list.append(other_item_str)
 
                         #Get response from LLM
                         json_success=False
@@ -148,30 +172,48 @@ def compare_semantics_in_list(input_list,order, threshhold=0.9,both=False):
                                 time.sleep(60)
                         _=add_metadata(temp_meta, usage_metadata_join)
 
-                        relevant_items = [threshhold_temp_list for i, is_relevant in enumerate(response) if is_relevant]
+                        relevant_items = [threshold_temp_list for i, is_relevant in enumerate(response) if is_relevant]
+
+                         #Add relevant semantic equivalents to the list
+                        if relevant_items is not None:
+                            soft_binding_dic[item_str] =[] 
+                            for i in relevant_items:
+                                soft_binding_dic[item_str].append(i)
+
+                        #Add to semantic list for comparison
+                        dict[item_str] = relevant_items
                     
                     else: # Only Embeddings
-
+                        relevant_items=[]
                         for other_item in temp_list2:
                             other_item_str = other_item[0]
                             emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
                             emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
-                            relevant_items=[]
-                            if cosine_similarity(emb1, emb2) > threshhold:
+                            
+                            if cosine_similarity(emb1, emb2) > threshold:
                                 relevant_items.append(other_item_str)
+                        
+                         #Add relevant semantic equivalents to the list
+                        if relevant_items is not None:
+                            soft_binding_dic[item_str] =[] 
+                            for i in relevant_items:
+                                soft_binding_dic[item_str].append(i)
+
+                        #Add to semantic list for comparison
+                        dict[item_str] = relevant_items
 
                             
                                 
 
 
-                    #Add relevant semantic equivalents to the list
-                    if relevant_items is not None:
-                        soft_binding_dic[item_str] =[] 
-                        for i in relevant_items:
-                            soft_binding_dic[item_str].append(i)
+                    # #Add relevant semantic equivalents to the list
+                    # if relevant_items is not None:
+                    #     soft_binding_dic[item_str] =[] 
+                    #     for i in relevant_items:
+                    #         soft_binding_dic[item_str].append(i)
 
-                    #Add to semantic list for comparison
-                    dict[item_str] = relevant_items
+                    # #Add to semantic list for comparison
+                    # dict[item_str] = relevant_items
                     
 
                 print(f"The key belongs to {order[counter][0]}")
