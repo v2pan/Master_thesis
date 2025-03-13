@@ -36,7 +36,7 @@ def visualize_results(acc, prec, rec, f1):
 
     
 
-    save_path="saved_plots/average_metrics_gemini_1_5_translation.png"
+    save_path="saved_plots/Final_Join_Evaluation.png"
     # Save the figure
     try:
         plt.savefig(save_path, dpi=300)  # Higher dpi for better quality
@@ -55,4 +55,4 @@ def visualize_results(acc, prec, rec, f1):
 # f1=
 
 
-visualize_results(0.49, 0.49, 0.58, 0.52)
+visualize_results(0.4, 0.67, 0.5, 0.57)

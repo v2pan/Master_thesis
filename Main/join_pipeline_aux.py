@@ -6,6 +6,9 @@ from Main.row_calculus_aux_pipeline import create_and_populate_translation_table
 from Utilities.llm import ask_llm, llm_json, add_metadata, RessourceError
 from Utilities.database import query_database, QueryExecutionError
 from Utilities.extractor import extract
+from Utilities.llm import get_embedding
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 import copy
 import time
 import re
@@ -24,7 +27,7 @@ usage_metadata_join = {
 #
     
 
-def compare_semantics_in_list(input_list,order):
+def compare_semantics_in_list(input_list,order, threshhold=0.9,both=False):
     """
     Compares each unique item from the first list in each sublist against every element in the second list to find semantically equivalent expressions using llm_json.
 
@@ -103,25 +106,64 @@ def compare_semantics_in_list(input_list,order):
                     seen_items.add(item_str)
 
                     total_prompt = f"Answer the following questions with True or False.\n"
+                    if threshhold is None:
+                        #Iteation over all items from another list
+                        for other_item in temp_list2:
+                            other_item_str = other_item[0]
+                            prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
+                            total_prompt += prompt
 
-                    #Iteation over all items from another list
-                    for other_item in temp_list2:
-                        other_item_str = other_item[0]
-                        prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
-                        total_prompt += prompt
+                        #Get response from LLM
+                        json_success=False
+                        while not json_success:
+                            try:
+                                response, temp_meta = llm_json(total_prompt, response_type=list[bool], return_metadata=True)
+                                json_success=True
+                            except RessourceError:
+                                print(f"Resource Error occured in Join Pipeline JSON")
+                                time.sleep(60)
+                        _=add_metadata(temp_meta, usage_metadata_join)
 
-                    #Get response from LLM
-                    json_success=False
-                    while not json_success:
-                        try:
-                            response, temp_meta = llm_json(total_prompt, response_type=list[bool], return_metadata=True)
-                            json_success=True
-                        except RessourceError:
-                            print(f"Resource Error occured in Join Pipeline JSON")
-                            time.sleep(60)
-                    _=add_metadata(temp_meta, usage_metadata_join)
+                        relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
 
-                    relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
+                    elif both==True:
+                        for other_item in temp_list2:
+                            other_item_str = other_item[0]
+                            emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
+                            emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
+                            threshhold_temp_list=[]
+                            if cosine_similarity(emb1, emb2) > threshhold:
+                                prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
+                                total_prompt += prompt
+                                threshhold_temp_list.append(other_item_str)
+
+                        #Get response from LLM
+                        json_success=False
+                        while not json_success:
+                            try:
+                                response, temp_meta = llm_json(total_prompt, response_type=list[bool], return_metadata=True)
+                                json_success=True
+                            except RessourceError:
+                                print(f"Resource Error occured in Join Pipeline JSON")
+                                time.sleep(60)
+                        _=add_metadata(temp_meta, usage_metadata_join)
+
+                        relevant_items = [threshhold_temp_list for i, is_relevant in enumerate(response) if is_relevant]
+                    
+                    else: # Only Embeddings
+
+                        for other_item in temp_list2:
+                            other_item_str = other_item[0]
+                            emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
+                            emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
+                            relevant_items=[]
+                            if cosine_similarity(emb1, emb2) > threshhold:
+                                relevant_items.append(other_item_str)
+
+                            
+                                
+
+
                     #Add relevant semantic equivalents to the list
                     if relevant_items is not None:
                         soft_binding_dic[item_str] =[] 

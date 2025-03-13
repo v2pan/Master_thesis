@@ -146,22 +146,37 @@ def list_semantics_aux(input_list):
             # print(f"The goal is {goal}")
             #add_metadata(temp_meta)
             #Ask LLM to generate a phrase for the comparison
-            phrase,temp_meta=ask_llm(f'''Write the output out in natural languge and ignore possible numbers
-                              Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
-                              Output: is smaller than
-                              Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
-                              Output: has NOT the same meaning (also in another language) as
-                              Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
-                              Output: has NOT the same meaning (also in another language) as
-                              Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
-                              Output: has the same meaning as (also in antoher language) or is the same as
-                              Input:{condition}.
-                              Output:''',True, max_token=100)
+            # phrase,temp_meta=ask_llm(f'''Write the output out in natural languge and ignore possible numbers
+            #                   Input: (2, <Comparison '<' at 0x75D1C85F0A00>)
+            #                   Output: is smaller than
+            #                   Input: (2, <Comparison '!=' at 0x75D1C85F0A00>)
+            #                   Output: has NOT the same meaning (also in another language) as
+            #                   Input: (2, <Comparison '<>' at 0x75D1C85F0A00>)
+            #                   Output: has NOT the same meaning (also in another language) as
+            #                   Input: (2, <Comparison '=' at 0x75D1C85F0A00>)
+            #                   Output: has the same meaning as (also in antoher language) or is the same as
+            #                   Input:{condition}.
+            #                   Output:''',True, max_token=100)
+
+            comparison_mapping = {
+                 "=": "has the same meaning as (also in another language) or is the same as",
+                "<": "is smaller than",
+                "!=": "has a different meaning than",
+                "<>": "has a different meaning than"
+                }
+
+            # Extract the comparison operator from the condition (assuming condition is in a similar format)
+            condition_str = str(condition)
+            operator = next((op for op in comparison_mapping if op in condition_str), None)
+
+            if operator:
+                phrase = comparison_mapping[operator]
+            else:
+                phrase = "Unknown comparison"
             
             #Update the metadata
-            _ = add_metadata(temp_meta,usage_metadata_row)
+           
             print(f"The phrase is:\n {phrase}. ")
-
             print(f"temp_string: {temp_string}")
             print(f"temp_list: {temp_list}")
 

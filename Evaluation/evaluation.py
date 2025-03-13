@@ -300,6 +300,6 @@ test_cases = [
     )
 
 ]
-path = "metrics/test_evaluation_metrics_gemini-1.5-flash_tranlsation.txt"
-calculate_average_metrics(path)
-calculate_average_tokens(path)
+# path = "metrics/test_evaluation_metrics_gemini-1.5-flash_tranlsation.txt"
+# calculate_average_metrics(path)
+# calculate_average_tokens(path)
