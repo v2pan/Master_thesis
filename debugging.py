@@ -132,7 +132,7 @@ while i < 1:
 
 #!!!!!!!!!!!!!!!!!!!!
 #For testing purposes
-two_step=[False]
+two_step=[True, False, None]
 threshhold_series=[0.8]
 
 for threshold in threshhold_series:

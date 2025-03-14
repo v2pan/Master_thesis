@@ -113,99 +113,100 @@ def compare_semantics_in_list(input_list,order, threshold=None,two_step=False):
                 same_meaning_list = []
                 seen_items = set()  # Track unique items from temp_list1
                 
-                #Iteration over all items from one list
+                batch_size = 10  # You can adjust batch size depending on LLM token limits and API performance
+                item_batches = []
+                current_batch = []
+
+                # Collect items for batching
                 for item in temp_list1:
                     item_str = item[0]
                     if item_str in seen_items:
                         continue
                     seen_items.add(item_str)
+                    current_batch.append(item_str)
 
-                    total_prompt = f"Answer the following questions with True or False.\n"
-                    if two_step is None:
-                        #Iteation over all items from another list
-                        for other_item in temp_list2:
-                            other_item_str = other_item[0]
-                            prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
-                            total_prompt += prompt
+                    if len(current_batch) >= batch_size:
+                        item_batches.append(current_batch)
+                        current_batch = []
 
-                        #Get response from LLM
-                        json_success=False
-                        response=[]
-                        while not json_success or len(response)!=len(temp_list2):
-                            try:
-                                json_success=False
-                                response, temp_meta = llm_json(total_prompt, response_type=list[bool], return_metadata=True)
-                                json_success=True
-                            except RessourceError:
-                                print(f"Resource Error occured in Join Pipeline JSON")
-                                time.sleep(60)
-                        _=add_metadata(temp_meta, usage_metadata_join)
+                # Add remaining items if any
+                if current_batch:
+                    item_batches.append(current_batch)
 
-                        relevant_items = [temp_list2[i][0] for i, is_relevant in enumerate(response) if is_relevant]
+                # Process each batch
+                for batch in item_batches:
+                    total_prompts = []  # To collect all prompts for this batch
+                    item_to_other_items = {}  # Mapping for later result mapping
 
-                        #Add relevant semantic equivalents to the list
-                        if relevant_items is not None:
-                            soft_binding_dic[item_str] =[] 
-                            for i in relevant_items:
-                                soft_binding_dic[item_str].append(i)
-
-                        #Add to semantic list for comparison
-                        dict[item_str] = relevant_items
-
-                    elif two_step==True:
-                        threshold_temp_list=[]
-                        for other_item in temp_list2:
-                            other_item_str = other_item[0]
-                            emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
-                            emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
-                            
-                            if cosine_similarity(emb1, emb2) > threshold:
-                                prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  #Simplified prompt
-                                total_prompt += prompt
-                                threshold_temp_list.append(other_item_str)
-
-                        #Get response from LLM
-                        json_success=False
-                        response=[]
-                        while not json_success or len(response)!=len(threshold_temp_list):
-                            try:
-                                json_success=False
-                                response, temp_meta = llm_json(total_prompt, response_type=list[bool], return_metadata=True)
-                                json_success=True
-                            except RessourceError:
-                                print(f"Resource Error occured in Join Pipeline JSON")
-                                time.sleep(60)
-                        _=add_metadata(temp_meta, usage_metadata_join)
-
-                        relevant_items = [threshold_temp_list[0] for i, is_relevant in enumerate(response) if is_relevant]
-
-                         #Add relevant semantic equivalents to the list
-                        if relevant_items is not None:
-                            soft_binding_dic[item_str] =[] 
-                            for i in relevant_items:
-                                soft_binding_dic[item_str].append(i)
-
-                        #Add to semantic list for comparison
-                        dict[item_str] = relevant_items
-                    
-                    else: # Only Embeddings
-                        relevant_items=[]
-                        for other_item in temp_list2:
-                            other_item_str = other_item[0]
-                            emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
-                            emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
-                            
-                            if cosine_similarity(emb1, emb2) > threshold:
-                                relevant_items.append(other_item_str)
+                    for item_str in batch:
+                        batch_prompt = ""
+                        filtered_temp_list2 = []
                         
-                         #Add relevant semantic equivalents to the list
-                        if relevant_items is not None:
-                            soft_binding_dic[item_str] =[] 
-                            for i in relevant_items:
-                                soft_binding_dic[item_str].append(i)
+                        if two_step is None:
+                            # Prepare prompts for each item in batch
+                            for other_item in temp_list2:
+                                other_item_str = other_item[0]
+                                batch_prompt += f"'{item_str}' {phrase} '{other_item_str}' \n"
+                            item_to_other_items[item_str] = temp_list2  # Keep full list for mapping
+                            total_prompts.append(batch_prompt)
 
-                        #Add to semantic list for comparison
-                        dict[item_str] = relevant_items
+                        elif two_step is True:
+                            # Prepare prompts only for filtered embeddings
+                            threshold_temp_list = []
+                            for other_item in temp_list2:
+                                other_item_str = other_item[0]
+                                emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
+                                emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
+                                if cosine_similarity(emb1, emb2) > threshold:
+                                    batch_prompt += f"'{item_str}' {phrase} '{other_item_str}' \n"
+                                    threshold_temp_list.append(other_item)
+                            if threshold_temp_list:  # Only if any passed the threshold
+                                total_prompts.append(batch_prompt)
+                                item_to_other_items[item_str] = threshold_temp_list
+
+                        else:  # Only Embeddings
+                            relevant_items = []
+                            for other_item in temp_list2:
+                                other_item_str = other_item[0]
+                                emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
+                                emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
+                                if cosine_similarity(emb1, emb2) > threshold:
+                                    relevant_items.append(other_item_str)
+
+                            # Save results directly since no LLM call is needed here
+                            soft_binding_dic[item_str] = relevant_items
+                            dict[item_str] = relevant_items
+
+                    # Only proceed to LLM if we have prompts to process
+                    if total_prompts:
+                        full_prompt = "Answer the following questions with True or False.\n" + "\n".join(total_prompts)
+
+                        # Get response from LLM
+                        json_success = False
+                        response = []
+                        total_other_items = sum([len(item_to_other_items[item]) for item in batch])
+                        while not json_success or len(response) != total_other_items:
+                            try:
+                                response, temp_meta = llm_json(full_prompt, response_type=list[bool], return_metadata=True)
+                                json_success = True
+                            except RessourceError:
+                                print(f"Resource Error occurred in Join Pipeline JSON")
+                                time.sleep(60)
+                        _ = add_metadata(temp_meta, usage_metadata_join)
+
+                        # Split responses back to respective items
+                        resp_index = 0
+                        for item_str in batch:
+                            other_items = item_to_other_items[item_str]
+                            relevant_items = []
+                            for i in range(len(other_items)):
+                                if response[resp_index]:
+                                    relevant_items.append(other_items[i][0])
+                                resp_index += 1
+
+                            # Add relevant items to dictionaries
+                            soft_binding_dic[item_str] = relevant_items
+                            dict[item_str] = relevant_items
 
                             
                                 
