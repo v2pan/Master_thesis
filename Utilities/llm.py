@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import google.generativeai as genai
 import json
 import typing_extensions as typing

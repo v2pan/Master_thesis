@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import sys
-sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Evaluation.evaluation import calculate_average_metrics
 
 def visualize_results(acc, prec, rec, f1):

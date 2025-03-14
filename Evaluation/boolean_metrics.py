@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Utilities.llm import ask_llm, llm_json, RessourceError
 import time
 from Evaluation.evaluation import evaluate_results

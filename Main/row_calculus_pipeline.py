@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Utilities.database import query_database
 from Utilities.extractor import extract
 from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY

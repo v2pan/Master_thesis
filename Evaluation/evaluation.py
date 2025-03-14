@@ -1,6 +1,7 @@
 import time
 import sys
-sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Main.row_calculus_pipeline import row_calculus_pipeline
 from Main.join_pipeline import join_pipeline
 from Main.combined_pipeline import combined_pipeline

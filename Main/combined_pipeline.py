@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Main.join_pipeline import join_pipeline
 from Main.row_calculus_pipeline import row_calculus_pipeline, get_relevant_tables, get_context, initial_query
 from Utilities.extractor import extract
@@ -52,7 +53,8 @@ TOTAL_DIC = {}
 def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None, threshold=None, two_step=None): 
 
     import sys
-    sys.path.insert(0, '/home/vlapan/Documents/Masterarbeit/Relational')
+    import os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     if aux==False:
         from Main.join_pipeline import join_pipeline
         from Main.row_calculus_pipeline import row_calculus_pipeline
