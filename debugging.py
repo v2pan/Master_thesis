@@ -3,6 +3,7 @@ import numpy
 import re
 import time
 import csv
+import os
 
 from Main.combined_pipeline import combined_pipeline
 path="Data/itunes_amazon_raw_data/labeled_data.csv"
@@ -119,49 +120,44 @@ create_and_populate_table(ground_truth_left, "ground_truth_left")
 ground_truth_answer=query_database("SELECT * FROM ground_truth_left;", printing=False)
 ground_truth_answer       
 
-
-#Series of threshhold
-threshhold_series=[]
-i=0
+# Series of threshold
+threshold_series = []
+i = 0
 while i < 1:
-    i+=1/8
-    threshhold_series.append(i)
-# threshhold_series
+    i += 1 / 8
+    threshold_series.append(i)
+
+# For testing purposes
+two_step_values = [True, False]
+threshold_series = [0.9]
 
 
+for threshold in threshold_series:
+    for two_step in two_step_values:
 
-#!!!!!!!!!!!!!!!!!!!!
-#For testing purposes
-two_step=[True, False, None]
-threshhold_series=[0.8]
+        print("Running logic with two_step=None (No threshold applied)")
+        already_run_none = True  # Set to True after the first run
 
-for threshold in threshhold_series:
-    for two_step in two_step:
-
-        #Execute it and write the output to the file
-        start=time.time()
+        # Execute and write the output to the file
+        start = time.time()
         try:
-            answer, metadata= combined_pipeline(query=None,initial_sql_query="SELECT * FROM right_table JOIN left_table ON left_table.aggregate = right_table.aggregate;",aux=True, threshold=threshold, two_step=two_step)
+            answer, metadata = combined_pipeline(query=None, initial_sql_query="SELECT * FROM right_table JOIN left_table ON left_table.aggregate = right_table.aggregate;", aux=True, threshold=threshold, two_step=two_step)
         except Exception as e:
             print(f"An error occurred: {e}")
-            metadata={'prompt_token_count': 0, 'candidates_token_count': 0, 'total_token_count': 0, 'total_calls': 0}
-        end=time.time()
-        #FOR PROBLEMATIC SITUATION
-        solution_prompt="SELECT * FROM left_table INNER JOIN left_tableaggregateright_tableaggregate_table ON left_table.aggregate = left_tableaggregateright_tableaggregate_table.word INNER JOIN right_table ON left_tableaggregateright_tableaggregate_table.synonym = right_table.aggregate;"
+            metadata = {'prompt_token_count': 0, 'candidates_token_count': 0, 'total_token_count': 0, 'total_calls': 0}
+        end = time.time()
 
+        # Problematic situation solution prompt
+        solution_prompt = "SELECT * FROM left_table INNER JOIN left_tableaggregateright_tableaggregate_table ON left_table.aggregate = left_tableaggregateright_tableaggregate_table.word INNER JOIN right_table ON left_tableaggregateright_tableaggregate_table.synonym = right_table.aggregate;"
 
-        # #Deal wit answer:
-        # if not answer:
-        #     answer=None
-
-        #Try to get the answer
-        required_answer=set()
+        # Try to get the answer
+        required_answer = set()
         try:
-            required_answer=query_database(solution_prompt, printing=False)
+            required_answer = query_database(solution_prompt, printing=False)
         except:
-            required_answer=set()
+            required_answer = set()
 
-        correct_answer = required_answer==answer
+        correct_answer = required_answer == answer
         unique_result = list(set(tuple(sorted(set(t))) for t in required_answer))
 
         try:
@@ -177,11 +173,7 @@ for threshold in threshhold_series:
             bleu_scores[n_gram] = score  # Store in dictionary
             print(f"BLEU-{n_gram} score: {score:.4f}")  # Nicely formatted output
 
-
-
-
         # --- Write to CSV ---
-
         csv_row = {
             "accuracy": accuracy,
             "precision": precision,
@@ -203,7 +195,6 @@ for threshold in threshhold_series:
         csv_file = "results_output.csv"
 
         # Check if file exists to decide whether to write headers
-        import os
         file_exists = os.path.isfile(csv_file)
 
         # Write data
@@ -213,5 +204,78 @@ for threshold in threshhold_series:
                 writer.writeheader()  # Write headers if file doesn't exist
             writer.writerow(csv_row)
 
-# print(f"Results written to {csv_file}")
 
+# For testing purposes
+two_step_values = [None]
+
+for threshold in threshold_series:
+    for two_step in two_step_values:
+
+        print("Running logic with two_step=None (No threshold applied)")
+        already_run_none = True  # Set to True after the first run
+
+        # Execute and write the output to the file
+        start = time.time()
+        try:
+            answer, metadata = combined_pipeline(query=None, initial_sql_query="SELECT * FROM right_table JOIN left_table ON left_table.aggregate = right_table.aggregate;", aux=True, threshold=threshold, two_step=two_step)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            metadata = {'prompt_token_count': 0, 'candidates_token_count': 0, 'total_token_count': 0, 'total_calls': 0}
+        end = time.time()
+
+        # Problematic situation solution prompt
+        solution_prompt = "SELECT * FROM left_table INNER JOIN left_tableaggregateright_tableaggregate_table ON left_table.aggregate = left_tableaggregateright_tableaggregate_table.word INNER JOIN right_table ON left_tableaggregateright_tableaggregate_table.synonym = right_table.aggregate;"
+
+        # Try to get the answer
+        required_answer = set()
+        try:
+            required_answer = query_database(solution_prompt, printing=False)
+        except:
+            required_answer = set()
+
+        correct_answer = required_answer == answer
+        unique_result = list(set(tuple(sorted(set(t))) for t in required_answer))
+
+        try:
+            accuracy, precision, recall, f1_score = evaluate_results(ground_truth_answer, unique_result)
+        except:
+            accuracy, precision, recall, f1_score = 0, 0, 0, 0
+
+        n_gram_range = [1, 2, 3, 4]
+        bleu_scores = {}
+
+        for n_gram in n_gram_range:
+            score = average_best_bleu_score(ground_truth_answer, required_answer, n_gram=n_gram)
+            bleu_scores[n_gram] = score  # Store in dictionary
+            print(f"BLEU-{n_gram} score: {score:.4f}")  # Nicely formatted output
+
+        # --- Write to CSV ---
+        csv_row = {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1_score,
+            "execution_time": end - start,
+            "threshold": threshold,
+            "two_step": two_step,
+            "bleu_1": bleu_scores[1],
+            "bleu_2": bleu_scores[2],
+            "bleu_3": bleu_scores[3],
+            "bleu_4": bleu_scores[4],
+            "prompt_token_count": metadata['prompt_token_count'],
+            "candidates_token_count": metadata['candidates_token_count'],
+            "total_token_count": metadata['total_token_count'],
+            "total_calls": metadata['total_calls']
+        }
+
+        csv_file = "results_output.csv"
+
+        # Check if file exists to decide whether to write headers
+        file_exists = os.path.isfile(csv_file)
+
+        # Write data
+        with open(csv_file, mode='a', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=csv_row.keys())
+            if not file_exists:
+                writer.writeheader()  # Write headers if file doesn't exist
+            writer.writerow(csv_row)
