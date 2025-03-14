@@ -13,7 +13,7 @@ data
 
 #Index
 index_start = 0
-index_end = 10
+index_end = 3
 
 class_vector=data['label']
 left_table=data.iloc[:,4:10]
@@ -126,31 +126,33 @@ i=0
 while i < 1:
     i+=1/8
     threshhold_series.append(i)
-threshhold_series
+# threshhold_series
 
-current_threshhold=0.5
-current_both=False
 
-both=[True, False]
 
 #!!!!!!!!!!!!!!!!!!!!
 #For testing purposes
-both=[False]
-threshhold_series=[0.5]
+two_step=[False]
+threshhold_series=[0.8]
 
 for threshold in threshhold_series:
-    for two_step in both:
+    for two_step in two_step:
 
         #Execute it and write the output to the file
         start=time.time()
         try:
-            answer, metadata= combined_pipeline(query=None,initial_sql_query="SELECT * FROM right_table JOIN left_table ON left_table.aggregate = right_table.aggregate;",aux=True)
-        except:
-            answer=set()
+            answer, metadata= combined_pipeline(query=None,initial_sql_query="SELECT * FROM right_table JOIN left_table ON left_table.aggregate = right_table.aggregate;",aux=True, threshold=threshold, two_step=two_step)
+        except Exception as e:
+            print(f"An error occurred: {e}")
             metadata={'prompt_token_count': 0, 'candidates_token_count': 0, 'total_token_count': 0, 'total_calls': 0}
         end=time.time()
         #FOR PROBLEMATIC SITUATION
         solution_prompt="SELECT * FROM left_table INNER JOIN left_tableaggregateright_tableaggregate_table ON left_table.aggregate = left_tableaggregateright_tableaggregate_table.word INNER JOIN right_table ON left_tableaggregateright_tableaggregate_table.synonym = right_table.aggregate;"
+
+
+        # #Deal wit answer:
+        # if not answer:
+        #     answer=None
 
         #Try to get the answer
         required_answer=set()
@@ -186,8 +188,8 @@ for threshold in threshhold_series:
             "recall": recall,
             "f1_score": f1_score,
             "execution_time": end - start,
-            "threshold": current_threshhold,
-            "two_step": current_both,
+            "threshold": threshold,
+            "two_step": two_step,
             "bleu_1": bleu_scores[1],
             "bleu_2": bleu_scores[2],
             "bleu_3": bleu_scores[3],

@@ -27,7 +27,7 @@ usage_metadata_join = {
 #
     
 
-def compare_semantics_in_list(input_list,order, threshold=0.9,two_step=True):
+def compare_semantics_in_list(input_list,order, threshold=None,two_step=False):
     """
     Compares each unique item from the first list in each sublist against every element in the second list to find semantically equivalent expressions using llm_json.
 
@@ -95,10 +95,11 @@ def compare_semantics_in_list(input_list,order, threshold=0.9,two_step=True):
                 # #add_metadata(temp_meta)
                 # print(f"The phrase is: {phrase}")
                 comparison_mapping = {
+                "=": "has the same meaning as (also in another language) or is the same as",
                 "<": "is smaller than",
                 "!=": "has a different meaning than",
                 "<>": "has a different meaning than",
-                "=": "has the same meaning as (also in another language) or is the same as"
+                
                 }
 
                 # Extract the comparison operator from the condition (assuming condition is in a similar format)
@@ -120,7 +121,7 @@ def compare_semantics_in_list(input_list,order, threshold=0.9,two_step=True):
                     seen_items.add(item_str)
 
                     total_prompt = f"Answer the following questions with True or False.\n"
-                    if threshold is None:
+                    if two_step is None:
                         #Iteation over all items from another list
                         for other_item in temp_list2:
                             other_item_str = other_item[0]
@@ -129,8 +130,10 @@ def compare_semantics_in_list(input_list,order, threshold=0.9,two_step=True):
 
                         #Get response from LLM
                         json_success=False
-                        while not json_success:
+                        response=[]
+                        while not json_success or len(response)!=len(temp_list2):
                             try:
+                                json_success=False
                                 response, temp_meta = llm_json(total_prompt, response_type=list[bool], return_metadata=True)
                                 json_success=True
                             except RessourceError:
@@ -163,8 +166,10 @@ def compare_semantics_in_list(input_list,order, threshold=0.9,two_step=True):
 
                         #Get response from LLM
                         json_success=False
-                        while not json_success:
+                        response=[]
+                        while not json_success or len(response)!=len(threshold_temp_list):
                             try:
+                                json_success=False
                                 response, temp_meta = llm_json(total_prompt, response_type=list[bool], return_metadata=True)
                                 json_success=True
                             except RessourceError:
@@ -172,7 +177,7 @@ def compare_semantics_in_list(input_list,order, threshold=0.9,two_step=True):
                                 time.sleep(60)
                         _=add_metadata(temp_meta, usage_metadata_join)
 
-                        relevant_items = [threshold_temp_list for i, is_relevant in enumerate(response) if is_relevant]
+                        relevant_items = [threshold_temp_list[0] for i, is_relevant in enumerate(response) if is_relevant]
 
                          #Add relevant semantic equivalents to the list
                         if relevant_items is not None:
@@ -233,7 +238,7 @@ def compare_semantics_in_list(input_list,order, threshold=0.9,two_step=True):
 
     return dict_list, order, total_dic
 
-def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False):
+def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False, threshold=None,two_step=None):
 
 
 
@@ -248,7 +253,7 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
     new_list = execute_queries_on_conditions(join_conditions)
     print(new_list)
     #TODO: Multiple dictinoaries for multiple JOINs
-    semantic_dic, order, new_dic= compare_semantics_in_list(new_list, order)
+    semantic_dic, order, new_dic= compare_semantics_in_list(new_list, order, threshold=threshold, two_step=two_step)
     print( new_dic)
     print(order)
 

@@ -63,7 +63,8 @@ def create_and_populate_translation_table(TOTAL_DIC, comparison):
         elif type_synonym == int:
             type_synonym = "INTEGER"
         else:
-            raise TypeError(f"Unexpected type: {type_synonym}, expected str or int.")
+            print(f"Unexpected type: {type_synonym}, expected str or int.")
+            type_synonym = "TEXT"
 
 
 
