@@ -14,8 +14,7 @@ data
 
 #Index
 index_start = 0
-index_end = 3
-
+index_end = 10
 class_vector=data['label']
 left_table=data.iloc[:,4:10]
 right_table=data.iloc[:,10:16]
@@ -129,7 +128,7 @@ while i < 1:
 
 # For testing purposes
 two_step_values = [True, False]
-threshold_series = [0.9]
+# threshold_series = [0.9]
 
 
 for threshold in threshold_series:
