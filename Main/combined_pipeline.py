@@ -78,8 +78,11 @@ def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None
 
     total_count=0
     total_retries=4
+
+    if "SELECT" in query:
+        initial_sql_query=query
     
-    if initial_sql_query is None:
+    elif initial_sql_query is None:
         while total_count<total_retries:
             #Get context
             count=0
@@ -153,7 +156,7 @@ def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None
         #Then WHERE clause
         elif where_conditions:
             print(f"The \n”{initial_sql_query}\n has a WHERE clause.")
-            output, temp_meta=row_calculus_pipeline(initial_sql_query, return_metadata=True)
+            output, temp_meta=row_calculus_pipeline(initial_sql_query, return_metadata=True, threshold=threshold, two_step=two_step)
             add_metadata(temp_meta, usage_metadata_total)
         
         elif join_conditions:

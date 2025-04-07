@@ -3,6 +3,17 @@
 # print(answer)
 
 def remove_duplicate_rows(output, total_dic):
+
+
+     # Build reverse mapping: synonym -> key
+    reverse_dic = {}
+    for key, synonyms in total_dic.items():
+        for syn in synonyms:
+            reverse_dic[syn] = reverse_dic.get(syn, set())
+            reverse_dic[syn].add(key)
+
+
+
     cleaned_rows = []
     seen_rows = set()
     if output is not None:
@@ -14,6 +25,12 @@ def remove_duplicate_rows(output, total_dic):
             for i, value in enumerate(row_list):
                 if value in total_dic:
                     for synonym in total_dic[value]:
+                        temp_row = row_list[:]
+                        temp_row[i] = synonym
+                        modified_versions.add(frozenset(temp_row))
+
+                if value in reverse_dic:
+                    for synonym in reverse_dic[value]:
                         temp_row = row_list[:]
                         temp_row[i] = synonym
                         modified_versions.add(frozenset(temp_row))

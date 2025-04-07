@@ -1,0 +1,151 @@
+--- Individual Metrics ---
+Calculus ∃id ∃name ∃patients_pd (doctors(id, name, patients_pd) ∧ patients_pd < 12):
+  Accuracy: 0.6667
+  Precision: 0.6667
+  Recall: 1.0000
+  F1-score: 0.8000
+
+--- Individual Metrics ---
+Calculus ∃id ∃patients_pd (doctors(id, 'Peter', patients_pd) ∧ patients_pd < 12):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name (shareowner1row(id, name, shares) ∧ animalowner1row(id, _, 'dog')):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name (shareowner(id, name, shares) ∧ animalowner(id, _, 'dog')):
+  Accuracy: 0.3333
+  Precision: 1.0000
+  Recall: 0.3333
+  F1-score: 0.5000
+
+--- Individual Metrics ---
+Calculus ∃id ∃shares ∃name(shareowner(id, name, shares) ∧ ¬animalowner(id, _, 'dog')):
+  Accuracy: 0.3333
+  Precision: 0.3333
+  Recall: 1.0000
+  F1-score: 0.5000
+
+--- Individual Metrics ---
+Calculus ∃x ∃y ∃z (children_table(x, y) ∧ fathers(x, z)):
+  Accuracy: 0.2778
+  Precision: 0.6667
+  Recall: 0.2778
+  F1-score: 0.3889
+prompt_token_count: 2534.3333333333335
+candidates_token_count: 188.33333333333334
+total_token_count: 2722.6666666666665
+total_calls: 8.0
+
+
+--- Individual Metrics ---
+Calculus ∃id (children_table(id, ) ∧ fathers(id, _) ∧ mothers(id, _) ):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+
+--- Individual Metrics ---
+Calculus ∃id (tennis_players(id, _, 'January') ∧ tournaments(id, name, price_money)):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+
+--- Individual Metrics ---
+Calculus ∃m ∃f ∃i (influencers(m, f) ∧ f > 500 ∧ followers(i, m, z)):
+  Accuracy: 0.7500
+  Precision: 1.0000
+  Recall: 0.7500
+  F1-score: 0.8571
+
+--- Individual Metrics ---
+Calculus ∃id (children_table(id, >1) ∧ fathers(id, _)):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+
+--- Individual Metrics ---
+Calculus ARTISTS(a,,), ALBUMS(,a,"Reputation",2017),SONGS(,a2,song_name,),ALBUMS(a2,a,):
+  Accuracy: 1.0000
+  Precision: 1.0000
+  Recall: 1.0000
+  F1-score: 1.0000
+
+
+--- Individual Metrics ---
+Calculus ∃d weather(d, city, temperature, rainfall) ∧ website_visits(d, page, visits):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+
+--- Individual Metrics ---
+Calculus ∃item bakery_sales(item, _, _) ∧ oven_temperature(d, >200 °C):
+  Accuracy: 0.7778
+  Precision: 1.0000
+  Recall: 0.7778
+  F1-score: 0.8333
+
+--- Individual Metrics ---
+Calculus ∃item bakery_sales(item, < 55, price) ∧ oven_temperature(item, temperature ):
+  Accuracy: 0.2500
+  Precision: 1.0000
+  Recall: 0.2500
+  F1-score: 0.4000
+
+--- Individual Metrics ---
+Calculus ∃item bakery_sales(item, > 90,_) ∧ oven_temperature(item, >180 °C):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+
+--- Individual Metrics ---
+Calculus ∃movie movies(movie,_, _) ∧ movies_personal(movie, _):
+  Accuracy: 0.3333
+  Precision: 1.0000
+  Recall: 0.3333
+  F1-score: 0.5000
+
+--- Individual Metrics ---
+Calculus ∃movie movies(movie,_, _) ∧ movies_personal(movie, >70%):
+  Accuracy: 0.2778
+  Precision: 0.6667
+  Recall: 0.2778
+  F1-score: 0.3889
+
+--- Individual Metrics ---
+Calculus ∃ movies("The sky over Berlin",_,_):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+
+
+--- Individual Metrics ---
+Calculus ∃clicks influencers( _ , clicks) ∧ publication_clicks(_ , clicks):
+  Accuracy: 0.0000
+  Precision: 0.0000
+  Recall: 0.0000
+  F1-score: 0.0000
+
+
+
+
+
+--- Average Metrics ---
+Average Accuracy: 0.53
+Average Precision: 0.70
+Average Recall: 0.58
+Average F1-score: 0.59
+
+-

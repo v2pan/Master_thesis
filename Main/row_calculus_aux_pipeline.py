@@ -13,7 +13,9 @@ from Utilities.extractor import extract
 import copy
 import time
 from Main.row_calculus_pipeline import extract_where_conditions_sqlparse, execute_queries_on_conditions
-
+from Utilities.llm import get_embedding
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 retry_delay=60
 
 #Metadata to keep track of use 
@@ -99,8 +101,60 @@ def create_and_populate_translation_table(TOTAL_DIC, comparison):
         print(f"An error occurred: {e}")
 
 
+def generate_prompt_and_get_response(temp_list, temp_string, phrase, left, ask_llm, llm_json, add_metadata, usage_metadata_row):
+    total_prompt = f"Answer the following questions with True or False. Reason your thinking, especially considering the units, converting units to another and then answering the question.  \n"
+    
+    # Iterate over the items in temp_list and compare with temp_string
+    for item in temp_list:
+        item = item[0]  # Extract the item from the tuple
 
-def list_semantics_aux(input_list):
+        # Remove unnecessary newline characters from strings
+        if type(item) != int:
+            item = item.replace("\n", "")
+        if type(temp_string) != int:
+            temp_string = temp_string.replace("\n", "")
+        if type(phrase) != int:
+            phrase = phrase.replace("\n", "")
+        
+        # Actual logic, this is where the semantic binding occurs
+        if left:
+            prompt = f"'{temp_string}'  {phrase} '{item}' \n"
+        else:
+            prompt = f" '{item}'  {phrase} '{temp_string}' \n"
+        
+        # Add the condition to the total prompt
+        total_prompt += prompt
+
+    # Figure out the binding by giving out a list of lists    
+    # response = llm_json(total_prompt, response_type=list[bool])
+
+    while True:
+        # Ask the model for an answer and get metadata
+        answer, temp_meta = ask_llm(total_prompt, return_metadata=True)
+        _ = add_metadata(temp_meta, usage_metadata_row)
+
+        # Get the model's response, expecting a list of booleans
+        response, temp_meta = llm_json(
+            f"For this question \n{total_prompt} \n The following answer was given {answer}. Return the necessary answer whether this question is true or False",
+            response_type=list[bool],
+            return_metadata=True
+        )
+
+        _ = add_metadata(temp_meta, usage_metadata_row)
+
+        # Check if response has the same length as temp_list
+        if len(response) == len(temp_list):
+            break  # Exit loop if lengths match
+
+        # If lengths do not match, print error and retry
+        print("Error")
+        print("The response and the temp_list have different lengths")
+        print(f"The response is {response}")
+        print(f"The temp_list is {temp_list}")
+    
+    return response  # Return the response after processing
+
+def list_semantics_aux(input_list, two_step=None, threshold=None):
     """
     Compare each pair of expressions in a sublist to determine if they have the same semantic meaning
     using the llm_json function. 
@@ -161,7 +215,7 @@ def list_semantics_aux(input_list):
             #                   Output:''',True, max_token=100)
 
             comparison_mapping = {
-                 "=": "has the same meaning as (also in another language) or is the same as",
+                 "=": "is the same as",
                 "<": "is smaller than",
                 "!=": "has a different meaning than",
                 "<>": "has a different meaning than"
@@ -187,77 +241,90 @@ def list_semantics_aux(input_list):
             # Compare the string with the items in the list using llm_json
             soft_binding_list = []
 
-            #Final prompt with list
-            #total_prompt="Answer the following questions with True or False." # Change in connection with bakery Fahrenheit/Celcius example
-            total_prompt=f"Answer the following questions with True or False. Reason you thinking, especially considering the units, converting units to another and then answering the question.  \n"
-            # Iterate over the items in temp_list and compare with temp_string
-            for item in temp_list:
-                item=item[0]
+            if two_step is None:
+                #Final prompt with list
+                #total_prompt="Answer the following questions with True or False." # Change in connection with bakery Fahrenheit/Celcius example
+                response=generate_prompt_and_get_response(temp_list, temp_string, phrase, left, ask_llm, llm_json, add_metadata, usage_metadata_row)
 
 
-                #FOR TESTING Purposes:
-                #phrase=" has the same meaning as (also in antoher language) or is the same as"
 
-                #Deletes unnecessary "\n"
-                if type(item)!=int:
-                    item=item.replace("\n", "")
-                if type(temp_string)!=int:
-                    temp_string=temp_string.replace("\n", "")
-                if type(phrase)!=int:
-                    phrase=phrase.replace("\n", "")
-                #Actual logic, this is where the semantic binding occurs
-                if left:
-                    prompt = f"'{temp_string}'  {phrase} '{item}' \n"
-                else:
-                    prompt = f" '{item}'  {phrase} '{temp_string}' \n"
-                #Add condition to the prompt
-                total_prompt+=prompt
+                #Retrieve the relevant items
+                relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
 
-            #Figure out the binding by giving out a list of lists    
-            # response = llm_json(total_prompt, response_type=list[bool])
+                if relevant_items is not None:
+                    soft_binding_dic[temp_string] =[] 
+                    for i in relevant_items:
+                        i=i[0]
+                        soft_binding_dic[temp_string].append(i)
 
-            while True:
-                answer, temp_meta = ask_llm(total_prompt, return_metadata=True)
-                _ = add_metadata(temp_meta, usage_metadata_row)
+                #Add to List for duplicate elimination
+                #For duplicate elimination
+                if relevant_items is not None:
+                    TOTAL_DIC[temp_string]=[]
+                    for i in relevant_items:
+                        i=i[0]
+                        if i!=temp_string:
+                            TOTAL_DIC[temp_string].append(i)
 
-                response, temp_meta = llm_json(
-                    f"For this question \n{total_prompt} \n The following answer was given {answer}. Return the necessary answer whether this question is true or False",
-                    response_type=list[bool],
-                    return_metadata=True
-                )  # Expect a list of booleans back
+            elif two_step==True:
                 
-                _ = add_metadata(temp_meta, usage_metadata_row)
+                threshold_temp_list=[]
+                emb1 = np.array(get_embedding(temp_string)).reshape(1, -1)
+                for i in temp_list:
+                    emb2 = np.array(get_embedding(i)).reshape(1, -1)
+                    cos_sim=cosine_similarity(emb1, emb2)[0][0]
+                    if  cos_sim> threshold:
+                        threshold_temp_list.append(i)
 
-                # Check if response has the same length as temp_list
-                if len(response) == len(temp_list):
-                    break  # Exit loop if lengths match
+                response=generate_prompt_and_get_response(temp_list, temp_string, phrase, left, ask_llm, llm_json, add_metadata, usage_metadata_row)
 
-                # If lengths do not match, print error and retry
-                print("Error")
-                print("The response and the temp_list have different lengths")
-                print(f"The response is {response}")
-                print(f"The temp_list is {temp_list}")
+                #Retrieve the relevant items
+                relevant_items = [threshold_temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
+
+                if relevant_items is not None:
+                    soft_binding_dic[temp_string] =[] 
+                    for i in relevant_items:
+                        i=i[0]
+                        soft_binding_dic[temp_string].append(i)
+
+                #Add to List for duplicate elimination
+                #For duplicate elimination
+                if relevant_items is not None:
+                    TOTAL_DIC[temp_string]=[]
+                    for i in relevant_items:
+                        i=i[0]
+                        if i!=temp_string:
+                            TOTAL_DIC[temp_string].append(i)
+
+            elif two_step==False:
+
+                threshold_temp_list=[]
+                emb1 = np.array(get_embedding(temp_string)).reshape(1, -1)
+                for i in temp_list:
+                    emb2 = np.array(get_embedding(i)).reshape(1, -1)
+                    cos_sim=cosine_similarity(emb1, emb2)[0][0]
+                    if  cos_sim> threshold:
+                        threshold_temp_list.append(i)
 
 
-            #Retrieve the relevant items
-            relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
+                #Retrieve the relevant items
+                relevant_items = threshold_temp_list
 
-            if relevant_items is not None:
-                soft_binding_dic[temp_string] =[] 
-                for i in relevant_items:
-                    i=i[0]
-                    soft_binding_dic[temp_string].append(i)
+                if relevant_items is not None:
+                    soft_binding_dic[temp_string] =[] 
+                    for i in relevant_items:
+                        i=i[0]
+                        soft_binding_dic[temp_string].append(i)
 
-            #Add to List for duplicate elimination
-            #For duplicate elimination
-            if relevant_items is not None:
-                TOTAL_DIC[temp_string]=[]
-                for i in relevant_items:
-                    i=i[0]
-                    if i!=temp_string:
-                        TOTAL_DIC[temp_string].append(i)
+                #Add to List for duplicate elimination
+                #For duplicate elimination
+                if relevant_items is not None:
+                    TOTAL_DIC[temp_string]=[]
+                    for i in relevant_items:
+                        i=i[0]
+                        if i!=temp_string:
+                            TOTAL_DIC[temp_string].append(i)
 
-            
             #Appen to final dictionary please:
             semantic_dic[outer_list[-2]+ "_comparison_"+outer_list[-1]] = soft_binding_dic
 
@@ -278,7 +345,7 @@ def list_semantics_aux(input_list):
 
 
 #MAIN FUNCTION
-def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=False):
+def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=False, threshold=None, two_step=None):
     
   
 
@@ -289,7 +356,7 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
     #INNER LOGIC: Analyze SQL query, retrieve necessary items to retrieve, compare them using the LLM
     conditions = extract_where_conditions_sqlparse(initial_sql_query)
     query_results = execute_queries_on_conditions(conditions)
-    semantic_dic, semantic_list=list_semantics_aux(query_results)
+    semantic_dic, semantic_list=list_semantics_aux(query_results, threshold=threshold, two_step=two_step)
     print(f"The semantics dic is {semantic_dic}")
 
     #Create and populate the translation table

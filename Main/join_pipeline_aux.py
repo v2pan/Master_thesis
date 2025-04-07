@@ -164,7 +164,7 @@ def compare_semantics_in_list(input_list, order, threshold=None, two_step=False)
                             emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
                             emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
 
-                            if cosine_similarity(emb1, emb2) > threshold:
+                            if cosine_similarity(emb1, emb2)[0][0] > threshold:
                                 prompt = f"'{item_str}' {phrase} '{other_item_str}' \n"  # Simplified prompt
                                 total_prompt+=prompt
                                 threshold_temp_list.append(other_item_str)
@@ -201,8 +201,8 @@ def compare_semantics_in_list(input_list, order, threshold=None, two_step=False)
                             other_item_str = other_item[0]
                             emb1 = np.array(get_embedding(item_str)).reshape(1, -1)
                             emb2 = np.array(get_embedding(other_item_str)).reshape(1, -1)
-
-                            if cosine_similarity(emb1, emb2) > threshold:
+                            cos_sim=cosine_similarity(emb1, emb2)[0][0]
+                            if cos_sim > threshold:
                                 relevant_items.append(other_item_str)
 
                         # Add relevant semantic equivalents to the list

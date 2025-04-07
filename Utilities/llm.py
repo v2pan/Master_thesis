@@ -29,9 +29,9 @@ genai.configure(api_key=api_key)
 # 1 million TPM
 # 1,500 RPD
 
-MODEL="gemini-1.5-flash"
+MODEL= "gemini-2.0-flash"
 # "gemini-1.5-flash"
-# "gemini-2.0-flash"
+
 #"deepseek-r1:1.5b"
 #"llama3.2"
 def ask_llm(prompt, return_metadata=False, temp=1.0, max_token=4096 ,model=MODEL):  # Add optional argument
@@ -240,4 +240,4 @@ def extract_boolean_values(response_string):
     
 
 
-# print(llm_json("Is Berlin the capital of Germany?", response_type=bool))
+

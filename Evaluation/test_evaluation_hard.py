@@ -1,4 +1,7 @@
 import os
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Utilities.database import query_database
 from Utilities.extractor import extract
 from Utilities.llm import ask_llm, llm_json, QUERY, CATEGORY
@@ -341,16 +344,18 @@ def error_logic(loaded_dictionary, queries):
         metrics_list=[]
         [metrics_list.append(i) for i in averages]
         metrics_list.append(query)
-        append_metrics_to_file(metrics_list ,filename="metrics/test_evaluation_metrics_1_5_hard.txt.")
 
+        save_path="metrics/test_evaluation_metrics_1_5_hard_new.txt"
+        append_metrics_to_file(metrics_list ,filename=save_path)
+        
         #Work with metadata
         for i in metadata.keys():
             metadata[i]=metadata[i]/RUNS
 
-        append_metadata_to_file(metadata, filename="metrics/test_evaluation_metrics_1_5_hard.txt.")
+        append_metadata_to_file(metadata, filename=save_path)
         
         #Append the time taken for the whole pipeline
-        append_time_to_file(times, filename="metrics/test_evaluation_metrics_1_5_hard.txt.")
+        append_time_to_file(times, filename=save_path)
 
     
     #Write that to a file

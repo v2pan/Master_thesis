@@ -161,7 +161,7 @@ def create_boolean(prompts, true_responses, comparisons, models, reasons, write=
 def visualize_boolean_metrics(metrics=None):
     
     if metrics is None:
-        with open("saved_json/boolean_metrics_ollama_complete.json", "r") as f:
+        with open("saved_json/boolean_metrics.json", "r") as f:
             metrics=json.load(f)
     
     x_axis_count=0
@@ -194,7 +194,8 @@ def visualize_boolean_metrics(metrics=None):
                     ax = axes[c][count]
                     #ax = axes[count][c]
 
-                    ax.bar(["Acc", "Precision", "Recall", "F1-score"], mean_scores)
+                    #ax.bar(["Acc", "Precision", "Recall", "F1-score"], mean_scores)
+                    ax.bar(["Precision", "Recall", "F1-score"], mean_scores[1:])
                     ax.set_ylabel("Mean Score")
 
                     
@@ -212,8 +213,8 @@ def visualize_boolean_metrics(metrics=None):
             plt.tight_layout()      
 
         # plt.tight_layout()  # Adjust subplot parameters for better spacing
-    #fig.savefig("saved_plots/boolean_metrics_ollama_complete.png", dpi=300, bbox_inches='tight')
-    write_boolean_metrics(metrics)
+    fig.savefig("saved_plots/new_boolean_metrics.png", dpi=300, bbox_inches='tight')
+    #write_boolean_metrics(metrics)
     plt.show()   
 
     for reason in   kpi_reason.keys():

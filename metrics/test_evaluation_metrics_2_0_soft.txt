@@ -230,7 +230,6 @@ total_calls AVERAGE: 6.0
 
 
 --- Average Metrics ---
-Average Accuracy: 0.65
 Average Precision: 0.71
 Average Recall: 0.68
 Average F1-score: 0.69
