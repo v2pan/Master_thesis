@@ -76,7 +76,7 @@ Doctors example with inequality and two WHERE clauses<br>
 | 2  | "Reputation Artist" | "English" |
 
 
-### Table 4: albums
+### Table 5: albums
 
 | id | artist_id | album_name  | release_year |
 |----|------------|-------------|---------------|
@@ -84,7 +84,7 @@ Doctors example with inequality and two WHERE clauses<br>
 | 2  | 2          | "Reputation" | 2017          |
 
 
-### Table 5: songs
+### Table 6: songs
 
 | id | album_id | song_name      | duration |
 |----|-----------|-----------------|----------|
@@ -99,7 +99,7 @@ Initial example provided<br>
 
 # Example Time and Tennis_Players
 
-### Table 6: tennis_players
+### Table 7: tennis_players
 
 |id| name          | born   | 
 |----|-------------|----------|
@@ -108,7 +108,7 @@ Initial example provided<br>
 |3   | Xi       | January 1986 |
 |4   | Michael       |    18.01.1997  |
 
-### Table 7: tournaments
+### Table 8: tournaments
 
 | winner_id    | name   |price_money in million|
 |---------------|------------|------  |
@@ -125,7 +125,7 @@ Date mismatch, Tournaments won by player born in January
 
 # Example Influencers
 
-### Table 8: influencers
+### Table 9: influencers
 
 |media_name|  clicks  | 
 |----------|---------    |
@@ -134,7 +134,7 @@ Date mismatch, Tournaments won by player born in January
 |surviver1000   | 1 million|
 | princess   | one thousand  |
 
-### Table 9: followers
+### Table 10: followers
 
 |  id  | following   | adult |
 |---------------|------------|------  |
@@ -154,7 +154,7 @@ Clicks is written in a completely different format.<br>
 # Example Join
 
 
-### Table 8: children_table
+### Table 11: children_table
 
 |id|  children  | 
 |----------|----|
@@ -163,7 +163,7 @@ Clicks is written in a completely different format.<br>
 | 2         | many |
 | 3         | 2  |
 
-### Table 9: fathers
+### Table 12: fathers
 
 |  id  | name   |
 |---------------|------------|
@@ -172,7 +172,7 @@ Clicks is written in a completely different format.<br>
 | four        | Simon |
 | two          | Dieter  |
 
-### Table 10: mothers
+### Table 12: mothers
 
 |  id  | name   |
 |---------------|------------|
@@ -211,7 +211,7 @@ Multiple Join example, Now works extra logic was added to accomodate it<br>
 # Join Example On two string columns with different format
 
 
-## Table 11: weather
+## Table 14: weather
 
 | date       | city       | temperature | rainfall |
 |------------|-------------|-------------|----------|
@@ -221,7 +221,7 @@ Multiple Join example, Now works extra logic was added to accomodate it<br>
 | 2023 10 27 | New York    | 13          | 1        |
 
 
-## Table 12: website_visits
+## Table 15: website_visits
 
 | date       | page       | visits |
 |------------|-------------|--------|
@@ -239,7 +239,7 @@ Multiple Join example, Now works extra logic was added to accomodate it<br>
 
 The example realtes to bakery sales
 
-## Table 13: bakery_sales
+## Table 16: bakery_sales
 
 |  Item| Quantity  | Price  |
 |------------|--------------------|--------------------|
@@ -249,7 +249,7 @@ The example realtes to bakery sales
 | Pain au Chocolat| 3 dozen                | 15.00 per dozen          |
 
 
-## Table 14: oven_temperature
+## Table 17: oven_temperature
 
 
 |Item| Temperature |
@@ -274,7 +274,7 @@ This example uses different units (Fahrenheit and dozens) and joins data based o
 
 # Movie Example Join 
 
-## Table 15: movies 
+## Table 18: movies 
 
 |  Movie | cateogry  | rating  |
 |------------|--------------------|--------------------|
@@ -284,7 +284,7 @@ This example uses different units (Fahrenheit and dozens) and joins data based o
 | Amélie| comedy           | 5/5          |
 
 
-## Table 16: movies_personal
+## Table 19: movies_personal
 
 
 |Movie| Personal rating |
@@ -318,7 +318,7 @@ This example uses different units (Fahrenheit and dozens) and joins data based o
 |surviver1000   | 1 million|
 | princess   | one thousand  |
 
-### Table 17: clicks
+### Table 20: clicks
 
 |publication|  clicks  | 
 |----------|---------    |
