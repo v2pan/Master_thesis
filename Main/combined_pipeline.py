@@ -284,6 +284,6 @@ def hard_pipeline(query):
             initial_query_result=[]
         return initial_query_result, temp_meta
 
-
+#combined_pipeline("SELECT * FROM animalowner WHERE animalowner.category = 'dog' ",  evaluation=True)
 
 
