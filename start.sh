@@ -43,3 +43,4 @@ echo ""
 
 # Run the app
 streamlit run app.py --server.port $PORT --server.address localhost
+
