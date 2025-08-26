@@ -184,7 +184,7 @@ def compare_semantics_in_list(input_list,order):
 
     return dict_list, order
 
-def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False):
+def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forward=False, return_metadata=False, db_connection=None):
 
     
    
@@ -226,7 +226,7 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
     join_conditions, order = extract_join_conditions_sqlparse(initial_sql_query)
     print(join_conditions)
     #Make sure this is correct, maybe rewrite to iterate again
-    new_list = execute_queries_on_conditions(join_conditions)
+    new_list = execute_queries_on_conditions(join_conditions, db_connection=db_connection)
     print(new_list)
     #TODO: Multiple dictinoaries for multiple JOINs
     semantic_dic, order= compare_semantics_in_list(new_list, order)
@@ -339,7 +339,7 @@ def join_pipeline(initial_sql_query, return_query=False, evaluation=False, forwa
                 return sql_query
             
             try:
-                result=query_database(sql_query,printing=False)
+                result=query_database(sql_query,printing=False, db_connection=db_connection)
             except QueryExecutionError:
                 retries_left-=1
                 print("Query not executable")

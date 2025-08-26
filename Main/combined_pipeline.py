@@ -50,7 +50,7 @@ def analyze_sql_query(sql_query):
 TOTAL_DIC = {}
 
 #Combination of both pipeline, adjustment was necessary
-def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None, threshold=None, two_step=None): 
+def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None, threshold=None, two_step=None, db_connection=None): 
 
     import sys
     import os
@@ -119,7 +119,7 @@ def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None
 
             #Check whether the SQL query is invalid
             try:
-                initial_query_result=query_database(initial_sql_query)
+                initial_query_result=query_database(initial_sql_query, db_connection=db_connection)
             except QueryExecutionError as e:
                 initial_query_result=f"{e}"
                 initial_query_result=initial_query_result.split('\n')[0]
@@ -130,7 +130,7 @@ def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None
 
     else: 
         try:
-            initial_query_result=query_database(initial_sql_query)
+            initial_query_result=query_database(initial_sql_query, db_connection=db_connection)
         except QueryExecutionError as e:
             #raise Exception("The initial SQL query is invalid")
             print("The initial SQL query is invalid")
@@ -148,21 +148,21 @@ def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None
         #First Problematic Join
         if join_conditions and where_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-            output_query, temp_meta=join_pipeline(initial_sql_query, forward=True, return_metadata=True)
+            output_query, temp_meta=join_pipeline(initial_sql_query, forward=True, return_metadata=True, db_connection=db_connection)
             add_metadata(temp_meta, usage_metadata_total)
-            output, temp_meta=row_calculus_pipeline(output_query, return_metadata=True)
+            output, temp_meta=row_calculus_pipeline(output_query, return_metadata=True, db_connection=db_connection)
             add_metadata(temp_meta, usage_metadata_total)
 
         #Then WHERE clause
         elif where_conditions:
             print(f"The \n”{initial_sql_query}\n has a WHERE clause.")
-            output, temp_meta=row_calculus_pipeline(initial_sql_query, return_metadata=True)
+            output, temp_meta=row_calculus_pipeline(initial_sql_query, return_metadata=True, db_connection=db_connection)
             add_metadata(temp_meta, usage_metadata_total)
         
         elif join_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
             # output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
-            output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True)
+            output, temp_meta=join_pipeline(initial_sql_query, return_metadata=True, db_connection=db_connection)
             add_metadata(temp_meta, usage_metadata_total)
         else:
             print(f"The \n{initial_sql_query}\n has no WHERE or JOIN clause.")
@@ -180,13 +180,13 @@ def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None
 
         if join_conditions and where_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-            initial_sql_query_join, semantic_list_join, sql_query_join, temp_meta=join_pipeline(initial_sql_query, return_query=False, forward=True, evaluation=True,  return_metadata=True)
+            initial_sql_query_join, semantic_list_join, sql_query_join, temp_meta=join_pipeline(initial_sql_query, return_query=False, forward=True, evaluation=True,  return_metadata=True, db_connection=db_connection)
             add_metadata(temp_meta, usage_metadata_total)
             max_retries = 3  # Set the maximum number of retries
             retry_count = 0
             while retry_count < max_retries:
                 try:
-                    initial_sql_query_where, semantic_list_where, result_where, temp_meta = row_calculus_pipeline(sql_query_join, evaluation=True, return_metadata=True)
+                    initial_sql_query_where, semantic_list_where, result_where, temp_meta = row_calculus_pipeline(sql_query_join, evaluation=True, return_metadata=True, db_connection=db_connection)
                     add_metadata(temp_meta, usage_metadata_total)
                     break  # Exit the loop if successful
                 except RessourceError:
@@ -199,19 +199,18 @@ def combined_pipeline(query, evaluation=False, aux=False, initial_sql_query=None
             if retry_count == max_retries:
                 print("Maximum retries exceeded.  Giving up.")
             output=result_where
-            output_query=initial_sql_query_where
 
         #Then WHERE clause
         elif where_conditions:
-            print(f"The \n”{initial_sql_query}\n has a WHERE clause.")
-            initial_sql_query_where, semantic_list_where, result_where, temp_meta=row_calculus_pipeline(initial_sql_query, evaluation=True, return_metadata=True)
+            print(f"The \n""{initial_sql_query}\n has a WHERE clause.")
+            initial_sql_query_where, semantic_list_where, result_where, temp_meta=row_calculus_pipeline(initial_sql_query, evaluation=True, return_metadata=True, db_connection=db_connection)
             add_metadata(temp_meta, usage_metadata_total)
             output=result_where
             output_query=initial_sql_query_where
         
         elif join_conditions:
             print(f"The \n{initial_sql_query}\n has a JOIN clause.")
-            initial_sql_query_join, semantic_list_join, result_join, temp_meta=join_pipeline(initial_sql_query, evaluation=True, return_metadata=True)
+            initial_sql_query_join, semantic_list_join, result_join, temp_meta=join_pipeline(initial_sql_query, evaluation=True, return_metadata=True, db_connection=db_connection)
             add_metadata(temp_meta, usage_metadata_total)
             output=result_join
             output_query=initial_sql_query_join

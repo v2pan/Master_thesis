@@ -279,7 +279,7 @@ def extract_where_conditions_sqlparse(sql_query):
         print(f"Error parsing SQL query: {e}")
         return [] #Return empty list on parse error.
 
-def execute_queries_on_conditions(conditions_list):
+def execute_queries_on_conditions(conditions_list, db_connection=None):
     """
     Executes `query_database` for each item in the list of conditions
     that contains both 'SELECT' and 'FROM' in the string.
@@ -301,7 +301,7 @@ def execute_queries_on_conditions(conditions_list):
             if isinstance(item, str) and 'SELECT' in item and 'FROM' in item:
                 # Execute the query if it contains the correct keywords
                 try:
-                    query_result = query_database(item)
+                    query_result = query_database(item, db_connection=db_connection)
                 except Exception as e:
                     raise Exception(f"Error executing query: {e}")
                 
@@ -469,7 +469,7 @@ def initial_query(query,context):
 
 
 #MAIN FUNCTION
-def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=False):
+def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=False, db_connection=None):
 
 
     #Metadata to keep track of use set so 0
@@ -478,7 +478,7 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
     
     #INNER LOGIC: Analyze SQL query, retrieve necessary items to retrieve, compare them using the LLM
     conditions = extract_where_conditions_sqlparse(initial_sql_query)
-    query_results = execute_queries_on_conditions(conditions)
+    query_results = execute_queries_on_conditions(conditions, db_connection=db_connection)
     semantic_list=compare_semantics_in_list(query_results)
     print(f"The semantics list is {semantic_list}")
 
@@ -515,7 +515,7 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
         print("No SQL query found in response.")
     else:
         try:
-            result=query_database(sql_query)
+            result=query_database(sql_query, db_connection=db_connection)
         except:
             result=None
     #Print total usage

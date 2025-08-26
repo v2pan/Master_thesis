@@ -279,7 +279,8 @@ def run_enhanced_query(query: str):
                     pipeline_result = combined_pipeline(
                         query=query,
                         evaluation=True,
-                        aux=False  # Always use main pipeline, not auxiliary
+                        aux=False,  # Always use main pipeline, not auxiliary
+                        db_connection=st.session_state.duckdb_con  # Pass the DuckDB connection
                     )
                 
                 # Get the captured output
