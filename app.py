@@ -145,7 +145,7 @@ def run_enhanced_query(query: str):
             
             if best_result is None:
                 st.error("Pipeline failed to process the query after multiple attempts.")
-                return None, None
+                return None, None, None
             
             # Convert to DataFrame if it's a list of tuples
             if isinstance(best_result, list):
@@ -160,7 +160,7 @@ def run_enhanced_query(query: str):
                 
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
-        return None, None
+        return None, None, None
 
 # Sidebar for configuration
 with st.sidebar:
