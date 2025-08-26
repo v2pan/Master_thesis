@@ -1,22 +1,79 @@
-Utilities/api_key.txt
-api_key.txt
-embedding.py
-relational.txt
-venv
-__pycache__
-saved_info
-.gitignore
+# API Keys and sensitive files
+#Utilities/api_key.txt
+#api_key.txt
+Utilities/token.txt
+
+# Virtual Environment
+venv/
+env/
+.venv/
+.env/
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebooks
+*.ipynb
 Final_evaluation_final.ipynb
 Final_evaluation.ipynb
+Proper_creation.ipynb
+KPI_WHERE/KIP_analysis_not_where copy.ipynb
+KPI_WHERE/KIP_analysis_where copy.ipynb
+
+# Data files and results
+*.csv
 results_50_part_time.csv
 results_output_odd.csv
 results_output.csv
-results_output.csv
 results_output_execution.csv
-Proper_creation.ipynb
 results_output_together.csv
-KPI_analysis
-playground
-Utilities/token.txt
-KPI_WHERE/KIP_analysis_not_where copy.ipynb
-KPI_WHERE/KIP_analysis_where copy.ipynb
+
+# Project specific
+embedding.py
+relational.txt
+saved_info/
+KPI_analysis/
+playground/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp

@@ -29,6 +29,7 @@ genai.configure(api_key=api_key)
 # 1 million TPM
 # 1,500 RPD
 
+#MODEL= "gemini-1.5-flash"
 MODEL= "gemini-2.0-flash"
 # "gemini-1.5-flash"
 
@@ -116,11 +117,23 @@ def llm_json(prompt,response_type, model=MODEL, return_metadata=False):
     if "gemini" in model:
         try:
             model = genai.GenerativeModel(model)
+            
+            # Create a more explicit schema for list[bool] responses
+            if response_type == list[bool]:
+                schema = {
+                    "type": "array",
+                    "items": {"type": "boolean"},
+                    "description": "Array of boolean values"
+                }
+            else:
+                schema = response_type
+                
             result = model.generate_content(
-                #"Answer the following questions [Does 'dog' and 'chien' have the same semantic meaning?, Does 'dog' and 'chat have the same semantic meaning?, Does dog and cat have the same semantic meaning?]",
                 prompt,
                 generation_config=genai.GenerationConfig(
-                    response_mime_type="application/json", response_schema=response_type
+                    response_mime_type="application/json", 
+                    response_schema=schema,
+                    temperature=0.1  # Lower temperature for more consistent JSON output
                 ),
             )
             #print(f"The result text is {result.text}")

@@ -410,15 +410,36 @@ def compare_semantics_in_list(input_list):
 
             answer,temp_meta=ask_llm(total_prompt,return_metadata=True)
             _=add_metadata(temp_meta,usage_metadata_row)
-            response, temp_meta = llm_json(f"For this question \n{total_prompt} \n The following asnwer was given {answer}. Return the necessary answer whether this question is true or False", response_type=list[bool], return_metadata=True)  # Expect a list of booleans back
+            
+            # Create a more explicit prompt for the JSON response
+            json_prompt = f"""For the following semantic comparison questions, return a JSON array of boolean values (true/false) with exactly {len(temp_list)} elements.
+
+Questions:
+{total_prompt}
+
+The answer given was: {answer}
+
+Return a JSON array with {len(temp_list)} boolean values, where each value corresponds to whether the respective comparison is semantically equivalent (true) or not (false).
+
+Example format: [true, false, true, false]"""
+            
+            response, temp_meta = llm_json(json_prompt, response_type=list[bool], return_metadata=True)
             _=add_metadata(temp_meta,usage_metadata_row)
+            
             #Check if response has same length
             if len(response)!=len(temp_list):
                 print("Error")
                 print("The response and the temp_list have different lengths")
                 print(f"The response is {response}")
                 print(f"The temp_list is {temp_list}")
-                break
+                # Try to fix the response by padding or truncating
+                if len(response) < len(temp_list):
+                    # Pad with False if response is too short
+                    response.extend([False] * (len(temp_list) - len(response)))
+                else:
+                    # Truncate if response is too long
+                    response = response[:len(temp_list)]
+                print(f"Fixed response: {response}")
 
             #Retrieve the relevant items
             relevant_items = [temp_list[i] for i, is_relevant in enumerate(response) if is_relevant]
@@ -503,12 +524,12 @@ def row_calculus_pipeline(initial_sql_query, evaluation=False, return_metadata=F
     print(usage_metadata_row)
     if not return_metadata:
         if evaluation:
-            return initial_sql_query, semantic_list, result
+            return sql_query, semantic_list, result
         else:
             return result
     if return_metadata:
         if evaluation:
-            return initial_sql_query, semantic_list, result, usage_metadata_row
+            return sql_query, semantic_list, result, usage_metadata_row
         else:
             return result, usage_metadata_row
     
