@@ -186,7 +186,7 @@ def load_database_dump():
 
 # Page configuration
 st.set_page_config(
-    page_title="SQL Query Enhancement with LLM",
+    page_title="LLM Powered Query Answering",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -457,8 +457,9 @@ with st.sidebar:
 # Main content
 st.title("🤖 LLM Powered Query Answering")
 st.markdown("""
-This application uses a sophisticated LLM pipeline to enhance and execute SQL queries. 
-Upload your data or load pre-existing data, write a query, and let the AI improve it for better results!
+This application is a demonstration of the LLM Powered Query Answering pipeline developed during my master thesis.
+It reinterprets the query the given SQL query to match based on semantic meaning rather than syntactic matching. 
+The demonostrator makes use of a free Gemini 2-0 flash model. If intrigued read my [Diploma thesis](https://repositum.tuwien.at/bitstream/20.500.12708/216253/1/Panin%20Vladimir%20-%202025%20-%20LLM-Powered%20Query%20Answering.pdf).
 """)
 
 # Query input section
@@ -570,37 +571,66 @@ st.header("ℹ️ How It Works")
 
 with st.expander("Learn about the pipeline"):
     st.markdown("""
-    ### 🔄 Pipeline Process
-    
-    1. **Data Loading**: Choose between uploading CSV files or loading pre-existing data from PostgreSQL dump
-    2. **Virtual Database**: Data is loaded into an in-memory DuckDB database
-    3. **Query Analysis**: The system analyzes your input query to detect WHERE and JOIN conditions
-    4. **Context Retrieval**: Relevant database context is gathered based on the query
-    5. **LLM Enhancement**: The query is processed through our combined pipeline:
-       - **Join Pipeline**: Handles complex JOIN operations
-       - **Row Calculus Pipeline**: Processes WHERE clauses and filtering
-    6. **Query Execution**: The enhanced query is executed against your data
-    7. **Result Processing**: Results are displayed in a formatted table
-    
-    ### 🎛️ Configuration Options
-    
-    - **Full LLM Pipeline**: Uses the core combined pipeline for query enhancement
-    - **Semantic Analysis**: Handles WHERE and JOIN clauses with semantic understanding
-    - **Pre-existing Data**: Load data from PostgreSQL dump file
-    
-    ### 📁 Supported Data Sources
-    
-    - Upload CSV files through the sidebar
-    - Load pre-existing data from PostgreSQL database dump
-    - The system automatically creates a DuckDB in-memory database
-    - Tables are registered and available for querying
-    
-    ### 🔮 Advanced Features
-    
-    - LLM-powered query enhancement with semantic analysis
-    - Multi-language support for query terms
-    - Automatic query optimization
-    - Support for complex JOIN and WHERE operations
+    ### ⚙️ Pipeline Workflow
+
+1. **Data Loading**:  
+   - Upload CSV files through the sidebar, or  
+   - Load pre-existing data from a PostgreSQL dump.  
+   All data is stored in an in-memory **DuckDB** instance for efficient querying.
+
+2. **Schema Context Extraction**:  
+   The system retrieves schema-level information for each table (column names, data types, constraints).  
+   This context is cached to avoid repeated lookups across runs.
+
+3. **Initial Query Generation**:  
+   An initial SQL query is generated based on your input (predicate-style) query and the schema information.  
+   This is handled by the **combined LLM pipeline**.
+
+4. **Query Parsing**:  
+   The system checks whether the initial query contains:  
+   - at least one **JOIN** clause → triggers the **Join Pipeline**  
+   - at least one **WHERE** clause → triggers the **Row Calculus Pipeline**
+
+5. **Semantic Binding (JOINs)**:  
+   For each JOIN condition, unique values are retrieved, and a *semantic list* of soft bindings is created.  
+   Example format:  
+   ```python
+   [{hard_value1: soft_values1}, {hard_value2: soft_values2}]
+   ```
+These soft-bound entities are then incorporated into the query.
+
+Semantic Binding (WHERE clauses):
+WHERE conditions are similarly enriched with soft bindings, ensuring semantic matches instead of strict syntactic ones.
+
+Final Query Generation:
+Using few-shot prompting, the LLM integrates the semantic lists (JOIN + WHERE) into the query.
+If no soft bindings exist, the original conditions remain unchanged.
+
+Execution & Results:
+The modified SQL query is executed against DuckDB, and the results are returned in a formatted table.
+The modified query is also displayed for transparency.
+
+### 🎛️ Configuration Options
+- **Full LLM Pipeline** — Runs the combined pipeline (**JOIN + WHERE**).
+- **Semantic Analysis Only** — Apply semantic binding to **JOIN/WHERE** clauses.
+- **Pre-existing Data** — Load from a **PostgreSQL dump** instead of CSVs.
+
+---
+
+### 📁 Supported Data Sources
+- **CSV upload** via sidebar
+- **PostgreSQL dump** file import
+- **Automatic DuckDB** in-memory database creation
+- **Registered tables** available for immediate querying
+
+---
+
+### 🔮 Advanced Features
+- **LLM-powered query rewriting** with *soft semantic bindings*
+- **Multi-language support** for query terms
+- **Automatic query optimization**
+- **Transparent display** of modified SQL
+- Support for **complex JOIN** and **WHERE** conditions
     """)
 
 # Footer
@@ -608,7 +638,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center; color: #666;'>
-        <p>Built with Streamlit and powered by advanced LLM pipelines</p>
+        <p>Built with Streamlit.</p>
     </div>
     """,
     unsafe_allow_html=True
