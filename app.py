@@ -458,7 +458,7 @@ with st.sidebar:
 st.title("🤖 LLM Powered Query Answering")
 st.markdown("""
 This application is a demonstration of the LLM Powered Query Answering pipeline developed during my master thesis.
-It reinterprets the query the given SQL query to match based on semantic meaning rather than syntactic matching. 
+It reinterprets the given SQL query to match based on semantic meaning rather than syntactic matching. 
 The demonostrator makes use of a free Gemini 2-0 flash model. If intrigued read my [Diploma thesis](https://repositum.tuwien.at/bitstream/20.500.12708/216253/1/Panin%20Vladimir%20-%202025%20-%20LLM-Powered%20Query%20Answering.pdf).
 """)
 
